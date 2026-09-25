@@ -116,8 +116,10 @@ async def test_un_riavvio_non_ricrea_la_configurazione(hass, hass_storage):
     assert await hass.config_entries.async_setup(voce.entry_id)
     await hass.async_block_till_done()
 
-    assert voce.runtime_data.configurazione["revisione"] == 7
-    assert voce.runtime_data.configurazione["tipologie"][0]["nome"] == "Pannolini"
+    assert voce.runtime_data.archivi.configurazione["revisione"] == 7
+    assert (
+        voce.runtime_data.archivi.configurazione["tipologie"][0]["nome"] == "Pannolini"
+    )
 
 
 async def test_rimuovere_l_integrazione_cancella_gli_archivi(hass, hass_storage):

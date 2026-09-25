@@ -15,4 +15,14 @@ Nessuna versione ancora: il progetto è in progettazione. La specifica è in
   Differenziata* chiede le tipologie da cui partire (umido, carta, plastica, vetro,
   secco, verde, con i loro colori) e quando si espongono i sacchi: di default dalle
   20:00 del giorno prima alle 06:00 del giorno del ritiro. Si può installare una volta
-  sola. Per ora non crea ancora entità né promemoria.
+  sola.
+- **Entità per le automazioni e le dashboard.** Un calendario con un evento per ogni
+  ritiro (`calendar.raccolta_differenziata`); i sensori *Oggi* e *Domani* con le
+  tipologie di quel giorno; un sensore *Prossimo ritiro* per ogni tipologia, con la data e
+  i giorni che mancano; il sensore *Da esporre*, acceso da quando si possono mettere fuori
+  i sacchi finché il ritiro non passa. Si aggiornano da soli a mezzanotte e all'apertura e
+  chiusura delle finestre di esposizione.
+- **Avvisi in Riparazioni.** Un ritiro che cade in un giorno festivo nei prossimi 30
+  giorni; il calendario che sta per scadere o è scaduto, con il modulo per rinnovarlo;
+  una configurazione non valida. Se il calendario non si può calcolare, le entità sono
+  non disponibili, mai "Nessuno".

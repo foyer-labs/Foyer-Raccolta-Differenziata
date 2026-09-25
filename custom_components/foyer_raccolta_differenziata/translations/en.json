@@ -27,6 +27,84 @@
       }
     }
   },
+  "device": {
+    "raccolta": {
+      "name": "Raccolta differenziata"
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "da_esporre": {
+        "name": "Da esporre"
+      }
+    },
+    "sensor": {
+      "domani": {
+        "name": "Domani"
+      },
+      "oggi": {
+        "name": "Oggi"
+      },
+      "prossimo": {
+        "name": "Prossimo ritiro {tipologia}"
+      }
+    }
+  },
+  "exceptions": {
+    "archivio_illeggibile": {
+      "message": "L'archivio della raccolta differenziata non si può leggere. Controlla il registro di Home Assistant."
+    }
+  },
+  "issues": {
+    "calcolo_non_riuscito": {
+      "description": "Il calcolo dei ritiri non è riuscito, quindi le entità della raccolta non sono disponibili. Il registro di Home Assistant contiene i dettagli: segnala il problema su GitHub.",
+      "title": "Il calendario della raccolta non si può calcolare"
+    },
+    "calendario_in_scadenza": {
+      "fix_flow": {
+        "error": {
+          "data_nel_passato": "La nuova data deve essere nel futuro.",
+          "salvataggio_non_riuscito": "Non è stato possibile salvare la nuova data."
+        },
+        "step": {
+          "conferma": {
+            "data": {
+              "valido_fino_al": "Valido fino al"
+            },
+            "description": "Hai indicato che il calendario della raccolta vale fino al {data}. Controlla il calendario nuovo del tuo comune e, se serve, aggiorna regole ed eccezioni dal pannello. Poi indica fino a quando il calendario è valido.",
+            "title": "Ho verificato il calendario del comune"
+          }
+        }
+      },
+      "title": "Il calendario della raccolta scade il {data}"
+    },
+    "calendario_scaduto": {
+      "fix_flow": {
+        "error": {
+          "data_nel_passato": "La nuova data deve essere nel futuro.",
+          "salvataggio_non_riuscito": "Non è stato possibile salvare la nuova data."
+        },
+        "step": {
+          "conferma": {
+            "data": {
+              "valido_fino_al": "Valido fino al"
+            },
+            "description": "Il calendario della raccolta valeva fino al {data}: i ritiri successivi sono segnati come da verificare. Controlla il calendario nuovo del tuo comune e, se serve, aggiorna regole ed eccezioni dal pannello. Poi indica fino a quando il calendario è valido.",
+            "title": "Ho verificato il calendario del comune"
+          }
+        }
+      },
+      "title": "Il calendario della raccolta è scaduto il {data}"
+    },
+    "configurazione_non_valida": {
+      "description": "La configurazione salvata contiene errori ({problemi}), quindi le entità della raccolta non sono disponibili. Correggila dal pannello della raccolta.",
+      "title": "La configurazione della raccolta non è valida"
+    },
+    "ritiri_festivi": {
+      "description": "Nei prossimi 30 giorni questi ritiri cadono in un giorno festivo: {ritiri}. Controlla cosa ha deciso il tuo comune e, dal pannello della raccolta, sposta o togli il ritiro, oppure ignora l'avviso se il ritiro resta com'è.",
+      "title": "Ritiri in giorni festivi da controllare"
+    }
+  },
   "selector": {
     "inizio_giorno": {
       "options": {
