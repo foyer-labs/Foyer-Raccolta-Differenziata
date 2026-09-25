@@ -8,6 +8,7 @@
   <img src="https://img.shields.io/badge/Home%20Assistant-2026.6%2B-41BDF5" alt="Home Assistant 2026.6 o successivo">
   <img src="https://img.shields.io/badge/HACS-repository%20personalizzato-41BDF5" alt="Repository personalizzato HACS">
   <a href="https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/LICENSE"><img src="https://img.shields.io/badge/licenza-Apache--2.0-blue" alt="Apache-2.0"></a>
+  <a href="https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/actions/workflows/ci.yml"><img src="https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
 </p>
 
 Umido il lunedì e il giovedì, la carta un martedì sì e uno no, il vetro il secondo

@@ -1,0 +1,14 @@
+{
+  "domain": "foyer_raccolta_differenziata",
+  "name": "Foyer Raccolta Differenziata",
+  "codeowners": ["@foyer-labs"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/foyer-labs/Foyer-Raccolta-Differenziata",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "0.0.0"
+}

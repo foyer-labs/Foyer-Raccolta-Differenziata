@@ -1,0 +1,48 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "La raccolta differenziata è già configurata: si gestisce dal pannello."
+    },
+    "error": {
+      "fine_prima_di_inizio": "Con inizio il giorno stesso, la fine dell'esposizione deve venire dopo l'inizio.",
+      "inizio_giorno_non_valido": "Scegli quando inizia l'esposizione.",
+      "orario_non_valido": "Uno degli orari non è valido."
+    },
+    "step": {
+      "user": {
+        "data": {
+          "fine_ora": "Entro le",
+          "inizio_giorno": "Esposizione da",
+          "inizio_ora": "Dalle",
+          "tipologie": "Tipologie di partenza"
+        },
+        "data_description": {
+          "fine_ora": "Ora del giorno del ritiro entro cui il sacco deve essere fuori.",
+          "inizio_giorno": "Da quando si possono mettere fuori i sacchi.",
+          "inizio_ora": "Ora da cui si possono mettere fuori i sacchi.",
+          "tipologie": "Potrai aggiungerne, toglierne e modificarle dal pannello."
+        },
+        "description": "Scegli le tipologie di rifiuto da cui partire e quando vanno esposti i sacchi. Giorni e regole si inseriscono poi dal pannello.",
+        "title": "Raccolta differenziata"
+      }
+    }
+  },
+  "selector": {
+    "inizio_giorno": {
+      "options": {
+        "giorno_prima": "Il giorno prima del ritiro",
+        "giorno_stesso": "Il giorno stesso del ritiro"
+      }
+    },
+    "tipologie": {
+      "options": {
+        "carta": "Carta",
+        "plastica": "Plastica",
+        "secco": "Secco",
+        "umido": "Umido",
+        "verde": "Verde",
+        "vetro": "Vetro"
+      }
+    }
+  }
+}
