@@ -876,6 +876,16 @@ l'opzione consigliata).
     dalle traduzioni, perché Home Assistant tiene in cache il nome tradotto e una
     tipologia rinominata resterebbe col nome vecchio fino al riavvio.
 
+Fase 3, 2026-09-25 (in autonomia, su mandato del proprietario).
+
+45. Il prototipo `docs/prototipo.html` è approvato come riferimento visivo di pannello e
+    card: chip e pallini nei colori delle tipologie, "Stasera fuori" come elemento
+    principale della card oggi/domani, regole scritte come frasi, anteprima delle date
+    nei moduli, finestra "Prima di salvare" con le differenze. Nei componenti veri i
+    colori di interfaccia vengono dal tema di Home Assistant (`--primary-color`,
+    `--card-background-color`, …); il verde acqua del prototipo è solo un segnaposto.
+    Le icone delle tipologie sono le icone MDI configurate, non gli emoji del prototipo.
+
 ---
 
 ## 17. Da confermare
