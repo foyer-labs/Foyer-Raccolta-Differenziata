@@ -1,6 +1,6 @@
 # Foyer Raccolta Differenziata — Specifica
 
-Stato: bozza 2 (2026-09-25). Tutto il progetto è in italiano: interfaccia, documentazione,
+Stato: bozza 3 (2026-09-25). Tutto il progetto è in italiano: interfaccia, documentazione,
 codice, commenti e commit (decisione 19).
 
 Questo documento è la fonte di verità. Dove una scelta sembra arbitraria, il motivo è
@@ -289,8 +289,33 @@ Campo facoltativo `valido_fino_al` (data). Vedi §9.3 (decisione 14).
 | `quando` | una forma di §8.1 | |
 | `tipologie` | "tutte" oppure elenco | "Tutte" include le tipologie create dopo. |
 | `destinatari` | elenco non vuoto di servizi `notify.*` e/o entità `notify` | Vedi §8.3. |
-| `richiami` | 0–2 | Solleciti se nessuno conferma. |
-| `richiamo_dopo` | 5–240 minuti | Intervallo tra un invio e il richiamo successivo. |
+
+I solleciti non sono un campo del profilo: sono un'impostazione unica (§4.9).
+
+### 4.9 Solleciti
+
+Un interruttore globale **"Sollecita se non confermo"**, nella pagina Promemoria, **spento
+all'installazione** (decisione 39). *Perché:* alla maggior parte delle persone basta la
+notifica; essere inseguiti da un promemoria ripetuto è fastidioso, e chi lo vuole lo
+accende con un gesto.
+
+| Campo | Tipo | Note |
+|---|---|---|
+| `solleciti` | booleano, default spento | |
+| `richiami` | 1–2, default 1 | Visibile e usato solo con i solleciti accesi. |
+| `richiamo_dopo` | 5–240 minuti, default 30 | Visibile e usato solo con i solleciti accesi. |
+
+Valgono per tutti i profili.
+
+- **Spenti:** nessun richiamo; le notifiche dell'app Companion hanno solo il pulsante
+  **Esposto ✓**.
+- **Accesi:** richiami secondo §8.5; le notifiche dell'app Companion hanno anche
+  **Ricordamelo tra 30 minuti**.
+
+La conferma esiste sempre, con i solleciti accesi o spenti: con due profili (la sera prima
+e la mattina) confermare la sera ferma il promemoria della mattina.
+
+Spegnere i solleciti annulla subito i richiami e i rinvii già programmati.
 
 ### 4.8 Sospensione
 
@@ -406,8 +431,9 @@ I destinatari si scelgono da un elenco che contiene sia i servizi `notify.*` (ap
 Companion, Telegram, email, …) sia le entità `notify`, raggiunte con `notify.send_message`
 (decisione 31).
 
-Ai servizi dell'app Companion (`notify.mobile_app_*`) il messaggio arriva con due azioni:
-**Esposto ✓** e **Ricordamelo tra 30 minuti**. A tutti gli altri servizi e alle entità
+Ai servizi dell'app Companion (`notify.mobile_app_*`) il messaggio arriva con l'azione
+**Esposto ✓** e, solo con i solleciti accesi (§4.9), anche **Ricordamelo tra 30 minuti**.
+A tutti gli altri servizi e alle entità
 `notify` arriva solo il testo: `notify.send_message` non supporta le azioni. Il pannello
 indica accanto a ogni destinatario se riceverà i pulsanti. Le azioni
 tornano come evento `mobile_app_notification_action`; l'identificativo dell'azione porta
@@ -432,6 +458,8 @@ può annullare dalle card finché la finestra è aperta. Le conferme si cancella
 dopo la data del ritiro.
 
 ### 8.5 Richiami e rinvio
+
+Richiami e rinvii esistono solo con i solleciti accesi (§4.9).
 
 - **Richiamo:** se dopo `richiamo_dopo` minuti almeno un ritiro dell'invio non è confermato
   e la finestra è ancora aperta, l'invio si ripete con i soli ritiri non confermati, al
@@ -481,6 +509,11 @@ configurazione, cambio dell'interruttore di sospensione. L'esecutore chiama i se
   aggiungere.
 - Configurazione iniziale (config flow, istanza unica): scelta dei preset, finestra di
   esposizione globale. Tutto il resto dal pannello.
+- "Configura" dell'integrazione (options flow): contiene solo l'interruttore **Mostra nella
+  barra laterale** (§10.1.1), perché sia recuperabile anche con il pannello nascosto.
+- Il dispositivo "Raccolta differenziata" ha come `configuration_url` l'indirizzo interno del
+  pannello: nella sua pagina Home Assistant mostra il collegamento che apre la
+  configurazione, anche quando il pannello non è nella barra laterale.
 
 ### 9.2 Entità
 
@@ -551,7 +584,8 @@ Home Assistant: funziona in chiaro e in scuro senza configurazione.
 
 ### 10.1 Pannello di configurazione
 
-Nella barra laterale, visibile solo agli amministratori (decisione 20). Pagine:
+Un pannello di Home Assistant, visibile solo agli amministratori (decisione 20), nella
+barra laterale se l'utente non lo nasconde (§10.1.1). Pagine:
 
 1. **Panoramica** — prossimi 30 giorni, anomalie con le loro azioni, stato di validità.
 2. **Tipologie** — elenco, creazione, modifica (nome, colore, icona, note, finestra
@@ -559,8 +593,26 @@ Nella barra laterale, visibile solo agli amministratori (decisione 20). Pagine:
 3. **Regole** — per tipologia; modulo con ricorrenza e periodo; anteprima immediata delle
    prossime date.
 4. **Eccezioni** — elenco per data, filtrabile per tipologia; modulo aggiungi/togli/sposta.
-5. **Promemoria** — profili, finestra globale, sospensioni.
-6. **Impostazioni** — patrono, validità.
+5. **Promemoria** — profili, solleciti (§4.9), finestra globale, sospensioni.
+6. **Impostazioni** — patrono, validità, "Mostra nella barra laterale".
+
+#### 10.1.1 Barra laterale
+
+L'interruttore **Mostra nella barra laterale** (acceso all'installazione) decide se il
+pannello compare nella barra di Home Assistant (decisione 38). Si trova in due posti che
+modificano lo stesso valore: la pagina Impostazioni del pannello e il "Configura"
+dell'integrazione. Il valore è salvato nelle opzioni della voce di configurazione, non
+nell'archivio della configurazione di §11, così i due punti di modifica non si
+contendono il numero di revisione.
+
+Il cambio ha effetto subito, senza riavvio. Nascosto, il pannello resta registrato e
+raggiungibile:
+
+- dalla pagina del dispositivo "Raccolta differenziata" (collegamento di configurazione);
+- dal suo indirizzo diretto.
+
+Le pagine del pannello sono navigabili tra loro con il menu interno, quindi entrare da
+uno qualsiasi di questi punti dà accesso a tutto.
 
 Ogni salvataggio passa dall'anteprima: l'utente vede cosa cambia nei prossimi 60 giorni
 prima di confermare (decisione 36). *Perché:* una regola sbagliata non dà errori,
@@ -644,7 +696,7 @@ Una fase per sessione, un ramo per fase, una pull request per fase verso `main`.
 | **1 — Motore** | `core/`: modello, ricorrenze, periodi, precedenze, eccezioni, festività, anomalie, test di §7. |
 | **2 — Entità** | Caricamento della configurazione, calendario, sensori, binary sensor, riparazioni, aggiornamenti temporizzati. |
 | **3 — Prototipo** | `docs/prototipo.html`: pannello e tre card, navigabile, da approvare. |
-| **4 — Pannello** | Comandi WebSocket di amministrazione, pannello completo con anteprima. |
+| **4 — Pannello** | Comandi WebSocket di amministrazione, pannello completo con anteprima, interruttore della barra laterale, "Configura" dell'integrazione, collegamento dal dispositivo. |
 | **5 — Promemoria** | `decidi`, esecutore, schedulatore, conferme, richiami, rinvii, sospensione, recupero al riavvio, pulsante e interruttore. |
 | **6 — Card** | Tre card, comandi WebSocket di lettura, registrazione automatica della risorsa. |
 | **7 — Rilascio** | README (con i limiti), CHANGELOG, icone, prima versione pubblicata. |
@@ -673,7 +725,8 @@ Decisioni del proprietario, 2026-09-25.
 6. Finestra di esposizione globale, sovrascrivibile per tipologia.
 7. Profili di promemoria: quando, tipologie, destinatari; un solo messaggio per giorno.
 8. Conferma "Esposto ✓" da notifica e da pulsante, valida per tutti; richiamo facoltativo
-   (al massimo 2) e rinvio di 30 minuti.
+   (al massimo 2) e rinvio di 30 minuti. Richiami e rinvio ora dipendono dall'interruttore
+   globale della decisione 39.
 9. Nessun filtro di presenza: il sistema deve restare semplice.
 10. Promemoria persi durante un riavvio: recuperati se la finestra è ancora aperta.
 11. Sospensione per intervalli di date, più un interruttore.
@@ -709,6 +762,15 @@ Punti aperti della bozza 1 (§17), chiusi dal proprietario il 2026-09-25.
 35. Nessun servizio Home Assistant dedicato.
 36. Anteprima delle modifiche obbligatoria prima di ogni salvataggio nel pannello.
 37. Licenza Apache-2.0, come Foyer Home Defender.
+
+Aggiunte del proprietario, 2026-09-25.
+
+38. Interruttore "Mostra nella barra laterale" (default acceso), nel pannello e nel
+    "Configura" dell'integrazione; nascosto, il pannello si apre dalla pagina del
+    dispositivo.
+39. Solleciti con un interruttore globale, spento di default. Spenti: niente richiami e
+    niente "tra 30 minuti", la conferma resta. Sostituisce i campi `richiami` per profilo
+    della decisione 8.
 
 ---
 
