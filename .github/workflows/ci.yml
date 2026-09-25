@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  hassfest:
+    name: hassfest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: home-assistant/actions/hassfest@master
+
+  hacs:
+    name: validazione HACS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hacs/action@main
+        with:
+          category: integration
+          # Le icone arrivano con la Fase 7 (SPEC §14); i topic del repository li
+          # imposta il proprietario. Quando esistono, queste esclusioni si tolgono.
+          ignore: brands topics
+
+  lint:
+    name: ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: pip install ruff
+      - run: ruff check .
+      - run: ruff format --check .
+
+  pura:
+    # La suite pura, apposta SENZA Home Assistant installato: se core/ ne avesse
+    # bisogno, questi test non riuscirebbero nemmeno a importare (INV-1). Copre
+    # anche il confronto delle traduzioni (SPEC §12).
+    name: pytest puro (py${{ matrix.python }}, senza Home Assistant)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install pytest
+      - name: Home Assistant non deve essere importabile qui
+        run: "! python -c 'import homeassistant'"
+      - run: pytest
+
+  integrazione:
+    name: pytest integrazione (${{ matrix.nome }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # La versione minima dichiarata in hacs.json (decisione 24).
+          - nome: HA 2026.6
+            python: "3.14"
+            pacchetti: pytest-homeassistant-custom-component==0.13.336
+          # L'ultima versione di Home Assistant, per sapere presto se qualcosa si rompe.
+          - nome: HA ultima
+            python: "3.14"
+            pacchetti: pytest-homeassistant-custom-component
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          # I pacchetti di test di Home Assistant sono quasi tutto il tempo del job:
+          # si tengono tra un'esecuzione e l'altra. La chiave è questo file, così un
+          # cambio di versione riparte da capo.
+          cache: pip
+          cache-dependency-path: .github/workflows/ci.yml
+      - run: pip install ${{ matrix.pacchetti }} pytest-xdist
+      - run: >
+          pytest -p pytest_homeassistant_custom_component
+          -o asyncio_mode=auto -o asyncio_default_fixture_loop_scope=function
+          -n auto tests/integrazione

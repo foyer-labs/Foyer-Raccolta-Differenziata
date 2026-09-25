@@ -35,6 +35,20 @@ ignorate, ultimo istante di attività.
 
 **INV-6 — Semplice prima di completo.** Niente funzioni fuori dalla spec.
 
+## Test
+
+- Suite pura (nucleo e repository), **senza** Home Assistant installato: `pytest`.
+  Un ambiente in cui c'è Home Assistant carica da solo `pytest-asyncio` e rompe questa
+  suite: usa un ambiente con il solo `pytest`.
+- Suite d'integrazione, con `pytest-homeassistant-custom-component` (0.13.336 per la
+  2026.6, l'ultima per la versione corrente):
+  `pytest -p pytest_homeassistant_custom_component -o asyncio_mode=auto -o asyncio_default_fixture_loop_scope=function tests/integrazione`.
+  Su Windows non gira: serve Linux o WSL.
+- `ruff check .` e `ruff format --check .`.
+- `python scripts/genera_traduzioni.py` dopo ogni modifica a `strings.json`.
+- La CI (`.github/workflows/ci.yml`) esegue tutto questo più hassfest e la validazione
+  HACS; una pull request si unisce solo con la CI verde.
+
 ## Come si lavora
 
 - Una fase per sessione (piano in `docs/SPEC.md` §14). Niente lavoro di fasi successive,
