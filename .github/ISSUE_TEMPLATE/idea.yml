@@ -1,0 +1,19 @@
+name: Idea
+description: Una funzione che manca.
+labels: ["idea"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Il progetto sceglie la semplicità di proposito: spiega il caso reale che la funzione risolverebbe.
+  - type: textarea
+    id: caso
+    attributes:
+      label: Il caso reale
+      description: Cosa fa il tuo comune, o cosa ti serve in casa, che oggi non si può fare.
+    validations:
+      required: true
+  - type: textarea
+    id: proposta
+    attributes:
+      label: Come te lo immagini
