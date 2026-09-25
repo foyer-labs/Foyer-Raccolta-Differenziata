@@ -1,6 +1,6 @@
 # Foyer Raccolta Differenziata — Specifica
 
-Stato: bozza 3 (2026-09-25). Tutto il progetto è in italiano: interfaccia, documentazione,
+Stato: bozza 4 (2026-09-25). Tutto il progetto è in italiano: interfaccia, documentazione,
 codice, commenti e commit (decisione 19).
 
 Questo documento è la fonte di verità. Dove una scelta sembra arbitraria, il motivo è
@@ -699,15 +699,62 @@ Una fase per sessione, un ramo per fase, una pull request per fase verso `main`.
 | **4 — Pannello** | Comandi WebSocket di amministrazione, pannello completo con anteprima, interruttore della barra laterale, "Configura" dell'integrazione, collegamento dal dispositivo. |
 | **5 — Promemoria** | `decidi`, esecutore, schedulatore, conferme, richiami, rinvii, sospensione, recupero al riavvio, pulsante e interruttore. |
 | **6 — Card** | Tre card, comandi WebSocket di lettura, registrazione automatica della risorsa. |
-| **7 — Rilascio** | README (con i limiti), CHANGELOG, icone, prima versione pubblicata. |
+| **7 — Rilascio** | `docs/GUIDA.md`, README con le immagini delle card, `SUPPORT.md`, `CONTRIBUTING.md`, modelli di issue, icone, prima release GitHub. |
+
+README e changelog esistono dalla prima fase e si aggiornano in ogni fase (§15.4); la Fase
+7 li completa, non li crea.
 
 ---
 
 ## 15. Documentazione per l'utente
 
-La README dice chiaramente che il sistema ricorda ciò che l'utente ha inserito, non
+Tutto in italiano (decisione 40).
+
+### 15.1 README
+
+Il `README.md` è la porta d'ingresso ed è mantenuto per tutta la vita del progetto. Deve
+essere **attraente per chi lo userà**, come quello di Foyer Home Defender: una frase che
+dice cosa risolve, badge (versione, stato, Home Assistant minimo, HACS, licenza, CI),
+un'immagine delle card appena esistono, "Cosa ottieni" scritto dal punto di vista di chi
+porta fuori il sacco, "Per iniziare" in tre passi, "Stato", "Da sapere", il pulsante Buy
+Me a Coffee di Foyer Labs con la nota "una donazione è un ringraziamento e non compra né
+supporto né priorità", licenza.
+
+"Da sapere" dice chiaramente che il sistema ricorda ciò che l'utente ha inserito, non
 conosce il calendario del comune, e che dopo ogni cambio di calendario comunale va
-aggiornato. Spiega l'ancora con un esempio, perché è l'unico concetto non ovvio.
+aggiornato.
+
+Il README non promette mai qualcosa che la versione pubblicata non fa: finché non c'è una
+release, lo stato è "in progettazione".
+
+### 15.2 Guida
+
+Un solo documento, `docs/GUIDA.md`, **molto più semplice** della documentazione di Foyer
+Home Defender. Contenuto: installazione, le tipologie, come si scrive una regola (con
+l'ancora spiegata con un esempio, perché è l'unico concetto non ovvio), periodi ed
+eccezioni, promemoria e solleciti, le card, le entità per le automazioni, domande
+frequenti. Immagini dove aiutano. Nessun documento separato per argomento finché la
+guida non diventa scomoda da leggere.
+
+### 15.3 Changelog e release
+
+- `CHANGELOG.md` in italiano, una sezione per versione e una `[Non rilasciato]` in cima.
+  Ogni voce dice cosa cambia nel comportamento, non "correzioni varie"; ciò che richiede
+  un intervento dell'utente viene prima, sotto *Cambiato — leggi prima di aggiornare*.
+- Versioni in stile Semantic Versioning; la versione è la stessa in `manifest.json`, nel
+  tag git (`vX.Y.Z`) e nel titolo della release.
+- Ogni versione è una **release GitHub** con le note copiate dal changelog; le versioni di
+  prova sono marcate come pre-release.
+- Informazioni di contorno mantenute insieme al README: `CHANGELOG.md`, `LICENSE`,
+  `NOTICE`, `SUPPORT.md` (come chiedere aiuto, nessuna garanzia di risposta),
+  `CONTRIBUTING.md` (ambiente di sviluppo, regole del progetto), modelli di issue per
+  bug e richieste.
+
+### 15.4 Quando si aggiornano
+
+Ogni pull request che cambia qualcosa di visibile all'utente aggiorna nello stesso ramo il
+README (se cambia cosa si ottiene), la guida e la voce `[Non rilasciato]` del changelog.
+Una fase non è finita finché questi tre non dicono la verità.
 
 ---
 
@@ -771,6 +818,9 @@ Aggiunte del proprietario, 2026-09-25.
 39. Solleciti con un interruttore globale, spento di default. Spenti: niente richiami e
     niente "tra 30 minuti", la conferma resta. Sostituisce i campi `richiami` per profilo
     della decisione 8.
+40. README in italiano mantenuto per tutta la vita del progetto, attraente come quello di
+    Home Defender, con il pulsante Buy Me a Coffee; una guida unica e semplice
+    (`docs/GUIDA.md`); changelog, release GitHub e file di contorno mantenuti.
 
 ---
 

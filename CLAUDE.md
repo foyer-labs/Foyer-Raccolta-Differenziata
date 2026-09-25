@@ -47,5 +47,10 @@ ignorate, ultimo istante di attività.
 - **Se la spec è ambigua o si contraddice, fermati e chiedi.** Una domanda alla volta, con
   le alternative e quella consigliata per prima.
 - Configurazione solo da interfaccia, niente YAML.
+- Ogni cambiamento visibile all'utente aggiorna nello stesso ramo README, `docs/GUIDA.md`
+  (quando esiste) e la voce `[Non rilasciato]` di `CHANGELOG.md` (spec §15). Il README non
+  promette mai ciò che la versione pubblicata non fa.
+- Ogni versione: stessa versione in `manifest.json`, tag `vX.Y.Z` e release GitHub con le
+  note del changelog.
 - A fine sessione riporta tre cose: cosa hai fatto, cosa non hai fatto e perché, cosa nella
   spec ritieni sbagliato.
