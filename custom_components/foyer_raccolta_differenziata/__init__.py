@@ -67,8 +67,12 @@ async def _opzioni_cambiate(hass: HomeAssistant, entry: ConfigEntry) -> None:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     scaricata = await hass.config_entries.async_unload_platforms(entry, PIATTAFORME)
     if scaricata:
-        entry.runtime_data.gestore.arresta()
-        entry.runtime_data.arresta()
+        coordinatore = entry.runtime_data
+        coordinatore.gestore.arresta()
+        coordinatore.arresta()
+        # Un salvataggio ritardato ancora in attesa si scrive adesso: un
+        # ricaricamento non deve perdere lo stato (INV-3).
+        await coordinatore.archivi.archivio_stato.async_save(coordinatore.archivi.stato)
     return scaricata
 
 
