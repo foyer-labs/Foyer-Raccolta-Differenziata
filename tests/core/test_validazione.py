@@ -253,3 +253,68 @@ def test_elementi_che_non_sono_oggetti():
         ("regole[0]", "regola_non_valida"),
         ("eccezioni[0]", "eccezione_non_valida"),
     ]
+
+
+PROFILO = {
+    "id": "p1",
+    "nome": "Sera prima",
+    "attivo": True,
+    "quando": {"tipo": "giorni_prima", "giorni": 1, "ora": "20:30"},
+    "tipologie": None,
+    "destinatari": [{"tipo": "servizio", "id": "mobile_app_luca"}],
+}
+
+
+def test_promemoria_validi():
+    dati = grezza(
+        promemoria=[
+            PROFILO,
+            {
+                **PROFILO,
+                "id": "p2",
+                "quando": {"tipo": "apertura"},
+                "tipologie": ["umido"],
+                "destinatari": [{"tipo": "entita", "id": "notify.telegram"}],
+            },
+        ],
+        solleciti={"attivi": True, "richiami": 2, "richiamo_dopo": 30},
+        sospensioni=[{"dal": "2027-08-08", "al": "2027-08-23"}],
+    )
+
+    assert problemi(dati) == []
+
+
+@pytest.mark.parametrize(
+    ("modifica", "atteso"),
+    [
+        ({"nome": ""}, ("promemoria[0].nome", "nome_non_valido")),
+        ({"quando": {"tipo": "settimana_prima"}}, ("promemoria[0].quando", "quando_non_valido")),
+        ({"quando": {"tipo": "giorni_prima", "giorni": 8, "ora": "20:30"}}, ("promemoria[0].quando.giorni", "giorni_prima_non_validi")),
+        ({"quando": {"tipo": "giorno_stesso", "ora": "7:00"}}, ("promemoria[0].quando.ora", "orario_non_valido")),
+        ({"tipologie": ["carta"]}, ("promemoria[0].tipologie", "tipologia_sconosciuta")),
+        ({"tipologie": []}, ("promemoria[0].tipologie", "tipologia_sconosciuta")),
+        ({"destinatari": []}, ("promemoria[0].destinatari", "destinatari_mancanti")),
+        ({"destinatari": [{"tipo": "servizio", "id": "notify.mobile_app_luca"}]}, ("promemoria[0].destinatari", "destinatario_non_valido")),
+        ({"destinatari": [{"tipo": "entita", "id": "light.cucina"}]}, ("promemoria[0].destinatari", "destinatario_non_valido")),
+    ],
+)  # fmt: skip
+def test_promemoria_non_validi(modifica, atteso):
+    assert atteso in _codici(grezza(promemoria=[{**PROFILO, **modifica}]))
+
+
+@pytest.mark.parametrize(
+    ("solleciti", "atteso"),
+    [
+        ({"attivi": True, "richiami": 3, "richiamo_dopo": 30}, ("solleciti.richiami", "richiami_non_validi")),
+        ({"attivi": True, "richiami": 1, "richiamo_dopo": 4}, ("solleciti.richiamo_dopo", "intervallo_non_valido")),
+        ({"attivi": "sì", "richiami": 1, "richiamo_dopo": 30}, ("solleciti.attivi", "valore_non_valido")),
+    ],
+)  # fmt: skip
+def test_solleciti_non_validi(solleciti, atteso):
+    assert atteso in _codici(grezza(solleciti=solleciti))
+
+
+def test_sospensione_al_rovescio():
+    assert _codici(grezza(sospensioni=[{"dal": "2027-08-23", "al": "2027-08-08"}])) == [
+        ("sospensioni[0]", "fine_prima_di_inizio")
+    ]

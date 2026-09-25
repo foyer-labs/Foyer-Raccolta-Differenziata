@@ -1,6 +1,6 @@
 // Tutti i testi visibili del frontend (INV-5): nessun componente scrive testo suo.
 import { daIso, giornoSettimana } from "./date";
-import type { Anomalia, Periodo, Problema, Regola, Ricorrenza } from "./tipi";
+import type { Anomalia, Periodo, Problema, Quando, Regola, Ricorrenza } from "./tipi";
 
 export const GIORNI = ["lunedì", "martedì", "mercoledì", "giovedì", "venerdì", "sabato", "domenica"];
 export const GIORNI_BREVI = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
@@ -124,6 +124,40 @@ export const T = {
   del: "del",
   entroLe: "Entro le (giorno del ritiro)",
   togli: "Togli",
+  // Promemoria
+  aiutoPromemoria: "Un promemoria dice quando avvisarti e chi. Più rifiuti nello stesso giorno arrivano in un solo messaggio.",
+  nessunPromemoria: "Nessun promemoria: aggiungine uno per ricevere una notifica.",
+  nuovoPromemoria: "Nuovo promemoria",
+  nomePromemoria: "Nome",
+  nomePromemoriaAiuto: "La sera prima, Il vetro, …",
+  quando: "Quando",
+  giorniPrima: "Giorni prima",
+  giornoStesso: "Il giorno stesso",
+  apertura: "All'apertura",
+  aperturaAiuto: "Quando si possono mettere fuori i sacchi, secondo l'orario di esposizione di ogni tipologia.",
+  quantiGiorni: "Quanti giorni prima",
+  alle: "Alle",
+  perQuali: "Per quali rifiuti",
+  tutte: "Tutte",
+  tutteAiuto: "«Tutte» comprende anche le tipologie che aggiungerai.",
+  destinatari: "A chi",
+  destinatariAiuto: "I telefoni con l'app Companion ricevono anche il pulsante «Esposto ✓».",
+  nessunDestinatario: "Nessun servizio di notifica trovato in Home Assistant.",
+  conPulsanti: "con pulsanti",
+  soloTesto: "solo testo",
+  attivo: "Attivo",
+  solleciti: "Solleciti",
+  sollecitaSeNonConfermo: "Sollecita se non confermo",
+  sollecitiAiuto: "Ripete il promemoria finché qualcuno non tocca «Esposto ✓», e aggiunge il pulsante «Ricordamelo tra 30 minuti». Alla maggior parte delle persone basta la notifica.",
+  richiami: "Quante volte",
+  ogniMinuti: "Ogni",
+  minuti: (n: number) => `${n} min`,
+  vacanze: "Vacanze",
+  vacanzeAiuto: "Nelle date indicate i promemoria tacciono; il calendario, i sensori e le card restano.",
+  nessunaVacanza: "Nessuna vacanza in programma.",
+  aggiungiVacanza: "Aggiungi vacanza",
+  dalAl: (dal: string, al: string) => `dal ${dataLunga(dal)} al ${dataLunga(al)}`,
+  profiloRimosso: (n: number) => (n === 1 ? "Un promemoria riguardava solo questa tipologia e verrà eliminato." : `${n} promemoria riguardavano solo questa tipologia e verranno eliminati.`),
 };
 
 export function dataLunga(iso: string): string {
@@ -188,6 +222,12 @@ const MESSAGGI_PROBLEMI: Record<string, string> = {
   tipologia_sconosciuta: "la tipologia non esiste più",
   id_duplicato: "identificativo duplicato",
   revisione_superata: "qualcun altro ha salvato nel frattempo",
+  destinatari_mancanti: "scegli almeno un destinatario",
+  destinatario_non_valido: "un destinatario non è valido",
+  giorni_prima_non_validi: "da 1 a 7 giorni prima",
+  quando_non_valido: "scegli quando avvisare",
+  richiami_non_validi: "i solleciti vanno da 1 a 2",
+  intervallo_non_valido: "l'intervallo va da 5 a 240 minuti",
 };
 
 export const messaggioProblema = (p: Problema): string =>
@@ -222,3 +262,11 @@ export function fraseAnomalia(a: Anomalia, nome: (id: string) => string): string
 }
 
 export const nomeRegola = (r: Regola): string => r.nome || fraseRicorrenza(r.ricorrenza);
+
+/** "La sera prima alle 20:30", "Due giorni prima alle 19:00", … */
+export function fraseQuando(q: Quando): string {
+  if (q.tipo === "apertura") return "Quando si possono esporre i sacchi";
+  if (q.tipo === "giorno_stesso") return `Il giorno del ritiro alle ${q.ora}`;
+  const giorni = ["", "Il giorno prima", "Due giorni prima", "Tre giorni prima", "Quattro giorni prima", "Cinque giorni prima", "Sei giorni prima", "Una settimana prima"];
+  return `${giorni[q.giorni] ?? `${q.giorni} giorni prima`} alle ${q.ora}`;
+}

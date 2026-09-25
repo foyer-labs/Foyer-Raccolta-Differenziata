@@ -111,5 +111,6 @@ def stato_vuoto() -> dict[str, Any]:
         "invii_fatti": [],
         "pendenti": [],
         "anomalie_ignorate": [],
+        "sospensione_manuale": False,
         "ultimo_istante_attivo": None,
     }

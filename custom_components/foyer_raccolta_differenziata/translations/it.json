@@ -38,6 +38,11 @@
         "name": "Da esporre"
       }
     },
+    "button": {
+      "esposto": {
+        "name": "Esposto"
+      }
+    },
     "sensor": {
       "domani": {
         "name": "Domani"
@@ -47,6 +52,11 @@
       },
       "prossimo": {
         "name": "Prossimo ritiro {tipologia}"
+      }
+    },
+    "switch": {
+      "sospendi_promemoria": {
+        "name": "Sospendi promemoria"
       }
     }
   },

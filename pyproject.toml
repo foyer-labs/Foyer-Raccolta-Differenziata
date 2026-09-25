@@ -25,6 +25,11 @@ ignore = [
     "RUF001",   # testo italiano: apostrofi e virgolette tipografiche sono voluti
     "RUF002",
     "RUF003",
+    # Un validatore è un elenco piatto di controlli indipendenti e `decidi` un elenco
+    # di regole dei promemoria: spezzarli per il conto dei rami sparpaglierebbe
+    # regole che si verificano meglio una accanto all'altra.
+    "PLR0912",
+    "PLR0915",
 ]
 
 [tool.ruff.lint.per-file-ignores]

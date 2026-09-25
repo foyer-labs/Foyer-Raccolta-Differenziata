@@ -131,5 +131,6 @@ def test_stato_vuoto():
         "invii_fatti": [],
         "pendenti": [],
         "anomalie_ignorate": [],
+        "sospensione_manuale": False,
         "ultimo_istante_attivo": None,
     }

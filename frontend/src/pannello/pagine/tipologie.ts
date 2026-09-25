@@ -72,11 +72,17 @@ export class RdTipologie extends LitElement {
     const c = this.lettura.configurazione;
     const regole = c.regole.filter((r) => r.tipologia === bozza.id).length;
     const eccezioni = c.eccezioni.filter((e) => e.tipologia === bozza.id).length;
-    if (!confirm(T.eliminaTipologia(bozza.nome, regole, eccezioni))) return;
+    // Un promemoria che riguardava solo questa tipologia non avrebbe più nulla da dire.
+    const soloQuesta = c.promemoria.filter((p) => p.tipologie?.length === 1 && p.tipologie[0] === bozza.id).length;
+    const avviso = T.eliminaTipologia(bozza.nome, regole, eccezioni) + (soloQuesta ? ` ${T.profiloRimosso(soloQuesta)}` : "");
+    if (!confirm(avviso)) return;
     const nuova = copia(c);
     nuova.tipologie = nuova.tipologie.filter((t) => t.id !== bozza.id);
     nuova.regole = nuova.regole.filter((r) => r.tipologia !== bozza.id);
     nuova.eccezioni = nuova.eccezioni.filter((e) => e.tipologia !== bozza.id);
+    nuova.promemoria = nuova.promemoria
+      .map((p) => (p.tipologie === null ? p : { ...p, tipologie: p.tipologie.filter((t) => t !== bozza.id) }))
+      .filter((p) => p.tipologie === null || p.tipologie.length > 0);
     proponi(this, nuova);
   }
 

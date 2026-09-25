@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
-PIATTAFORME = ["calendar", "sensor", "binary_sensor"]
+PIATTAFORME = ["calendar", "sensor", "binary_sensor", "button", "switch"]
 _WEBSOCKET = "foyer_raccolta_differenziata_websocket"
 
 
@@ -38,9 +38,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             translation_domain=DOMINIO, translation_key="archivio_illeggibile"
         ) from errore
 
+    from .notifiche import GestorePromemoria
+
     coordinatore = Coordinatore(hass, entry, archivi)
     entry.runtime_data = coordinatore
+    coordinatore.gestore = GestorePromemoria(hass, coordinatore)
     coordinatore.avvia()
+    coordinatore.gestore.avvia()
     await hass.config_entries.async_forward_entry_setups(entry, PIATTAFORME)
 
     from . import pannello, websocket
@@ -63,6 +67,7 @@ async def _opzioni_cambiate(hass: HomeAssistant, entry: ConfigEntry) -> None:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     scaricata = await hass.config_entries.async_unload_platforms(entry, PIATTAFORME)
     if scaricata:
+        entry.runtime_data.gestore.arresta()
         entry.runtime_data.arresta()
     return scaricata
 
