@@ -94,9 +94,17 @@ class GestorePromemoria:
         )
         prima = (self._stato.get("conferme"), self._stato.get("sospensione_manuale"))
         self._stato.update(decisione.stato)
-        coordinatore.archivi.archivio_stato.async_delay_save(
-            lambda: coordinatore.archivi.stato, SECONDI_SALVATAGGIO
-        )
+        archivio = coordinatore.archivi.archivio_stato
+        if evento is not None:
+            # Un gesto dell'utente (conferma, sospensione) si salva subito: un
+            # ricaricamento o un riavvio subito dopo non deve perderlo (INV-3).
+            self.hass.async_create_task(
+                archivio.async_save(coordinatore.archivi.stato), eager_start=False
+            )
+        else:
+            archivio.async_delay_save(
+                lambda: coordinatore.archivi.stato, SECONDI_SALVATAGGIO
+            )
         for scartato in decisione.scartati:
             _LOGGER.info(
                 "Promemoria non inviato (%s): %s", scartato.motivo, scartato.chiave
