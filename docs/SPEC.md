@@ -1,14 +1,14 @@
 # Foyer Raccolta Differenziata — Specifica
 
-Stato: bozza 1 (2026-09-25). Tutto il progetto è in italiano: interfaccia, documentazione,
+Stato: bozza 2 (2026-09-25). Tutto il progetto è in italiano: interfaccia, documentazione,
 codice, commenti e commit (decisione 19).
 
 Questo documento è la fonte di verità. Dove una scelta sembra arbitraria, il motivo è
 scritto accanto: se il motivo non regge più, si cambia la spec prima del codice.
 
-Le scelte che ho fatto scrivendo la spec, senza una decisione esplicita del proprietario,
-sono marcate **[da confermare]** e raccolte in §17. Finché restano aperte, nessuna fase
-che le tocca può partire.
+Le scelte fatte scrivendo la spec senza una decisione esplicita del proprietario vanno
+marcate **[da confermare]** e raccolte in §17. Finché restano aperte, nessuna fase che le
+tocca può partire. Al momento §17 è vuota.
 
 ---
 
@@ -164,8 +164,8 @@ vuol dire sia "ogni due settimane" sia "due volte a settimana" (decisione 1).
 Regola di calcolo: le settimane iniziano il lunedì. Sia `s(d)` il lunedì della settimana che
 contiene la data `d`. Un giorno `d` genera un ritiro se il suo giorno della settimana è in
 `G` e `(s(d) − s(A)) / 7` è multiplo di `N`. Il calcolo vale in entrambe le direzioni:
-l'ancora **non** è una data di inizio — l'inizio lo decide il periodo.
-**[da confermare]** *Perché:* separare "fase" e "inizio" evita che chi inserisce come
+l'ancora **non** è una data di inizio — l'inizio lo decide il periodo (decisione 25).
+*Perché:* separare "fase" e "inizio" evita che chi inserisce come
 ancora "il primo ritiro che ricordo" perda i ritiri precedenti a quella data.
 
 Nell'interfaccia l'ancora si chiede come "un giorno in cui questo ritiro c'è stato o ci
@@ -182,9 +182,10 @@ sbagliata di una settimana produce un calendario plausibile ma sfasato.
 **Mensile per data** — "il giorno `X` del mese".
 
 - `X`: insieme non vuoto di interi 1–31. Esempio: "il 1 e il 15".
-- **[da confermare]** Nei mesi in cui `X` non esiste (31 aprile, 30 febbraio), quel ritiro
-  **non avviene**, e il pannello lo segnala come anomalia informativa. Alternativa:
-  spostarlo all'ultimo giorno del mese. Scelgo la prima per coerenza con INV-4.
+- Nei mesi in cui `X` non esiste (31 aprile, 30 febbraio), quel ritiro **non avviene**, e
+  il pannello lo segnala come anomalia informativa (decisione 26). *Perché:* spostarlo
+  all'ultimo giorno del mese sarebbe uno spostamento automatico (INV-4); se il comune fa
+  così, si aggiunge un'eccezione.
 
 #### 4.2.2 Periodo
 
@@ -192,8 +193,9 @@ Tre forme (decisione 4):
 
 - **Sempre**: la regola vale ogni giorno.
 - **Annuale**: dal `gg/mm` al `gg/mm`, ogni anno. Può scavalcare la fine dell'anno
-  (01/11 → 31/03). Estremi inclusi.
-  **[da confermare]** Un estremo 29/02 negli anni non bisestili vale come 28/02.
+  (01/11 → 31/03). Estremi inclusi. Il 29/02 non è ammesso come estremo di un periodo
+  annuale: il pannello lo rifiuta (decisione 27). *Perché:* negli anni non bisestili non
+  esiste, e ogni lettura alternativa è un'ipotesi.
 - **Con anno**: dal `gg/mm/aaaa` al `gg/mm/aaaa`, estremi inclusi, fine ≥ inizio.
 
 Fuori da ogni periodo di ogni regola, la tipologia non ha ritiri da regola.
@@ -205,7 +207,8 @@ Per una tipologia `T` e un giorno `d`, siano `R(d)` le regole di `T` il cui peri
 1. Se in `R(d)` c'è almeno una regola **con anno**, le regole **annuali** e **sempre** di
    `R(d)` vengono ignorate per quel giorno (decisione 5). *Perché:* la regola con anno è
    quasi sempre il calendario nuovo del comune che sostituisce l'abitudine.
-   **[da confermare]** "Sempre" è trattata come "annuale" ai fini di questa precedenza.
+   "Sempre" è trattata come "annuale" ai fini di questa precedenza: cede anch'essa alla
+   regola con anno (decisione 28).
 2. Le regole rimaste si **sommano**: `d` ha un ritiro di `T` se almeno una di esse lo genera
    (decisione 22).
 3. In entrambi i casi il sistema produce un'anomalia (§6.3), anche quando il risultato è
@@ -244,11 +247,12 @@ Il sistema conosce le festività nazionali e un patrono configurabile, e le usa 
 segnalare (decisione 2, INV-4).
 
 Festività nazionali: 1 gennaio, 6 gennaio, Pasqua, Lunedì dell'Angelo, 25 aprile, 1 maggio,
-2 giugno, 15 agosto, 4 ottobre (San Francesco, festa nazionale dal 2026), 1 novembre,
-8 dicembre, 25 dicembre, 26 dicembre. La Pasqua è calcolata (algoritmo gregoriano).
+2 giugno, 15 agosto, 4 ottobre, 1 novembre, 8 dicembre, 25 dicembre, 26 dicembre. La
+Pasqua è calcolata (algoritmo gregoriano).
 
-**[da confermare]** Il 4 ottobre: la legge che lo ha ripristinato va verificata sul testo
-ufficiale prima dell'implementazione.
+Il 4 ottobre (San Francesco d'Assisi) è festivo **solo dal 2026**: Legge 8 ottobre 2025
+n. 151, Gazzetta Ufficiale n. 236 del 10/10/2025, in vigore dal 1° gennaio 2026
+(decisione 29). Per gli anni precedenti non va segnalato.
 
 Patrono: facoltativo, una data `gg/mm` e un nome ("Sant'Ambrogio").
 
@@ -284,7 +288,7 @@ Campo facoltativo `valido_fino_al` (data). Vedi §9.3 (decisione 14).
 | `attivo` | booleano | |
 | `quando` | una forma di §8.1 | |
 | `tipologie` | "tutte" oppure elenco | "Tutte" include le tipologie create dopo. |
-| `destinatari` | elenco non vuoto di servizi `notify.*` | Vedi §8.3. |
+| `destinatari` | elenco non vuoto di servizi `notify.*` e/o entità `notify` | Vedi §8.3. |
 | `richiami` | 0–2 | Solleciti se nessuno conferma. |
 | `richiamo_dopo` | 5–240 minuti | Intervallo tra un invio e il richiamo successivo. |
 
@@ -293,12 +297,14 @@ Campo facoltativo `valido_fino_al` (data). Vedi §9.3 (decisione 14).
 - Un elenco di intervalli `dal`–`al` (date, estremi inclusi), gestiti nel pannello.
 - Un interruttore "Sospendi promemoria" che sospende da subito, a tempo indeterminato.
 
-I promemoria tacciono se **la data del ritiro** cade in un intervallo, oppure se
-l'interruttore è acceso nel momento dell'invio. **[da confermare]** *Perché la data del
-ritiro e non quella dell'invio:* il promemoria "2 giorni prima" per un ritiro del primo
-giorno di vacanza deve tacere anche se parte prima della partenza. Il caso inverso (ritiro
-il giorno del rientro, promemoria la sera prima quando si è ancora via) resta
-volutamente attivo.
+Un invio (promemoria, richiamo o rinvio) tace se **l'istante in cui partirebbe** cade in
+un intervallo, oppure se in quell'istante l'interruttore è acceso (decisione 30). Conta
+il momento della notifica, non la data del ritiro: un promemoria "2 giorni prima" inviato
+prima della partenza arriva anche se il ritiro cade durante la vacanza; il promemoria
+della sera prima del rientro tace. È la stessa regola dell'interruttore, applicata alle
+date.
+
+Un invio taciuto è scartato, non rimandato alla fine della sospensione.
 
 La sospensione non tocca il calendario, i sensori né le card: i ritiri continuano a
 esistere. Le card mostrano "Promemoria sospesi fino al …".
@@ -396,12 +402,14 @@ Un ritiro già confermato non entra in un invio. Un invio senza ritiri non parte
 
 ### 8.3 Destinatari e azioni
 
-I destinatari sono servizi `notify.*` scelti da un elenco. **[da confermare]** Solo servizi
-legacy `notify.*` (quelli dell'app Companion lo sono), non le entità `notify`: sono gli unici
-che supportano le azioni nelle notifiche.
+I destinatari si scelgono da un elenco che contiene sia i servizi `notify.*` (app
+Companion, Telegram, email, …) sia le entità `notify`, raggiunte con `notify.send_message`
+(decisione 31).
 
 Ai servizi dell'app Companion (`notify.mobile_app_*`) il messaggio arriva con due azioni:
-**Esposto ✓** e **Ricordamelo tra 30 minuti**. Agli altri arriva solo il testo. Le azioni
+**Esposto ✓** e **Ricordamelo tra 30 minuti**. A tutti gli altri servizi e alle entità
+`notify` arriva solo il testo: `notify.send_message` non supporta le azioni. Il pannello
+indica accanto a ogni destinatario se riceverà i pulsanti. Le azioni
 tornano come evento `mobile_app_notification_action`; l'identificativo dell'azione porta
 un gettone opaco che il sistema riconduce all'invio.
 
@@ -415,7 +423,7 @@ Si conferma da:
 - l'azione **Esposto ✓** di una notifica: conferma i ritiri di quell'invio;
 - l'entità `button` **Esposto**: conferma i ritiri la cui finestra è aperta; se nessuna è
   aperta, quelli del prossimo giorno di ritiro, purché sia oggi o domani; altrimenti non
-  fa nulla e lo scrive nel registro di Home Assistant. **[da confermare]** *Perché:* chi
+  fa nulla e lo scrive nel registro di Home Assistant (decisione 32). *Perché:* chi
   esce di casa alle 19 mette fuori il sacco prima che la finestra si apra;
 - le card (stesso comportamento del pulsante, per il giorno mostrato).
 
@@ -428,8 +436,8 @@ dopo la data del ritiro.
 - **Richiamo:** se dopo `richiamo_dopo` minuti almeno un ritiro dell'invio non è confermato
   e la finestra è ancora aperta, l'invio si ripete con i soli ritiri non confermati, al
   massimo `richiami` volte.
-  **[da confermare]** Se la finestra non è ancora aperta (promemoria "2 giorni prima"),
-  non si richiama: il richiamo esiste per il momento dell'esposizione, non per l'avviso
+  Se la finestra non è ancora aperta (promemoria "2 giorni prima"), non si richiama
+  (decisione 33): il richiamo esiste per il momento dell'esposizione, non per l'avviso
   anticipato.
 - **Rinvio "tra 30 minuti":** reinvia lo stesso invio 30 minuti dopo, solo al destinatario
   che l'ha chiesto, se i ritiri non sono ancora confermati. I rinvii non consumano i
@@ -509,8 +517,9 @@ Le entità per tipologia nascono e spariscono con la tipologia.
   compare un problema in Riparazioni. Il flusso di correzione chiede la nuova data (default
   +1 anno) dopo "Ho verificato il calendario del comune". Dopo la scadenza i ritiri
   continuano a essere calcolati e notificati, marcati "da verificare" in card e calendario.
-- **Ritiri in giorni festivi nei prossimi 30 giorni, non gestiti** **[da confermare]**: un
-  problema unico che rimanda al pannello. *Perché:* chi non apre mai il pannello non
+- **Ritiri in giorni festivi nei prossimi 30 giorni, non gestiti** (decisione 34): un
+  problema unico, con l'elenco dei ritiri, che rimanda al pannello. Sparisce quando ogni
+  ritiro elencato ha un'eccezione o è stato ignorato. *Perché:* chi non apre mai il pannello non
   vedrebbe l'avviso prima del giorno sbagliato.
 - **Configurazione illeggibile** (INV-2).
 
@@ -528,8 +537,10 @@ Le entità per tipologia nascono e spariscono con la tipologia.
 
 La validazione vive nel backend; il frontend la ripete solo per dare riscontro immediato.
 
-Nessun servizio Home Assistant oltre a quelli impliciti delle entità. **[da confermare]**
-*Perché:* INV-6; un servizio "aggiungi eccezione" per le automazioni si valuta se serve.
+Nessun servizio Home Assistant oltre a quelli impliciti delle entità (decisione 35):
+`button.press` per confermare, lo `switch` per sospendere, il `calendar` e il
+`binary_sensor` come trigger. *Perché:* INV-6; un servizio dedicato si aggiunge solo
+quando un caso reale lo richiede.
 
 ---
 
@@ -552,7 +563,7 @@ Nella barra laterale, visibile solo agli amministratori (decisione 20). Pagine:
 6. **Impostazioni** — patrono, validità.
 
 Ogni salvataggio passa dall'anteprima: l'utente vede cosa cambia nei prossimi 60 giorni
-prima di confermare. **[da confermare]** *Perché:* una regola sbagliata non dà errori,
+prima di confermare (decisione 36). *Perché:* una regola sbagliata non dà errori,
 dà un calendario plausibile e sbagliato.
 
 ### 10.2 Card
@@ -564,8 +575,9 @@ giorno.
   icona, stato di esposizione ("Da esporre entro le 06:00" / "Esposto ✓ alle 21:04 da
   Anna"), pulsante di conferma, banner di sospensione e di validità.
 - **Settimana** (`foyer-raccolta-settimana-card`): sette giorni a partire da oggi (oppure
-  da lunedì, configurabile), oggi evidenziato, chip colorate, note al tocco, indicazioni
-  "spostato" e "festivo".
+  da lunedì, configurabile), oggi evidenziato, chip colorate, note al tocco, indicazione
+  "spostato dal …". Le card non segnalano i festivi: quell'avviso vive nel pannello e in
+  Riparazioni (decisione 34).
 - **Mese** (`foyer-raccolta-mese-card`): griglia mensile con pallini colorati per
   tipologia, navigazione tra i mesi, dettaglio del giorno al tocco.
 
@@ -680,25 +692,28 @@ Decisioni del proprietario, 2026-09-25.
 23. Dominio `foyer_raccolta_differenziata`.
 24. Home Assistant minimo 2026.6.0.
 
+Punti aperti della bozza 1 (§17), chiusi dal proprietario il 2026-09-25.
+
+25. L'ancora settimanale dà solo la fase, non l'inizio della regola.
+26. Mensile per data su un giorno che il mese non ha: nessun ritiro, anomalia informativa.
+27. Il 29/02 non è ammesso come estremo di un periodo annuale.
+28. Il periodo "sempre" cede alla regola con anno come un periodo annuale.
+29. Il 4 ottobre è festivo dal 2026 (Legge 151/2025); verificato sul testo pubblicato.
+30. La sospensione si giudica sull'istante dell'invio, non sulla data del ritiro.
+31. Destinatari: servizi `notify.*` ed entità `notify`; i pulsanti solo sull'app Companion.
+32. Il pulsante senza finestra aperta conferma il prossimo giorno di ritiro, se è oggi o
+    domani.
+33. Nessun richiamo prima dell'apertura della finestra di esposizione.
+34. Ritiri festivi non gestiti nei prossimi 30 giorni: un problema unico in Riparazioni;
+    nessun avviso nelle card.
+35. Nessun servizio Home Assistant dedicato.
+36. Anteprima delle modifiche obbligatoria prima di ogni salvataggio nel pannello.
+37. Licenza Apache-2.0, come Foyer Home Defender.
+
 ---
 
 ## 17. Da confermare
 
-Scelte fatte scrivendo la spec. Ognuna blocca la fase indicata finché il proprietario non
-la conferma o la cambia.
-
-| # | Scelta | Fase |
-|---|---|---|
-| A | L'ancora settimanale dà solo la fase, non l'inizio (§4.2.1). | 1 |
-| B | Mensile per data su un giorno inesistente: il ritiro non avviene (§4.2.1). | 1 |
-| C | Estremo annuale 29/02 negli anni non bisestili = 28/02 (§4.2.2). | 1 |
-| D | "Sempre" trattata come annuale nella precedenza (§4.2.3). | 1 |
-| E | Il 4 ottobre tra le festività nazionali, da verificare sul testo di legge (§4.4). | 1 |
-| F | Sospensione giudicata sulla data del ritiro (§4.8). | 5 |
-| G | Destinatari solo servizi `notify.*` legacy (§8.3). | 5 |
-| H | Il pulsante senza finestra aperta conferma il prossimo giorno di ritiro se è oggi o domani (§8.4). | 5 |
-| I | Nessun richiamo prima dell'apertura della finestra (§8.5). | 5 |
-| J | Problema in Riparazioni per ritiri festivi non gestiti nei prossimi 30 giorni (§9.3). | 2 |
-| K | Nessun servizio Home Assistant dedicato (§9.4). | 2 |
-| L | Anteprima obbligatoria prima di ogni salvataggio nel pannello (§10.1). | 4 |
-| M | Licenza: Apache-2.0 come Foyer Home Defender. | 0 |
+Nessuna voce aperta. Le scelte fatte scrivendo la spec senza una decisione esplicita del
+proprietario si elencano qui, con la fase che bloccano, finché non vengono confermate e
+spostate in §16.
