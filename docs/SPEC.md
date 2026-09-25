@@ -689,6 +689,23 @@ Requisiti comuni: editor visuale nella dashboard, stati vuoti curati ("Nessun ri
 settimana"), contrasto testo/colore calcolato, animazioni sobrie, funzionanti a 320 px di
 larghezza.
 
+Come sono fatte (decisione 52):
+
+| Card | Tipo | Opzioni |
+|---|---|---|
+| Oggi e domani | `custom:foyer-raccolta-oggi-card` | `titolo` |
+| Settimana | `custom:foyer-raccolta-settimana-card` | `titolo`, `inizio`: `oggi` (predefinito) o `lunedi` |
+| Mese | `custom:foyer-raccolta-mese-card` | `titolo` |
+
+- Compaiono nel selettore delle card di Home Assistant, con l'editor visuale.
+- Leggono i ritiri con `…/ritiri` e si aggiornano con `…/iscriviti`: nessuna
+  interrogazione a intervalli. Una volta al minuto si ridisegnano da sole, perché le
+  finestre si aprono e si chiudono.
+- La card oggi e domani mette in evidenza, nell'ordine: i ritiri da esporre adesso (con
+  "Esposto ✓"), quelli già confermati (con chi e quando, e "Annulla"), il prossimo
+  ritiro (con "Esposto ✓" se è oggi o domani, decisione 32).
+- Una card non decide nulla: conferma e annullamento sono comandi al backend.
+
 Prima di scrivere il frontend, una fase produce un prototipo HTML navigabile di pannello e
 card (`docs/prototipo.html`) da approvare.
 
@@ -925,6 +942,10 @@ Fase 5, 2026-09-26 (in autonomia).
 50. La finestra di esposizione globale sta in Impostazioni, non in Promemoria.
 51. Eliminare una tipologia la toglie anche dai promemoria; un promemoria che riguardava
     solo quella tipologia viene eliminato, e il pannello lo dice prima di confermare.
+
+Fase 6, 2026-09-26 (in autonomia).
+
+52. Le tre card: tipi, opzioni e comportamento in §10.2.
 
 ---
 
