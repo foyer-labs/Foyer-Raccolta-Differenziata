@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/foyer-labs/Foyer-Raccolta-Differenziata/main/docs/logo/raccolta-app-192.png" alt="Foyer Raccolta Differenziata" width="120">
+</p>
+
 <h1 align="center">Foyer Raccolta Differenziata</h1>
 
 <p align="center"><em>Il calendario della raccolta differenziata dentro Home Assistant: sai sempre cosa esporre stasera, e se te lo dimentichi te lo ricorda lui.</em></p>

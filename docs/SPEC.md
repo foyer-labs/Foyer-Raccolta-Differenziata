@@ -855,6 +855,12 @@ Fase 1, 2026-09-25.
     Tra regole annuali e con anno l'avviso resta sui periodi (decisione 5), perché lì
     una regola viene davvero ignorata.
 
+Marchio, 2026-09-25.
+
+42. Il simbolo è il segno di Foyer dentro una pattumiera con coperchio e maniglia
+    (variante A di quattro mockup), con la grammatica dello scudo di Home Defender
+    (§18).
+
 ---
 
 ## 17. Da confermare
@@ -862,3 +868,40 @@ Fase 1, 2026-09-25.
 Nessuna voce aperta. Le scelte fatte scrivendo la spec senza una decisione esplicita del
 proprietario si elencano qui, con la fase che bloccano, finché non vengono confermate e
 spostate in §16.
+
+---
+
+## 18. Identità visiva
+
+Il simbolo è il segno di Foyer (due archi uno dentro l'altro e una porta ad arco
+illuminata) dentro una **pattumiera stilizzata**: coperchio con maniglia e corpo
+rastremato (decisione 42). È la stessa grammatica dello scudo di Foyer Home Defender,
+così i due progetti si riconoscono come una famiglia: tratto 3.2 su una griglia di 64,
+giunzioni e terminali tondi, l'arco lontano a metà opacità, la porta ambra come unico
+elemento caldo e pieno.
+
+| Token | Valore | Ruolo |
+|---|---|---|
+| Ink | `#0D1014` | Fondo su scuro, tratto su chiaro |
+| Paper | `#E8ECF2` | Tratto su scuro, fondo su chiaro |
+| Ambra | `#F0A835` | La porta; il sottotitolo su fondo scuro |
+| Ambra su chiaro | `#B4780F` | Il sottotitolo su fondo chiaro, per il contrasto |
+
+L'ambra della porta non cambia mai; sul fondo chiaro si scurisce solo il sottotitolo.
+
+### 18.1 File
+
+| File | Dove si usa |
+|---|---|
+| `docs/logo/raccolta-simbolo-fondo-scuro.svg`, `-fondo-chiaro.svg` | Intestazione del pannello e delle card, fondo trasparente |
+| `docs/logo/raccolta-icona.svg` | Disegno a 24 px in un solo colore (`currentColor`, tratto 3.4, un solo arco): ridisegnato, mai rimpicciolito |
+| `docs/logo/raccolta-app.svg` → `raccolta-app-512.png`, `-192.png` | README (da indirizzo GitHub assoluto, perché HACS mostra il README dentro Home Assistant), anteprima del repository |
+| `docs/logo/raccolta-lockup-fondo-scuro.svg` / `-fondo-chiaro.svg` (+ PNG) | Documentazione |
+| `custom_components/foyer_raccolta_differenziata/brand/` (`icon`, `logo`, ciascuno con `dark_` e `@2x`) | Pagine delle integrazioni di Home Assistant e HACS |
+
+Gli SVG si generano con `scripts/disegna_marchio.py` (serve il font Poppins Medium per
+convertire il sottotitolo in tracciati; il font non è nel repository). I PNG si ricavano
+dagli SVG con `scripts/genera_immagini_marchio.py`, mai disegnati a mano. La scritta
+FOYER è la stessa di Home Defender, a barre e tratti; "RACCOLTA DIFFERENZIATA" è in
+Poppins Medium convertito in tracciati e si allarga esattamente quanto FOYER. Nessun file
+dipende da un font installato.

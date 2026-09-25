@@ -22,9 +22,6 @@ jobs:
       - uses: hacs/action@main
         with:
           category: integration
-          # Le icone arrivano con la Fase 7 (SPEC §14): quando esistono, l'esclusione
-          # si toglie.
-          ignore: brands
 
   lint:
     name: ruff
