@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="it">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Banco: pannello</title></head>
+<body>
+<script type="module">
+  import { creaHass } from "./hass.js";
+  await import("../custom_components/foyer_raccolta_differenziata/frontend/raccolta-pannello.js");
+  const pannello = document.createElement("foyer-raccolta-pannello");
+  pannello.narrow = innerWidth < 870;
+  document.body.append(pannello);
+  pannello.hass = creaHass();
+  (await import("./passi.js")).esegui();
+</script>
+</body>
+</html>

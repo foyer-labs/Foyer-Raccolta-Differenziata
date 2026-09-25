@@ -50,6 +50,20 @@ ignorate, ultimo istante di attività.
 - La CI (`.github/workflows/ci.yml`) esegue tutto questo più hassfest e la validazione
   HACS; una pull request si unisce solo con la CI verde.
 
+## Frontend e immagini
+
+- `cd frontend && npm ci && npm run build`: i file costruiti sono nel repository.
+- `banco/` è un banco di prova con un finto `hass`: pannello (`banco/pannello.html`) e
+  card (`banco/card.html`) si aprono in un browser servendo la radice del repository
+  (`python -m http.server 8766`). Parametri: `oggi`, `ora` (orologio fermo), `tema=scuro`,
+  `pagina`, `passi` (pulsanti da cliccare, per testo), `card`, `larghezza`.
+- Il finto `ha-icon` disegna nello shadow DOM: figli nel light DOM sposterebbero gli
+  indici dei nodi di Lit e i valori finirebbero nei posti sbagliati.
+- `banco/icone.json` si rigenera con `scripts/estrai_icone.py`; gli screenshot di
+  `docs/screenshots/` con `scripts/genera_screenshot.sh`.
+- Guarda ogni pagina come immagine appena esiste: i difetti di composizione non si vedono
+  leggendo il codice.
+
 ## Come si lavora
 
 - Una fase per sessione (piano in `docs/SPEC.md` §14). Niente lavoro di fasi successive,

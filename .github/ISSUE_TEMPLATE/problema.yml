@@ -1,0 +1,41 @@
+name: Problema
+description: Qualcosa non funziona come dovrebbe.
+labels: ["problema"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Grazie della segnalazione. Prima di aprirla, guarda la [guida](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/docs/GUIDA.md) e le Riparazioni di Home Assistant.
+  - type: input
+    id: versione
+    attributes:
+      label: Versione dell'integrazione
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: home_assistant
+    attributes:
+      label: Versione di Home Assistant
+      placeholder: "2026.9.2"
+    validations:
+      required: true
+  - type: textarea
+    id: atteso
+    attributes:
+      label: Cosa ti aspettavi
+    validations:
+      required: true
+  - type: textarea
+    id: successo
+    attributes:
+      label: Cosa è successo
+      description: Se riguarda un ritiro, indica la regola o l'eccezione e la data.
+    validations:
+      required: true
+  - type: textarea
+    id: registro
+    attributes:
+      label: Registro
+      description: Le righe del registro di Home Assistant che riguardano foyer_raccolta_differenziata.
+      render: text

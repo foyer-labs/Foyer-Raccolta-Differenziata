@@ -7,8 +7,10 @@ non solo "correzioni", e quello che richiede qualcosa da te viene prima di tutto
 
 ## [Non rilasciato]
 
-Nessuna versione ancora: il progetto è in progettazione. La specifica è in
-[docs/SPEC.md](docs/SPEC.md).
+## [0.1.0] — 2026-09-26 — la prima versione
+
+Il calendario della raccolta, i promemoria e le tre card. La guida è in
+[docs/GUIDA.md](docs/GUIDA.md), la specifica in [docs/SPEC.md](docs/SPEC.md).
 
 ### Aggiunto
 - **Installazione da Home Assistant.** *Aggiungi integrazione → Foyer Raccolta

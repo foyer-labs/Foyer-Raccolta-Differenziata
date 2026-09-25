@@ -947,6 +947,16 @@ Fase 6, 2026-09-26 (in autonomia).
 
 52. Le tre card: tipi, opzioni e comportamento in §10.2.
 
+Fase 7, 2026-09-26 (in autonomia).
+
+53. La prima versione è la 0.1.0, pubblicata come release normale: il numero sotto l'1
+    dice già che è la prima, e una pre-release non sarebbe proposta da HACS a chi non la
+    cerca. Nessuna azione su HACS oltre al repository personalizzato (richiesta del
+    proprietario).
+54. Gli screenshot della documentazione vengono dal banco di prova (`banco/`, nel
+    repository) con Chrome headless, con data e ora fisse: si rifanno identici da
+    qualunque installazione.
+
 ---
 
 ## 17. Da confermare
