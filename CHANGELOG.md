@@ -37,14 +37,19 @@ Nessuna versione ancora: il progetto è in progettazione. La specifica è in
   scegliendo tra i servizi di notifica di Home Assistant. Più rifiuti nello stesso giorno
   arrivano in un solo messaggio: *Stasera fuori: Umido e Carta*.
 - **Esposto ✓.** Un pulsante nella notifica dell'app Companion, un'entità pulsante (per
-  un tag NFC o un pulsante vicino alla porta) e, fra poco, le card: chi conferma ferma
-  gli altri promemoria di quel ritiro per tutti.
+  un tag NFC o un pulsante vicino alla porta) e le card: chi conferma ferma gli altri
+  promemoria di quel ritiro per tutti.
 - **Solleciti, spenti di default.** Se li accendi, il promemoria si ripete finché qualcuno
   non conferma, e la notifica ha anche *Ricordamelo tra 30 minuti*.
 - **Vacanze e interruttore *Sospendi promemoria*.** Nelle date indicate, o con
   l'interruttore acceso, i promemoria tacciono; il calendario resta.
 - **Niente promemoria persi per un riavvio.** Se Home Assistant era spento all'ora di un
   promemoria, parte al riavvio, purché sia ancora il momento di esporre i sacchi.
+- **Tre card per le dashboard**, nel selettore delle card senza installare altro:
+  *Oggi e domani* (cosa esporre stasera, con il pulsante *Esposto ✓*), *Settimana* (sette
+  giorni con le icone dei rifiuti, da oggi o dal lunedì) e *Mese* (il calendario con un
+  pallino per ogni ritiro e il dettaglio del giorno). Seguono il tema chiaro o scuro di
+  Home Assistant.
 - **Avvisi in Riparazioni.** Un ritiro che cade in un giorno festivo nei prossimi 30
   giorni; il calendario che sta per scadere o è scaduto, con il modulo per rinnovarlo;
   una configurazione non valida. Se il calendario non si può calcolare, le entità sono

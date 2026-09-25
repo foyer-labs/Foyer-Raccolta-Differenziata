@@ -1,3 +1,5 @@
-// Le card arrivano con la Fase 6 (SPEC §10.2). Il modulo esiste già perché il
-// backend lo carica su ogni pagina (decisione 46).
-export {};
+// Le tre card della raccolta (SPEC §10.2), caricate su ogni pagina di Home
+// Assistant (decisione 46): oggi e domani, settimana, mese.
+import "./oggi";
+import "./settimana";
+import "./mese";

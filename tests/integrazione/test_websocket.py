@@ -10,7 +10,7 @@ from datetime import date
 
 from custom_components.foyer_raccolta_differenziata.const import DOMINIO
 
-from .conftest import installa
+from .conftest import configurazione, installa
 
 
 async def _invia(client, **messaggio):
@@ -215,3 +215,18 @@ async def test_iscrizione_avvisa_a_ogni_ricalcolo(hass, hass_storage, hass_ws_cl
 
     evento = await client.receive_json()
     assert evento["event"] == {"evento": "aggiornato"}
+
+
+async def test_ritiri_dicono_se_i_promemoria_sono_sospesi(
+    hass, hass_storage, hass_ws_client
+):
+    oggi = date.today()
+    config = configurazione(sospensioni=[{"dal": oggi.isoformat(), "al": "2099-12-31"}])
+    await installa(hass, hass_storage, config)
+    client = await hass_ws_client(hass)
+
+    risposta = await _invia(
+        client, type=f"{DOMINIO}/ritiri", dal=oggi.isoformat(), al=oggi.isoformat()
+    )
+
+    assert risposta["result"]["sospeso"] == {"manuale": False, "fino_al": "2099-12-31"}
