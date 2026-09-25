@@ -1,0 +1,294 @@
+"""I comandi WebSocket del pannello e delle card (SPEC §9.4).
+
+La validazione vive qui, nel backend: il frontend la ripete solo per dare un
+riscontro immediato. I comandi che leggono i ritiri sono per tutti gli utenti
+(servono alle card); quelli che leggono o cambiano la configurazione solo per gli
+amministratori.
+"""
+
+from __future__ import annotations
+
+from datetime import date, timedelta
+from typing import Any
+
+from homeassistant.components import websocket_api
+from homeassistant.core import HomeAssistant, callback
+import voluptuous as vol
+
+from .const import DOMINIO, OPZIONE_BARRA_LATERALE
+from .coordinatore import Coordinatore
+from .core import serializza
+from .core.calendario import anomalie, calcola
+from .core.modello import carica
+from .core.validazione import problemi
+
+GIORNI_ANTEPRIMA = 60
+MASSIMO_GIORNI = 400
+
+
+def _coordinatore(hass: HomeAssistant) -> Coordinatore | None:
+    for voce in hass.config_entries.async_loaded_entries(DOMINIO):
+        return voce.runtime_data
+    return None
+
+
+def _senza_coordinatore(connection, msg) -> None:
+    connection.send_error(msg["id"], "non_caricata", "Integrazione non caricata")
+
+
+def _tipologie(coordinatore: Coordinatore) -> list[dict[str, Any]]:
+    return [
+        {
+            "id": t.id,
+            "nome": t.nome,
+            "colore": t.colore,
+            "icona": t.icona,
+            "note": t.note,
+        }
+        for t in coordinatore.tipologie
+    ]
+
+
+@callback
+def async_registra(hass: HomeAssistant) -> None:
+    for comando in (
+        ws_ritiri,
+        ws_iscriviti,
+        ws_config_leggi,
+        ws_config_salva,
+        ws_anteprima,
+        ws_ignora_anomalia,
+        ws_barra_laterale,
+    ):
+        websocket_api.async_register_command(hass, comando)
+
+
+# --- per tutti ---------------------------------------------------------------------
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMINIO}/ritiri",
+        vol.Required("dal"): str,
+        vol.Required("al"): str,
+    }
+)
+@callback
+def ws_ritiri(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
+    """I ritiri di un intervallo, con quello che serve a disegnarli."""
+    coordinatore = _coordinatore(hass)
+    if coordinatore is None:
+        _senza_coordinatore(connection, msg)
+        return
+    try:
+        dal, al = date.fromisoformat(msg["dal"]), date.fromisoformat(msg["al"])
+    except ValueError:
+        connection.send_error(msg["id"], "data_non_valida", "Data non valida")
+        return
+    if al < dal or (al - dal).days > MASSIMO_GIORNI:
+        connection.send_error(
+            msg["id"], "intervallo_non_valido", "Intervallo non valido"
+        )
+        return
+    risultato = coordinatore.calcola_intervallo(dal, al)
+    connection.send_result(
+        msg["id"],
+        {
+            "disponibile": risultato is not None,
+            "oggi": coordinatore.oggi.isoformat(),
+            "tipologie": _tipologie(coordinatore),
+            "ritiri": [serializza.ritiro(r) for r in risultato.ritiri]
+            if risultato
+            else [],
+            "conferme": [
+                {"data": giorno.isoformat(), "tipologia": tipologia}
+                for giorno, tipologia in sorted(coordinatore.conferme)
+            ],
+            "valido_fino_al": coordinatore.archivi.configurazione.get("valido_fino_al"),
+        },
+    )
+
+
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMINIO}/iscriviti"})
+@callback
+def ws_iscriviti(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
+    """Avvisa chi è iscritto a ogni ricalcolo: le card rileggono i ritiri."""
+    coordinatore = _coordinatore(hass)
+    if coordinatore is None:
+        _senza_coordinatore(connection, msg)
+        return
+
+    @callback
+    def _avvisa() -> None:
+        connection.send_message(
+            websocket_api.event_message(msg["id"], {"evento": "aggiornato"})
+        )
+
+    connection.subscriptions[msg["id"]] = coordinatore.ascolta(_avvisa)
+    connection.send_result(msg["id"])
+
+
+# --- per gli amministratori ----------------------------------------------------------
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMINIO}/config/leggi"})
+@callback
+def ws_config_leggi(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
+    coordinatore = _coordinatore(hass)
+    if coordinatore is None:
+        _senza_coordinatore(connection, msg)
+        return
+    configurazione = coordinatore.archivi.configurazione
+    connection.send_result(
+        msg["id"],
+        {
+            "configurazione": configurazione,
+            "revisione": configurazione.get("revisione", 0),
+            "oggi": coordinatore.oggi.isoformat(),
+            "problemi": [serializza.problema(p) for p in coordinatore.problemi],
+            "anomalie": [serializza.anomalia(a) for a in coordinatore.anomalie],
+            "festivi_ignorati": coordinatore.archivi.stato.get("anomalie_ignorate", []),
+            "mostra_barra_laterale": coordinatore.entry.options.get(
+                OPZIONE_BARRA_LATERALE, True
+            ),
+        },
+    )
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMINIO}/config/salva",
+        vol.Required("configurazione"): dict,
+        vol.Required("revisione"): int,
+    }
+)
+@websocket_api.async_response
+async def ws_config_salva(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
+    coordinatore = _coordinatore(hass)
+    if coordinatore is None:
+        _senza_coordinatore(connection, msg)
+        return
+    trovati = await coordinatore.async_salva_configurazione(
+        msg["configurazione"], revisione_letta=msg["revisione"]
+    )
+    connection.send_result(
+        msg["id"],
+        {
+            "salvato": not trovati,
+            "problemi": [serializza.problema(p) for p in trovati],
+            "revisione": coordinatore.archivi.configurazione.get("revisione", 0),
+        },
+    )
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMINIO}/anteprima",
+        vol.Required("configurazione"): dict,
+        vol.Optional("giorni", default=GIORNI_ANTEPRIMA): vol.All(
+            int, vol.Range(min=1, max=MASSIMO_GIORNI)
+        ),
+    }
+)
+@callback
+def ws_anteprima(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
+    """Il calcolo di una configurazione non salvata e cosa cambia (decisione 36)."""
+    coordinatore = _coordinatore(hass)
+    if coordinatore is None:
+        _senza_coordinatore(connection, msg)
+        return
+    candidata = msg["configurazione"]
+    trovati = problemi(candidata)
+    if trovati:
+        connection.send_result(
+            msg["id"],
+            {
+                "problemi": [serializza.problema(p) for p in trovati],
+                "ritiri": [],
+                "differenze": {"aggiunti": [], "tolti": []},
+                "anomalie": [],
+            },
+        )
+        return
+    config = carica(candidata)
+    oggi = coordinatore.oggi
+    al = oggi + timedelta(days=msg["giorni"] - 1)
+    dopo = calcola(config, oggi, al, coordinatore.fuso, coordinatore.festivi_ignorati)
+    prima = coordinatore.calcola_intervallo(oggi, al)
+    confronto = dopo
+    if msg["giorni"] > GIORNI_ANTEPRIMA:
+        # Le differenze si mostrano sempre sui prossimi 60 giorni (decisione 36).
+        fine = oggi + timedelta(days=GIORNI_ANTEPRIMA - 1)
+        confronto = calcola(config, oggi, fine, coordinatore.fuso)
+        prima = coordinatore.calcola_intervallo(oggi, fine)
+    connection.send_result(
+        msg["id"],
+        {
+            "problemi": [],
+            "ritiri": [serializza.ritiro(r) for r in dopo.ritiri],
+            "differenze": serializza.differenze(prima, confronto),
+            "anomalie": [serializza.anomalia(a) for a in anomalie(config, oggi)],
+        },
+    )
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMINIO}/anomalie/ignora",
+        vol.Required("data"): str,
+        vol.Required("tipologia"): str,
+        vol.Optional("ignora", default=True): bool,
+    }
+)
+@websocket_api.async_response
+async def ws_ignora_anomalia(
+    hass: HomeAssistant, connection, msg: dict[str, Any]
+) -> None:
+    """ "Ignora" sull'avviso di un ritiro festivo, o il suo annullamento (SPEC §4.4)."""
+    coordinatore = _coordinatore(hass)
+    if coordinatore is None:
+        _senza_coordinatore(connection, msg)
+        return
+    try:
+        date.fromisoformat(msg["data"])
+    except ValueError:
+        connection.send_error(msg["id"], "data_non_valida", "Data non valida")
+        return
+    voce = {"data": msg["data"], "tipologia": msg["tipologia"]}
+    ignorate = [
+        v
+        for v in coordinatore.archivi.stato.get("anomalie_ignorate", [])
+        if not (
+            v.get("data") == voce["data"] and v.get("tipologia") == voce["tipologia"]
+        )
+    ]
+    if msg["ignora"]:
+        ignorate.append(voce)
+    coordinatore.archivi.stato["anomalie_ignorate"] = ignorate
+    await coordinatore.async_salva_stato()
+    connection.send_result(msg["id"])
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMINIO}/barra_laterale",
+        vol.Required("mostra"): bool,
+    }
+)
+@callback
+def ws_barra_laterale(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
+    """ "Mostra nella barra laterale" dal pannello: stessa opzione del Configura."""
+    coordinatore = _coordinatore(hass)
+    if coordinatore is None:
+        _senza_coordinatore(connection, msg)
+        return
+    entry = coordinatore.entry
+    hass.config_entries.async_update_entry(
+        entry, options={**entry.options, OPZIONE_BARRA_LATERALE: msg["mostra"]}
+    )
+    connection.send_result(msg["id"])

@@ -22,6 +22,16 @@ Nessuna versione ancora: il progetto è in progettazione. La specifica è in
   i giorni che mancano; il sensore *Da esporre*, acceso da quando si possono mettere fuori
   i sacchi finché il ritiro non passa. Si aggiornano da soli a mezzanotte e all'apertura e
   chiusura delle finestre di esposizione.
+- **Il pannello Raccolta nella barra laterale**, per gli amministratori. *Panoramica*
+  con i prossimi 30 giorni e le cose da controllare; *Tipologie* con colore, icona, note
+  e orario di esposizione proprio; *Regole* scritte come frasi ("Una settimana sì e una
+  no, il martedì"), con le prossime date che compaiono mentre si compila; *Eccezioni*
+  per aggiungere, togliere o spostare un ritiro; *Impostazioni* per la finestra di
+  esposizione, la validità del calendario e il santo patrono. Ogni salvataggio mostra
+  prima cosa cambia nei prossimi 60 giorni.
+- **Il pannello si può togliere dalla barra laterale**, dal pannello stesso o da
+  *Configura*: resta raggiungibile dalla pagina del dispositivo «Raccolta
+  differenziata».
 - **Avvisi in Riparazioni.** Un ritiro che cade in un giorno festivo nei prossimi 30
   giorni; il calendario che sta per scadere o è scaduto, con il modulo per rinnovarlo;
   una configurazione non valida. Se il calendario non si può calcolare, le entità sono

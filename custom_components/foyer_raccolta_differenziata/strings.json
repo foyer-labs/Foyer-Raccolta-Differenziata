@@ -105,6 +105,17 @@
       "title": "Ritiri in giorni festivi da controllare"
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "mostra_barra_laterale": "Mostra nella barra laterale"
+        },
+        "description": "Tutta la configurazione si fa dal pannello Raccolta. Qui scegli solo se il pannello compare nella barra laterale: se lo nascondi, lo apri dalla pagina del dispositivo «Raccolta differenziata».",
+        "title": "Raccolta differenziata"
+      }
+    }
+  },
   "selector": {
     "inizio_giorno": {
       "options": {

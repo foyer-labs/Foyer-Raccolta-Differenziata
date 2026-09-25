@@ -21,3 +21,14 @@ CHIAVE_ARCHIVIO_CONFIGURAZIONE: Final = f"{DOMINIO}.configurazione"
 CHIAVE_ARCHIVIO_STATO: Final = f"{DOMINIO}.stato"
 VERSIONE_ARCHIVIO_CONFIGURAZIONE: Final = 1
 VERSIONE_ARCHIVIO_STATO: Final = 1
+
+# Il pannello (SPEC §10.1) e i file del frontend.
+URL_PANNELLO: Final = "raccolta-differenziata"
+ELEMENTO_PANNELLO: Final = "foyer-raccolta-pannello"
+ICONA_PANNELLO: Final = "mdi:trash-can-outline"
+URL_STATICO: Final = "/foyer_raccolta_differenziata_statici"
+MODULO_PANNELLO: Final = "raccolta-pannello.js"
+MODULO_CARD: Final = "raccolta-card.js"
+
+# Opzioni della voce di configurazione (SPEC §10.1.1).
+OPZIONE_BARRA_LATERALE: Final = "mostra_barra_laterale"

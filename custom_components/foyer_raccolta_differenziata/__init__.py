@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 PIATTAFORME = ["calendar", "sensor", "binary_sensor"]
+_WEBSOCKET = "foyer_raccolta_differenziata_websocket"
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -41,7 +42,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.runtime_data = coordinatore
     coordinatore.avvia()
     await hass.config_entries.async_forward_entry_setups(entry, PIATTAFORME)
+
+    from . import pannello, websocket
+
+    if not hass.data.get(_WEBSOCKET):
+        websocket.async_registra(hass)
+        hass.data[_WEBSOCKET] = True
+    await pannello.async_registra(hass, entry)
+    entry.async_on_unload(entry.add_update_listener(_opzioni_cambiate))
     return True
+
+
+async def _opzioni_cambiate(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """ "Mostra nella barra laterale" cambiato: si aggiorna solo il pannello."""
+    from . import pannello
+
+    await pannello.async_registra(hass, entry)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -58,6 +74,9 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     from .const import DOMINIO
 
     await async_elimina(hass)
+    from . import pannello
+
+    pannello.async_rimuovi(hass)
     for problema in list(ir.async_get(hass).issues.values()):
         if problema.domain == DOMINIO:
             ir.async_delete_issue(hass, DOMINIO, problema.issue_id)
