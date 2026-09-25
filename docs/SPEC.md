@@ -543,15 +543,16 @@ configurazione, cambio dell'interruttore di sospensione. L'esecutore chiama i se
 
 ### 9.2 Entità
 
-Tutte appartengono a un dispositivo "Raccolta differenziata". Gli `entity_id` indicati sono
-quelli generati alla creazione; l'utente può rinominarli.
+Tutte appartengono a un dispositivo "Raccolta differenziata", e gli `entity_id` nascono
+dal suo nome: `sensor.raccolta_differenziata_oggi` e così via. L'utente può rinominarli.
+Il nome di un sensore per tipologia segue il nome della tipologia; il suo `entity_id` no.
 
 | Entità | Stato | Attributi principali |
 |---|---|---|
-| `calendar.foyer_raccolta_differenziata` | acceso durante un evento | — |
+| `calendar.raccolta_differenziata` | acceso nel giorno di un ritiro | l'evento in corso o il prossimo |
 | `sensor.…_oggi` | nomi delle tipologie di oggi, separati da virgola, oppure "Nessuno" | `tipologie` (id), `ritiri` (dettaglio), `confermati` |
 | `sensor.…_domani` | come sopra, per domani | come sopra |
-| `sensor.…_prossimo_<tipologia>` | data (`device_class: date`) | `giorni_mancanti`, `origine`, `festivo`, `da_verificare` |
+| `sensor.…_prossimo_ritiro_<tipologia>` | data (`device_class: date`); sconosciuto se non c'è un ritiro nell'orizzonte | `giorni_mancanti`, `origine`, `festivo`, `da_verificare` |
 | `binary_sensor.…_da_esporre` | acceso se c'è un ritiro con finestra aperta e non confermato | `ritiri`, `fine_finestra` |
 | `button.…_esposto` | — | vedi §8.4 |
 | `switch.…_sospendi_promemoria` | acceso = promemoria sospesi | `intervalli` |
@@ -580,7 +581,10 @@ Le entità per tipologia nascono e spariscono con la tipologia.
   problema unico, con l'elenco dei ritiri, che rimanda al pannello. Sparisce quando ogni
   ritiro elencato ha un'eccezione o è stato ignorato. *Perché:* chi non apre mai il pannello non
   vedrebbe l'avviso prima del giorno sbagliato.
-- **Configurazione illeggibile** (INV-2).
+- **Configurazione non valida** (INV-2): le entità sono non disponibili finché non la si
+  corregge dal pannello. Un **calcolo non riuscito** ha un problema a sé.
+- Un **archivio illeggibile** non avvia l'integrazione: nessuna entità nasce, e la voce
+  di configurazione mostra l'errore. Mai un calendario vuoto al posto di quello salvato.
 
 ### 9.4 Comandi WebSocket
 
@@ -860,6 +864,17 @@ Marchio, 2026-09-25.
 42. Il simbolo è il segno di Foyer dentro una pattumiera con coperchio e maniglia
     (variante A di quattro mockup), con la grammatica dello scudo di Home Defender
     (§18).
+
+Fase 2, 2026-09-25 (scelte fatte in autonomia su mandato del proprietario, con
+l'opzione consigliata).
+
+43. I testi visibili che le traduzioni di Home Assistant non portano (titolo della voce,
+    stato "Nessuno", descrizioni degli eventi del calendario, messaggi delle notifiche,
+    nomi dei sensori per tipologia) stanno in un solo modulo, `testi.py`. È il "file dei
+    testi" del backend di INV-5.
+44. Il nome del sensore "prossimo ritiro" di una tipologia si imposta da `testi.py` e non
+    dalle traduzioni, perché Home Assistant tiene in cache il nome tradotto e una
+    tipologia rinominata resterebbe col nome vecchio fino al riavvio.
 
 ---
 

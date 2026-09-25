@@ -16,6 +16,7 @@ from homeassistant.helpers.selector import (
 )
 import voluptuous as vol
 
+from . import testi
 from .const import (
     CONF_FINE_ORA,
     CONF_INIZIO_GIORNO,
@@ -93,10 +94,8 @@ class RaccoltaConfigFlow(ConfigFlow, domain=DOMINIO):
             )
             if errore is None:
                 # Il titolo della voce non passa dalle traduzioni: Home Assistant
-                # non lo prevede. È l'unico testo visibile scritto nel codice.
-                return self.async_create_entry(
-                    title="Raccolta differenziata", data=dati
-                )
+                # non lo prevede, quindi sta in testi.py (decisione 43).
+                return self.async_create_entry(title=testi.TITOLO_VOCE, data=dati)
             errori["base"] = errore
             predefiniti = dati
         return self.async_show_form(

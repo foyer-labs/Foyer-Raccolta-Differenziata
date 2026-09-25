@@ -1,0 +1,23 @@
+{
+  "entity": {
+    "binary_sensor": {
+      "da_esporre": {
+        "default": "mdi:trash-can-outline",
+        "state": {
+          "on": "mdi:trash-can"
+        }
+      }
+    },
+    "sensor": {
+      "domani": {
+        "default": "mdi:calendar-arrow-right"
+      },
+      "oggi": {
+        "default": "mdi:calendar-today"
+      },
+      "prossimo": {
+        "default": "mdi:trash-can-outline"
+      }
+    }
+  }
+}

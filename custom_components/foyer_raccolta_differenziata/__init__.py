@@ -8,25 +8,56 @@ nemmeno installato (INV-1).
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
 
+_LOGGER = logging.getLogger(__name__)
+
+PIATTAFORME = ["calendar", "sensor", "binary_sensor"]
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    from .archivio import async_carica
+    from homeassistant.exceptions import ConfigEntryError
 
-    entry.runtime_data = await async_carica(hass, entry)
+    from .archivio import async_carica
+    from .const import DOMINIO
+    from .coordinatore import Coordinatore
+
+    try:
+        archivi = await async_carica(hass, entry)
+    except Exception as errore:
+        # INV-2: un archivio illeggibile non diventa un calendario vuoto. Nessuna
+        # entità nasce, e la voce di configurazione mostra l'errore.
+        _LOGGER.exception("Archivio della raccolta illeggibile")
+        raise ConfigEntryError(
+            translation_domain=DOMINIO, translation_key="archivio_illeggibile"
+        ) from errore
+
+    coordinatore = Coordinatore(hass, entry, archivi)
+    entry.runtime_data = coordinatore
+    coordinatore.avvia()
+    await hass.config_entries.async_forward_entry_setups(entry, PIATTAFORME)
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    return True
+    scaricata = await hass.config_entries.async_unload_platforms(entry, PIATTAFORME)
+    if scaricata:
+        entry.runtime_data.arresta()
+    return scaricata
 
 
 async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    from homeassistant.helpers import issue_registry as ir
+
     from .archivio import async_elimina
+    from .const import DOMINIO
 
     await async_elimina(hass)
+    for problema in list(ir.async_get(hass).issues.values()):
+        if problema.domain == DOMINIO:
+            ir.async_delete_issue(hass, DOMINIO, problema.issue_id)
