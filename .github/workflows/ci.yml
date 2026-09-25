@@ -81,7 +81,36 @@ jobs:
           cache: pip
           cache-dependency-path: .github/workflows/ci.yml
       - run: pip install ${{ matrix.pacchetti }} pytest-xdist
+      # L'integrazione dipende da frontend: serve il pacchetto del frontend alla
+      # versione che quella Home Assistant fissa nel suo manifest.
+      - name: Installa il frontend fissato da quella Home Assistant
+        run: |
+          pip install "$(python - <<'EOF'
+          import json, pathlib, homeassistant.components.frontend as f
+          manifest = pathlib.Path(f.__file__).with_name("manifest.json")
+          print(json.loads(manifest.read_text())["requirements"][0])
+          EOF
+          )"
       - run: >
           pytest -p pytest_homeassistant_custom_component
           -o asyncio_mode=auto -o asyncio_default_fixture_loop_scope=function
           -n auto tests/integrazione
+
+  frontend:
+    name: build del frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
+      # HACS installa l'integrazione così com'è: i file costruiti sono nel
+      # repository e devono corrispondere ai sorgenti.
+      - name: I file costruiti corrispondono ai sorgenti
+        run: git diff --exit-code custom_components/foyer_raccolta_differenziata/frontend

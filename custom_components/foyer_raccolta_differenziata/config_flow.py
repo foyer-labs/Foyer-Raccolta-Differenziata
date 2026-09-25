@@ -7,8 +7,15 @@ from __future__ import annotations
 
 from typing import Any
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlow,
+)
+from homeassistant.core import callback
 from homeassistant.helpers.selector import (
+    BooleanSelector,
     SelectSelector,
     SelectSelectorConfig,
     SelectSelectorMode,
@@ -23,6 +30,7 @@ from .const import (
     CONF_INIZIO_ORA,
     CONF_TIPOLOGIE,
     DOMINIO,
+    OPZIONE_BARRA_LATERALE,
 )
 from .core.configurazione import (
     FINESTRA_PREDEFINITA,
@@ -72,6 +80,11 @@ def _schema(predefiniti: dict[str, Any]) -> vol.Schema:
 class RaccoltaConfigFlow(ConfigFlow, domain=DOMINIO):
     VERSION = 1
 
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+        return RaccoltaOpzioni()
+
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
@@ -100,4 +113,36 @@ class RaccoltaConfigFlow(ConfigFlow, domain=DOMINIO):
             predefiniti = dati
         return self.async_show_form(
             step_id="user", data_schema=_schema(predefiniti), errors=errori
+        )
+
+
+class RaccoltaOpzioni(OptionsFlow):
+    """Il Configura: solo "Mostra nella barra laterale" (SPEC §9.1, §10.1.1).
+
+    Sta qui, oltre che nel pannello, perché un pannello nascosto si possa rimettere
+    nella barra senza doverlo prima trovare.
+    """
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        if user_input is not None:
+            return self.async_create_entry(
+                data={
+                    **self.config_entry.options,
+                    OPZIONE_BARRA_LATERALE: user_input[OPZIONE_BARRA_LATERALE],
+                }
+            )
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        OPZIONE_BARRA_LATERALE,
+                        default=self.config_entry.options.get(
+                            OPZIONE_BARRA_LATERALE, True
+                        ),
+                    ): BooleanSelector()
+                }
+            ),
         )

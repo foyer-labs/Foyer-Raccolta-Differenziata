@@ -9,3 +9,6 @@ frontend/node_modules/
 frontend/dist/
 .DS_Store
 Thumbs.db
+
+# Banco di prova locale del frontend: si ricrea quando serve.
+banco/

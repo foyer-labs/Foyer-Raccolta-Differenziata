@@ -530,9 +530,10 @@ configurazione, cambio dell'interruttore di sospensione. L'esecutore chiama i se
 - Versione minima: Home Assistant 2026.6.0; test in CI sulla minima e sull'ultima stabile
   (decisione 24).
 - Distribuzione: un solo repository HACS. L'integrazione serve i file del frontend
-  (pannello e card) e registra le card come risorsa Lovelace in automatico quando le
-  dashboard sono in modalità interfaccia; in modalità YAML la README spiega la riga da
-  aggiungere.
+  (pannello e card) e carica le card su ogni pagina di Home Assistant con
+  `add_extra_js_url`, in qualunque modalità delle dashboard, senza toccare le risorse
+  Lovelace (decisione 46). I file costruiti sono nel repository: HACS non ha un passo di
+  build.
 - Configurazione iniziale (config flow, istanza unica): scelta dei preset, finestra di
   esposizione globale. Tutto il resto dal pannello.
 - "Configura" dell'integrazione (options flow): contiene solo l'interruttore **Mostra nella
@@ -635,8 +636,9 @@ dell'integrazione. Il valore è salvato nelle opzioni della voce di configurazio
 nell'archivio della configurazione di §11, così i due punti di modifica non si
 contendono il numero di revisione.
 
-Il cambio ha effetto subito, senza riavvio. Nascosto, il pannello resta registrato e
-raggiungibile:
+Il cambio ha effetto subito, senza riavvio: il pannello si registra di nuovo con
+`show_in_sidebar` e non viene mai tolto, così chi lo sta usando resta dov'è. Nascosto,
+resta registrato e raggiungibile:
 
 - dalla pagina del dispositivo "Raccolta differenziata" (collegamento di configurazione);
 - dal suo indirizzo diretto.
@@ -885,6 +887,17 @@ Fase 3, 2026-09-25 (in autonomia, su mandato del proprietario).
     colori di interfaccia vengono dal tema di Home Assistant (`--primary-color`,
     `--card-background-color`, …); il verde acqua del prototipo è solo un segnaposto.
     Le icone delle tipologie sono le icone MDI configurate, non gli emoji del prototipo.
+
+Fase 4, 2026-09-25 (in autonomia).
+
+46. Le card si caricano con `add_extra_js_url`, come in Foyer Home Defender, invece di
+    registrarle come risorsa Lovelace: funziona anche con le dashboard in YAML e non
+    scrive nella configurazione dell'utente.
+47. La pagina Promemoria del pannello arriva con la Fase 5, insieme al motore dei
+    promemoria che ne valida i dati: una pagina che salva dati che nessuno controlla
+    ancora è il modo di trovarsi con configurazioni invalide al primo avvio della Fase 5.
+48. Nel pannello, "Mostra nella barra laterale" cambia subito, senza passare da "Prima di
+    salvare": non tocca il calendario. Tutto il resto ci passa (decisione 36).
 
 ---
 

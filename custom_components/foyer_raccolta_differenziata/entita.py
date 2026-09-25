@@ -9,7 +9,7 @@ from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity import Entity
 
 from . import testi
-from .const import DOMINIO
+from .const import DOMINIO, URL_PANNELLO
 from .coordinatore import Coordinatore
 from .core.calendario import Ritiro
 from .core.viste import confermato
@@ -21,6 +21,9 @@ def info_dispositivo(coordinatore: Coordinatore) -> DeviceInfo:
         translation_key="raccolta",
         manufacturer=testi.PRODUTTORE,
         entry_type=DeviceEntryType.SERVICE,
+        # Il collegamento "Apri configurazione" della pagina del dispositivo: porta
+        # al pannello anche quando non è nella barra laterale (SPEC §9.1).
+        configuration_url=f"homeassistant://{URL_PANNELLO}",
     )
 
 

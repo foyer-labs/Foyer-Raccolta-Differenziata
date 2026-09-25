@@ -30,6 +30,7 @@ MODULI_PURI = [
     "custom_components.foyer_raccolta_differenziata.core.modello",
     "custom_components.foyer_raccolta_differenziata.core.preset",
     "custom_components.foyer_raccolta_differenziata.core.ricorrenze",
+    "custom_components.foyer_raccolta_differenziata.core.serializza",
     "custom_components.foyer_raccolta_differenziata.core.validazione",
     "custom_components.foyer_raccolta_differenziata.core.viste",
     "custom_components.foyer_raccolta_differenziata.testi",

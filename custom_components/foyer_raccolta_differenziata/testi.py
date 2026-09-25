@@ -12,6 +12,7 @@ from __future__ import annotations
 from datetime import date
 
 TITOLO_VOCE = "Raccolta differenziata"
+TITOLO_PANNELLO = "Raccolta"
 NESSUNO = "Nessuno"
 PRODUTTORE = "Foyer Labs"
 
