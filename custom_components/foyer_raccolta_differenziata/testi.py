@@ -33,3 +33,30 @@ DA_VERIFICARE = "Da verificare: oltre la validità del calendario"
 
 def festivo(nome: str) -> str:
     return f"Giorno festivo: {nome}"
+
+
+# --- notifiche (SPEC §8.2) ------------------------------------------------------------
+
+AZIONE_ESPOSTO = "Esposto ✓"
+AZIONE_RINVIA = "Ricordamelo tra 30 minuti"
+_GIORNI = ("Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica")
+
+
+def elenco(nomi: list[str]) -> str:
+    """ "Umido", "Umido e Carta", "Umido, Carta e Vetro"."""
+    if len(nomi) <= 1:
+        return "".join(nomi)
+    return f"{', '.join(nomi[:-1])} e {nomi[-1]}"
+
+
+def messaggio(tipo: str, nomi: list[str], giorno: date) -> str:
+    cosa = elenco(nomi)
+    if tipo == "stasera":
+        return f"Stasera fuori: {cosa}"
+    if tipo == "oggi":
+        return f"Oggi: {cosa}"
+    if tipo == "domani":
+        return f"Domani: {cosa}"
+    if tipo == "sollecito":
+        return f"Ancora da esporre: {cosa}"
+    return f"{_GIORNI[giorno.weekday()]} {giorno.day}: {cosa}"

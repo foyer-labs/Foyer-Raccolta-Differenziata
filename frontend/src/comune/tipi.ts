@@ -40,6 +40,25 @@ export type Periodo =
   | { tipo: "annuale"; dal: string; al: string }
   | { tipo: "con_anno"; dal: string; al: string };
 
+export type Quando =
+  | { tipo: "giorni_prima"; giorni: number; ora: string }
+  | { tipo: "giorno_stesso"; ora: string }
+  | { tipo: "apertura" };
+
+export interface Destinatario {
+  tipo: "servizio" | "entita";
+  id: string;
+}
+
+export interface Profilo {
+  id: string;
+  nome: string;
+  attivo: boolean;
+  quando: Quando;
+  tipologie: string[] | null;
+  destinatari: Destinatario[];
+}
+
 export interface Regola {
   id: string;
   tipologia: string;
@@ -60,9 +79,9 @@ export interface Configurazione {
   esposizione: Finestra;
   patrono: { data: string; nome: string } | null;
   valido_fino_al: string | null;
-  promemoria: unknown[];
+  promemoria: Profilo[];
   solleciti: { attivi: boolean; richiami: number; richiamo_dopo: number };
-  sospensioni: unknown[];
+  sospensioni: { dal: string; al: string }[];
   [altro: string]: unknown;
 }
 
@@ -126,6 +145,7 @@ export interface LetturaRitiri {
   oggi: string;
   tipologie: Pick<Tipologia, "id" | "nome" | "colore" | "icona" | "note">[];
   ritiri: Ritiro[];
-  conferme: { data: string; tipologia: string }[];
+  conferme: { data: string; tipologia: string; istante?: string | null; utente?: string | null }[];
+  sospeso: { manuale: boolean; fino_al: string | null };
   valido_fino_al: string | null;
 }

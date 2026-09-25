@@ -15,7 +15,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from datetime import date, datetime, timedelta
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
@@ -31,6 +31,9 @@ from .core.modello import Configurazione, Tipologia, carica
 from .core.validazione import Problema, problemi
 from .core.viste import Conferme, conferme_da_stato, prossimo_cambiamento
 from .repairs import aggiorna_problemi
+
+if TYPE_CHECKING:
+    from .notifiche import GestorePromemoria
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -50,6 +53,8 @@ class Coordinatore:
         self._ascoltatori: list[Callable[[], None]] = []
         self._timer_confine: CALLBACK_TYPE | None = None
         self._timer_mezzanotte: CALLBACK_TYPE | None = None
+        # Il gestore dei promemoria, impostato all'avvio dell'integrazione.
+        self.gestore: GestorePromemoria
 
     # --- ciclo di vita -------------------------------------------------------------
 

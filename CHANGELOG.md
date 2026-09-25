@@ -32,6 +32,19 @@ Nessuna versione ancora: il progetto è in progettazione. La specifica è in
 - **Il pannello si può togliere dalla barra laterale**, dal pannello stesso o da
   *Configura*: resta raggiungibile dalla pagina del dispositivo «Raccolta
   differenziata».
+- **Promemoria.** Dalla pagina *Promemoria* del pannello: quando (N giorni prima, il
+  giorno stesso, all'apertura della finestra di esposizione), per quali rifiuti e a chi,
+  scegliendo tra i servizi di notifica di Home Assistant. Più rifiuti nello stesso giorno
+  arrivano in un solo messaggio: *Stasera fuori: Umido e Carta*.
+- **Esposto ✓.** Un pulsante nella notifica dell'app Companion, un'entità pulsante (per
+  un tag NFC o un pulsante vicino alla porta) e, fra poco, le card: chi conferma ferma
+  gli altri promemoria di quel ritiro per tutti.
+- **Solleciti, spenti di default.** Se li accendi, il promemoria si ripete finché qualcuno
+  non conferma, e la notifica ha anche *Ricordamelo tra 30 minuti*.
+- **Vacanze e interruttore *Sospendi promemoria*.** Nelle date indicate, o con
+  l'interruttore acceso, i promemoria tacciono; il calendario resta.
+- **Niente promemoria persi per un riavvio.** Se Home Assistant era spento all'ora di un
+  promemoria, parte al riavvio, purché sia ancora il momento di esporre i sacchi.
 - **Avvisi in Riparazioni.** Un ritiro che cade in un giorno festivo nei prossimi 30
   giorni; il calendario che sta per scadere o è scaduto, con il modulo per rinnovarlo;
   una configurazione non valida. Se il calendario non si può calcolare, le entità sono

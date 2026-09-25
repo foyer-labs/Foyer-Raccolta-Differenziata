@@ -4,8 +4,7 @@ Lavora sui dati grezzi dell'archivio e restituisce tutti i problemi, non solo il
 primo: il pannello li mostra insieme. Una configurazione con problemi non si salva
 (SPEC §5) e non si carica (INV-2).
 
-Profili di promemoria, solleciti e sospensioni si validano con la Fase 5: qui si
-controlla solo quello che serve al calendario.
+Comprende i profili di promemoria, i solleciti e le sospensioni (SPEC §4.7-§4.9).
 """
 
 from __future__ import annotations
@@ -270,6 +269,90 @@ class _Validatore:
             self.segnala("patrono.nome", "nome_non_valido")
 
 
+_QUANDO = ("giorni_prima", "giorno_stesso", "apertura")
+_ORA = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
+
+
+def _promemoria(v: _Validatore, elenco: Any) -> None:
+    if not isinstance(elenco, list):
+        v.segnala("promemoria", "promemoria_non_validi")
+        return
+    for i, p in enumerate(elenco):
+        percorso = f"promemoria[{i}]"
+        if not isinstance(p, dict):
+            v.segnala(percorso, "promemoria_non_validi")
+            continue
+        v.id(p, percorso)
+        if not _testo(p.get("nome"), 1, 40):
+            v.segnala(f"{percorso}.nome", "nome_non_valido")
+        if not isinstance(p.get("attivo", True), bool):
+            v.segnala(f"{percorso}.attivo", "valore_non_valido")
+        q = p.get("quando")
+        if not isinstance(q, dict) or q.get("tipo") not in _QUANDO:
+            v.segnala(f"{percorso}.quando", "quando_non_valido")
+        else:
+            if q["tipo"] == "giorni_prima" and not (
+                _e_intero(q.get("giorni")) and 1 <= q["giorni"] <= 7
+            ):
+                v.segnala(f"{percorso}.quando.giorni", "giorni_prima_non_validi")
+            if q["tipo"] != "apertura" and not (
+                isinstance(q.get("ora"), str) and _ORA.match(q["ora"])
+            ):
+                v.segnala(f"{percorso}.quando.ora", "orario_non_valido")
+        tipologie = p.get("tipologie")
+        if tipologie is not None and (
+            not isinstance(tipologie, list)
+            or not tipologie
+            or any(t not in v.tipologie for t in tipologie)
+        ):
+            v.segnala(f"{percorso}.tipologie", "tipologia_sconosciuta")
+        destinatari = p.get("destinatari")
+        if not isinstance(destinatari, list) or not destinatari:
+            v.segnala(f"{percorso}.destinatari", "destinatari_mancanti")
+            continue
+        for d in destinatari:
+            valido = (
+                isinstance(d, dict)
+                and isinstance(d.get("id"), str)
+                and (
+                    (d.get("tipo") == "servizio" and re.match(r"^[a-z0-9_]+$", d["id"]))
+                    or (
+                        d.get("tipo") == "entita"
+                        and re.match(r"^notify\.[a-z0-9_]+$", d["id"])
+                    )
+                )
+            )
+            if not valido:
+                v.segnala(f"{percorso}.destinatari", "destinatario_non_valido")
+                break
+
+
+def _solleciti(v: _Validatore, s: Any) -> None:
+    if not isinstance(s, dict):
+        v.segnala("solleciti", "solleciti_non_validi")
+        return
+    if not isinstance(s.get("attivi"), bool):
+        v.segnala("solleciti.attivi", "valore_non_valido")
+    if not (_e_intero(s.get("richiami")) and 1 <= s["richiami"] <= 2):
+        v.segnala("solleciti.richiami", "richiami_non_validi")
+    if not (_e_intero(s.get("richiamo_dopo")) and 5 <= s["richiamo_dopo"] <= 240):
+        v.segnala("solleciti.richiamo_dopo", "intervallo_non_valido")
+
+
+def _sospensioni(v: _Validatore, elenco: Any) -> None:
+    if not isinstance(elenco, list):
+        v.segnala("sospensioni", "sospensioni_non_valide")
+        return
+    for i, s in enumerate(elenco):
+        percorso = f"sospensioni[{i}]"
+        dal = _data(s.get("dal")) if isinstance(s, dict) else None
+        al = _data(s.get("al")) if isinstance(s, dict) else None
+        if dal is None or al is None:
+            v.segnala(percorso, "data_non_valida")
+        elif al < dal:
+            v.segnala(percorso, "fine_prima_di_inizio")
+
+
 def problemi(dati: dict[str, Any]) -> list[Problema]:
     """Tutti i problemi della parte di calendario di una configurazione grezza."""
     validatore = _Validatore()
@@ -281,4 +364,10 @@ def problemi(dati: dict[str, Any]) -> list[Problema]:
     valido = dati.get("valido_fino_al")
     if valido is not None and _data(valido) is None:
         validatore.segnala("valido_fino_al", "data_non_valida")
+    _promemoria(validatore, dati.get("promemoria", []))
+    _solleciti(
+        validatore,
+        dati.get("solleciti", {"attivi": False, "richiami": 1, "richiamo_dopo": 30}),
+    )
+    _sospensioni(validatore, dati.get("sospensioni", []))
     return validatore.trovati

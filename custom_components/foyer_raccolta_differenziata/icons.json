@@ -8,6 +8,11 @@
         }
       }
     },
+    "button": {
+      "esposto": {
+        "default": "mdi:check-circle-outline"
+      }
+    },
     "sensor": {
       "domani": {
         "default": "mdi:calendar-arrow-right"
@@ -17,6 +22,14 @@
       },
       "prossimo": {
         "default": "mdi:trash-can-outline"
+      }
+    },
+    "switch": {
+      "sospendi_promemoria": {
+        "default": "mdi:bell-ring-outline",
+        "state": {
+          "on": "mdi:bell-off-outline"
+        }
       }
     }
   }

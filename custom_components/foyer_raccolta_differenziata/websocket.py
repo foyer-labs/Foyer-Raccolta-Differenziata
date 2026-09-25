@@ -13,6 +13,7 @@ from typing import Any
 
 from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.util import dt as dt_util
 import voluptuous as vol
 
 from .const import DOMINIO, OPZIONE_BARRA_LATERALE
@@ -20,6 +21,7 @@ from .coordinatore import Coordinatore
 from .core import serializza
 from .core.calendario import anomalie, calcola
 from .core.modello import carica
+from .core.promemoria import AnnullaConferma, Conferma
 from .core.validazione import problemi
 
 GIORNI_ANTEPRIMA = 60
@@ -34,6 +36,20 @@ def _coordinatore(hass: HomeAssistant) -> Coordinatore | None:
 
 def _senza_coordinatore(connection, msg) -> None:
     connection.send_error(msg["id"], "non_caricata", "Integrazione non caricata")
+
+
+def _sospeso(coordinatore: Coordinatore) -> dict[str, Any]:
+    """Se i promemoria tacciono ora, e fino a quando (per il banner delle card)."""
+    configurazione = coordinatore.archivi.configurazione
+    oggi = dt_util.now().date().isoformat()
+    fino = None
+    for v in configurazione.get("sospensioni", []):
+        if v["dal"] <= oggi <= v["al"]:
+            fino = max(fino or v["al"], v["al"])
+    return {
+        "manuale": bool(coordinatore.archivi.stato.get("sospensione_manuale")),
+        "fino_al": fino,
+    }
 
 
 def _tipologie(coordinatore: Coordinatore) -> list[dict[str, Any]]:
@@ -54,6 +70,8 @@ def async_registra(hass: HomeAssistant) -> None:
     for comando in (
         ws_ritiri,
         ws_iscriviti,
+        ws_conferma,
+        ws_annulla_conferma,
         ws_config_leggi,
         ws_config_salva,
         ws_anteprima,
@@ -101,9 +119,15 @@ def ws_ritiri(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
             if risultato
             else [],
             "conferme": [
-                {"data": giorno.isoformat(), "tipologia": tipologia}
-                for giorno, tipologia in sorted(coordinatore.conferme)
+                {
+                    "data": v["data"],
+                    "tipologia": v["tipologia"],
+                    "istante": v.get("istante"),
+                    "utente": v.get("utente"),
+                }
+                for v in coordinatore.archivi.stato.get("conferme", [])
             ],
+            "sospeso": _sospeso(coordinatore),
             "valido_fino_al": coordinatore.archivi.configurazione.get("valido_fino_al"),
         },
     )
@@ -125,6 +149,73 @@ def ws_iscriviti(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
         )
 
     connection.subscriptions[msg["id"]] = coordinatore.ascolta(_avvisa)
+    connection.send_result(msg["id"])
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMINIO}/conferma",
+        vol.Required("data"): str,
+        vol.Optional("tipologie"): [str],
+    }
+)
+@websocket_api.async_response
+async def ws_conferma(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
+    """ "Esposto" da una card: i ritiri non confermati di quel giorno (SPEC §8.4)."""
+    coordinatore = _coordinatore(hass)
+    if coordinatore is None:
+        _senza_coordinatore(connection, msg)
+        return
+    try:
+        giorno = date.fromisoformat(msg["data"])
+    except ValueError:
+        connection.send_error(msg["id"], "data_non_valida", "Data non valida")
+        return
+    risultato = coordinatore.calcola_intervallo(giorno, giorno)
+    volute = set(msg.get("tipologie") or [])
+    ritiri = tuple(
+        (r.data, r.tipologia)
+        for r in (risultato.ritiri if risultato else ())
+        if not volute or r.tipologia in volute
+    )
+    if ritiri:
+        utente = await coordinatore.gestore.async_utente(connection.context(msg))
+        coordinatore.gestore.decidi(Conferma(ritiri, utente))
+    connection.send_result(msg["id"], {"confermati": len(ritiri)})
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMINIO}/annulla_conferma",
+        vol.Required("data"): str,
+        vol.Required("tipologia"): str,
+    }
+)
+@callback
+def ws_annulla_conferma(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
+    """Annulla una conferma, finché la finestra è aperta (SPEC §8.4)."""
+    coordinatore = _coordinatore(hass)
+    if coordinatore is None:
+        _senza_coordinatore(connection, msg)
+        return
+    try:
+        giorno = date.fromisoformat(msg["data"])
+    except ValueError:
+        connection.send_error(msg["id"], "data_non_valida", "Data non valida")
+        return
+    risultato = coordinatore.calcola_intervallo(giorno, giorno)
+    ritiro = next(
+        (
+            r
+            for r in (risultato.ritiri if risultato else ())
+            if r.tipologia == msg["tipologia"]
+        ),
+        None,
+    )
+    if ritiro is None or ritiro.fine_esposizione <= dt_util.now():
+        connection.send_error(msg["id"], "finestra_chiusa", "Finestra chiusa")
+        return
+    coordinatore.gestore.decidi(AnnullaConferma(giorno, msg["tipologia"]))
     connection.send_result(msg["id"])
 
 

@@ -516,9 +516,27 @@ decidi(config, risultato_calcolo, stato, evento, ora) -> Decisione
     Decisione.prossimo:     prossimo istante in cui richiamare decidi
 ```
 
-`evento` è uno tra: scatto del timer, riavvio, conferma, rinvio, modifica della
-configurazione, cambio dell'interruttore di sospensione. L'esecutore chiama i servizi
-`notify`, lo schedulatore fissa un solo timer sul `prossimo` istante.
+`evento` è uno tra: conferma, annullamento di una conferma, rinvio, cambio
+dell'interruttore di sospensione, oppure nessuno (timer, riavvio, modifica della
+configurazione). L'esecutore chiama i servizi `notify`, lo schedulatore fissa un solo
+timer sul `prossimo` istante.
+
+Come è costruito (decisione 49):
+
+- `decidi` gira ogni minuto, all'istante `prossimo` e a ogni evento; l'ultimo istante di
+  attività è quello dell'ultima esecuzione. Un invio parte se il suo istante cade tra
+  l'ultima esecuzione e ora, se non è già partito e se la finestra dei suoi ritiri non è
+  chiusa: la stessa regola copre il funzionamento normale e il recupero dopo un riavvio.
+  Alla prima esecuzione non si recupera nulla.
+- Un invio porta il *tipo* di testo ("stasera", "oggi", "domani", "giorno",
+  "sollecito"); le parole le scrive l'esecutore con `testi.py` (decisione 43).
+- I destinatari si salvano come `{"tipo": "servizio", "id": "mobile_app_luca"}` o
+  `{"tipo": "entita", "id": "notify.telegram"}`.
+- Le azioni delle notifiche sono `RACCOLTA_ESPOSTO_<gettone>` e
+  `RACCOLTA_RINVIA_<gettone>_<destinatario>`; il gettone è un'impronta di 12 caratteri
+  dell'invio. Le notifiche dello stesso giorno hanno lo stesso `tag`, così un sollecito
+  sostituisce il promemoria sul telefono invece di accumularsi.
+- Un destinatario che non esiste più non blocca gli altri: l'errore va nel registro.
 
 ---
 
@@ -624,8 +642,10 @@ barra laterale se l'utente non lo nasconde (§10.1.1). Pagine:
 3. **Regole** — per tipologia; modulo con ricorrenza e periodo; anteprima immediata delle
    prossime date.
 4. **Eccezioni** — elenco per data, filtrabile per tipologia; modulo aggiungi/togli/sposta.
-5. **Promemoria** — profili, solleciti (§4.9), finestra globale, sospensioni.
-6. **Impostazioni** — patrono, validità, "Mostra nella barra laterale".
+5. **Promemoria** — profili, solleciti (§4.9), vacanze.
+6. **Impostazioni** — finestra di esposizione globale, patrono, validità, "Mostra nella
+   barra laterale". La finestra sta qui e non tra i promemoria perché governa anche il
+   calendario, i sensori e le card (decisione 50).
 
 #### 10.1.1 Barra laterale
 
@@ -898,6 +918,13 @@ Fase 4, 2026-09-25 (in autonomia).
     ancora è il modo di trovarsi con configurazioni invalide al primo avvio della Fase 5.
 48. Nel pannello, "Mostra nella barra laterale" cambia subito, senza passare da "Prima di
     salvare": non tocca il calendario. Tutto il resto ci passa (decisione 36).
+
+Fase 5, 2026-09-26 (in autonomia).
+
+49. Come funzionano esecutore e schedulatore dei promemoria: §8.7.
+50. La finestra di esposizione globale sta in Impostazioni, non in Promemoria.
+51. Eliminare una tipologia la toglie anche dai promemoria; un promemoria che riguardava
+    solo quella tipologia viene eliminato, e il pannello lo dice prima di confermare.
 
 ---
 
