@@ -37,7 +37,8 @@ ignorate, ultimo istante di attività.
 
 ## Test
 
-- Suite pura (nucleo e repository), **senza** Home Assistant installato: `pytest`.
+- Suite pura (nucleo e repository), **senza** Home Assistant installato: `pytest`,
+  con `pytest` e `hypothesis` come sole dipendenze.
   Un ambiente in cui c'è Home Assistant carica da solo `pytest-asyncio` e rompe questa
   suite: usa un ambiente con il solo `pytest`.
 - Suite d'integrazione, con `pytest-homeassistant-custom-component` (0.13.336 per la

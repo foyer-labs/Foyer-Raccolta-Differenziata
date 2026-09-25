@@ -94,7 +94,8 @@ l'aria di essere giuste.
 **INV-5 — Tutto in italiano.** Interfaccia, documentazione, identificatori, commenti,
 commit. Restano in inglese solo i nomi imposti da Home Assistant, HACS e dalle librerie.
 Nessun testo visibile è scritto nel codice di un componente: passa da `translations/`
-(backend) o dal file dei testi del frontend.
+(backend) o dal file dei testi del frontend. Unica eccezione: il titolo della voce di
+configurazione ("Raccolta differenziata"), che Home Assistant non permette di tradurre.
 
 **INV-6 — Semplice prima di completo.** Una funzione non in questa spec non si aggiunge
 "perché costa poco". Il proprietario ha scelto la semplicità esplicitamente (decisione 9).
@@ -227,7 +228,10 @@ vale solo *Calendario 2027*".
 | **Sposta** | tipologia, da, a, nota facoltativa | Toglie (tipologia, da) e aggiunge (tipologia, a), ricordando l'origine. |
 
 Precedenza: eccezione > periodo > regola base (decisione 3). Le eccezioni si applicano
-dopo il calcolo delle regole, in quest'ordine: togli, sposta, aggiungi.
+dopo il calcolo delle regole, in quest'ordine: togli, partenze degli spostamenti, arrivi
+degli spostamenti, aggiungi. Separare partenze e arrivi rende il risultato indipendente
+dall'ordine in cui gli spostamenti sono stati inseriti: uno spostamento che arriva nel
+giorno da cui un altro parte resta (25/12 → 27/12 e 18/12 → 25/12 danno 25 e 27).
 
 Casi limite, tutti con un'anomalia informativa e mai con un errore (le regole possono
 cambiare dopo che l'eccezione è stata scritta):
@@ -239,7 +243,16 @@ cambiare dopo che l'eccezione è stata scritta):
   ritiro. Anomalia "eccezione ridondante".
 - Due eccezioni sulla stessa (tipologia, data) di partenza: il pannello non lo permette.
 
-Vincoli: le date di un'eccezione sono comprese tra il 01/01/2000 e il 31/12/2099.
+Vincoli: le date di un'eccezione sono comprese tra il 01/01/2000 e il 31/12/2099, come
+l'ancora delle regole settimanali e le date dei periodi con anno. La nota di
+un'eccezione è lunga al massimo 200 caratteri, il nome di una regola 40.
+
+### 4.3.1 Formato nell'archivio
+
+Date ISO (`2026-09-22`); giorno e mese dei periodi annuali e del patrono come `MM-GG`
+(`11-01`); orari `HH:MM`; giorni della settimana come interi, 0 = lunedì … 6 = domenica;
+la posizione "ultima" di una ricorrenza mensile è `-1`. Aggiungi e togli hanno `data`,
+sposta ha `da` e `a`.
 
 ### 4.4 Festività
 
@@ -350,10 +363,17 @@ salvataggio: una configurazione invalida non viene salvata, mai salvata a metà.
 ### 6.1 Interfaccia
 
 ```
-calcola(config, dal, al) -> Risultato
+calcola(config, dal, al, fuso, festivi_ignorati) -> Risultato
     Risultato.ritiri:   elenco ordinato di Ritiro
-    Risultato.anomalie: elenco di Anomalia
+    Risultato.anomalie: le anomalie dei singoli ritiri (ritiro_festivo)
+
+anomalie(config, oggi) -> elenco di Anomalia
+    le anomalie della configurazione vista da oggi (tutte le altre di §6.3)
 ```
+
+`festivi_ignorati` sono le coppie (data, tipologia) su cui l'utente ha scelto "Ignora".
+Le anomalie della configurazione stanno in una funzione separata perché dipendono da
+"oggi", che `calcola` non riceve.
 
 `Ritiro`: data, tipologia, origine (`regola` con gli id delle regole che lo generano,
 `aggiunto`, `spostato` con la data di partenza), finestra di esposizione assoluta
@@ -376,13 +396,19 @@ oltre, "prossimo ritiro" è sconosciuto.
 |---|---|---|
 | `ritiro_festivo` | avviso | Un ritiro cade in una festività (non ignorata). |
 | `sovrapposizione_mista` | avviso | Regole annuali/sempre e con anno si sovrappongono (§4.2.3). |
-| `sovrapposizione_stesso_tipo` | avviso | Regole dello stesso tipo si sovrappongono. |
+| `sovrapposizione_stesso_tipo` | avviso | Due regole in vigore generano lo stesso ritiro (decisione 41). |
 | `eccezione_senza_ritiro` | info | Togli/sposta su un giorno senza ritiro. |
 | `eccezione_ridondante` | info | Aggiungi su un ritiro già presente. |
 | `giorno_inesistente` | info | Mensile per data su un giorno che quel mese non ha. |
 | `tipologia_senza_ritiri` | info | Nessun ritiro nei prossimi 366 giorni. |
 | `calendario_in_scadenza` | avviso | Mancano ≤ 30 giorni alla validità. |
 | `calendario_scaduto` | avviso | La validità è passata. |
+
+Le anomalie della configurazione guardano oggi e il futuro: una regola con anno già
+finita, un'eccezione su un giorno passato o la parte passata di una sovrapposizione non
+si segnalano. Le sovrapposizioni tra regole dello stesso tipo e le tipologie senza
+ritiri si cercano nell'orizzonte di §6.2; le sovrapposizioni miste in tutto il periodo
+della regola con anno, da oggi. `giorno_inesistente` è una per regola, non una per mese.
 
 Le anomalie si mostrano nel pannello, con un'azione dove ha senso. Solo
 `ritiro_festivo` si può ignorare per il singolo ritiro; le altre spariscono quando la
@@ -821,6 +847,13 @@ Aggiunte del proprietario, 2026-09-25.
 40. README in italiano mantenuto per tutta la vita del progetto, attraente come quello di
     Home Defender, con il pulsante Buy Me a Coffee; una guida unica e semplice
     (`docs/GUIDA.md`); changelog, release GitHub e file di contorno mantenuti.
+
+Fase 1, 2026-09-25.
+
+41. Regole dello stesso tipo: l'avviso scatta solo quando due regole in vigore generano
+    lo stesso giorno. "Lunedì" e "giovedì" come due regole separate non danno avvisi.
+    Tra regole annuali e con anno l'avviso resta sui periodi (decisione 5), perché lì
+    una regola viene davvero ignorata.
 
 ---
 

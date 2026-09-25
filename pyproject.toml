@@ -27,6 +27,10 @@ ignore = [
     "RUF003",
 ]
 
+[tool.ruff.lint.per-file-ignores]
+# Le tabelle di casi dei test restano una riga per caso, anche se lunghe.
+"tests/**" = ["E501"]
+
 [tool.ruff.lint.isort]
 force-sort-within-sections = true
 known-first-party = ["custom_components"]

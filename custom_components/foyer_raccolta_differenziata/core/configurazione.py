@@ -10,10 +10,9 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable
 from typing import Any
 
+from .modello import GIORNO_PRIMA, GIORNO_STESSO
 from .preset import CHIAVI_PRESET, PRESET
 
-GIORNO_PRIMA = "giorno_prima"
-GIORNO_STESSO = "giorno_stesso"
 INIZI_POSSIBILI = (GIORNO_PRIMA, GIORNO_STESSO)
 
 # Finestra di esposizione predefinita (SPEC §4.5): dalle 20:00 del giorno prima alle
