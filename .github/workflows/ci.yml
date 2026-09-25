@@ -22,9 +22,9 @@ jobs:
       - uses: hacs/action@main
         with:
           category: integration
-          # Le icone arrivano con la Fase 7 (SPEC §14); i topic del repository li
-          # imposta il proprietario. Quando esistono, queste esclusioni si tolgono.
-          ignore: brands topics
+          # Le icone arrivano con la Fase 7 (SPEC §14): quando esistono, l'esclusione
+          # si toglie.
+          ignore: brands
 
   lint:
     name: ruff
