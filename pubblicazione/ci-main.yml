@@ -1,0 +1,26 @@
+name: CI
+
+# Il ramo main contiene solo l'integrazione pubblicata: qui girano i due controlli
+# che HACS richiede. Test, lint e build del frontend girano sul ramo sviluppo.
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  hassfest:
+    name: hassfest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: home-assistant/actions/hassfest@master
+
+  hacs:
+    name: validazione HACS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hacs/action@main
+        with:
+          category: integration

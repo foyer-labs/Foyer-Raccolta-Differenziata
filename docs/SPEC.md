@@ -994,6 +994,12 @@ Revisione, 2026-09-26.
     - bersagli di tocco di almeno 32 px e focus visibile da tastiera;
     - le card dicono in che giorno si espone ("domani dalle 20:00"), e il mese ha la
       legenda dei colori come la settimana.
+58. Due rami (richiesta del proprietario, 2026-09-26). `main` resta pulito per chi installa
+    da HACS: integrazione, README, guida con immagini e logo, changelog, licenza, supporto,
+    modelli di issue e i due controlli che HACS richiede. Tutto il materiale di lavoro
+    (spec, `CLAUDE.md`, test, banco, sorgenti del frontend, script, prototipo) vive su
+    `sviluppo`, da cui si lavora da qualsiasi installazione. Le release si fanno da `main`
+    con `scripts/pubblica_main.sh`.
 
 ---
 

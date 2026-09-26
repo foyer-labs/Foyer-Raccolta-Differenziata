@@ -1,0 +1,15 @@
+# I percorsi che il ramo main pubblica, uno per riga. Tutto il resto resta su sviluppo.
+custom_components
+hacs.json
+README.md
+CHANGELOG.md
+LICENSE
+NOTICE
+SUPPORT.md
+CONTRIBUTING.md
+docs/GUIDA.md
+docs/screenshots
+docs/logo
+.github/ISSUE_TEMPLATE
+.gitattributes
+.gitignore

@@ -7,6 +7,15 @@ non solo "correzioni", e quello che richiede qualcosa da te viene prima di tutto
 
 ## [Non rilasciato]
 
+## [0.3.1] — 2026-09-26 — repository più pulito
+
+### Cambiato
+- **Il repository mostra solo quello che serve a chi installa**: l'integrazione, la guida
+  con le immagini, le novità e le istruzioni per chiedere aiuto. Il materiale di sviluppo
+  (specifica, test, sorgenti del frontend, strumenti) è sul ramo `sviluppo`.
+- **Il README porta alla guida** in cima alla pagina e in una sezione *Documentazione*, e
+  i suoi collegamenti funzionano anche quando HACS lo mostra dentro Home Assistant.
+
 ## [0.3.0] — 2026-09-26 — più facile da usare
 
 ### Cambiato
@@ -69,7 +78,8 @@ non solo "correzioni", e quello che richiede qualcosa da te viene prima di tutto
 ## [0.1.0] — 2026-09-26 — la prima versione
 
 Il calendario della raccolta, i promemoria e le tre card. La guida è in
-[docs/GUIDA.md](docs/GUIDA.md), la specifica in [docs/SPEC.md](docs/SPEC.md).
+[docs/GUIDA.md](docs/GUIDA.md), la specifica sul ramo di sviluppo
+([docs/SPEC.md](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/sviluppo/docs/SPEC.md)).
 
 ### Aggiunto
 - **Installazione da Home Assistant.** *Aggiungi integrazione → Foyer Raccolta

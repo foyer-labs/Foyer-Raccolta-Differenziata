@@ -17,6 +17,17 @@ Una fase che dipende da una voce di §17 non ancora confermata non parte: chiedi
 Il repository è l'unica memoria condivisa tra le installazioni da cui si lavora: ogni
 decisione presa in chat va scritta nella spec (§16) nello stesso ramo del lavoro che la usa.
 
+## Due rami (decisione 58)
+
+- **`sviluppo`** contiene tutto e si lavora da qui: si clona questo ramo, i rami di lavoro
+  partono da qui e le pull request tornano qui. La CI completa gira qui.
+- **`main`** è il ramo predefinito, quello che vedono utenti e HACS: solo i file elencati
+  in `pubblicazione/file-pubblicati.txt`, più il workflow ridotto
+  `pubblicazione/ci-main.yml` (hassfest e validazione HACS, che HACS richiede).
+- Per pubblicare: da `sviluppo` pulito, `bash scripts/pubblica_main.sh pubblica-X.Y.Z`,
+  commit, pull request verso `main`, CI verde, merge, poi tag `vX.Y.Z` e release GitHub
+  **sul commit di `main`**. Mai lavorare direttamente su `main`.
+
 ## I sei invarianti
 
 **INV-1 — Il nucleo è puro.** `core/` non importa `homeassistant.*`, non legge l'orologio
@@ -71,7 +82,7 @@ ignorate, ultimo istante di attività.
 
 - Una fase per sessione (piano in `docs/SPEC.md` §14). Niente lavoro di fasi successive,
   nemmeno se è a una riga di distanza.
-- Un ramo per fase (`fase-N-descrizione`), pull request verso `main`. Commit piccoli e
+- Un ramo per fase o argomento, pull request verso `sviluppo`. Commit piccoli e
   funzionanti; il messaggio dice *perché*, non *cosa*.
 - Identità git: solo `Foyer Labs <foyerlabs@gmail.com>`. Controlla `git config user.email`
   prima del primo commit su una macchina nuova.
