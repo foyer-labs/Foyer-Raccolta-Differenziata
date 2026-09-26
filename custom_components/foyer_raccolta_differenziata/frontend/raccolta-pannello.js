@@ -2561,9 +2561,10 @@ q("rd-eccezioni", class extends M {
 		this._bozza = void 0;
 	}
 	updated(e) {
-		if (e.has("precompila") && this.precompila) {
+		if (e.has("precompila") && this.precompila && this.precompila !== this._usata) {
+			this._usata = this.precompila;
 			let e = this.precompila;
-			this._nuova(e.tipo, e.tipologia, e.data), this.precompila = void 0;
+			this._nuova(e.tipo, e.tipologia, e.data);
 		}
 	}
 	_nuova(e, t, n) {

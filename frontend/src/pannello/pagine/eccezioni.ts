@@ -35,11 +35,17 @@ export class RdEccezioni extends LitElement {
     this._bozza = undefined;
   }
 
+  // La richiesta di precompilazione già usata. Il pannello ripassa lo stesso oggetto a
+  // ogni suo ridisegno (Lit riassegna sempre le proprietà che sono oggetti), cioè a
+  // ogni cambio di stato in Home Assistant: senza questo controllo il modulo annullato
+  // si riapriva da solo. Una richiesta nuova è sempre un oggetto nuovo.
+  private _usata?: Precompila;
+
   override updated(cambiati: Map<string, unknown>) {
-    if (cambiati.has("precompila") && this.precompila) {
+    if (cambiati.has("precompila") && this.precompila && this.precompila !== this._usata) {
+      this._usata = this.precompila;
       const p = this.precompila;
       this._nuova(p.tipo, p.tipologia, p.data);
-      this.precompila = undefined;
     }
   }
 
