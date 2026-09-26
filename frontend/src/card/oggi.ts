@@ -8,6 +8,7 @@ import { daIso, giornoSettimana } from "../comune/date";
 import type { Ritiro } from "../comune/tipi";
 import { CardRaccolta, coloreTesto, registra } from "./base";
 import "./editor";
+import { definisci } from "../comune/definisci";
 
 const TIPO = "foyer-raccolta-oggi-card";
 
@@ -251,5 +252,5 @@ export class RaccoltaOggiCard extends CardRaccolta {
   ];
 }
 
-if (!customElements.get(TIPO)) customElements.define(TIPO, RaccoltaOggiCard);
+definisci(TIPO, RaccoltaOggiCard);
 registra(TIPO, T.card.nomeOggi, T.card.descrizioneOggi);

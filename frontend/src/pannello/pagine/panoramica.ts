@@ -16,6 +16,7 @@ import {
 import { giornoSettimana } from "../../comune/date";
 import type { Anomalia, HomeAssistant, LetturaConfigurazione, LetturaRitiri, Ritiro } from "../../comune/tipi";
 import { naviga, ricarica } from "../contesto";
+import { definisci } from "../../comune/definisci";
 
 const DOMINIO = "foyer_raccolta_differenziata";
 
@@ -252,4 +253,4 @@ export class RdPanoramica extends LitElement {
   ];
 }
 
-if (!customElements.get("rd-panoramica")) customElements.define("rd-panoramica", RdPanoramica);
+definisci("rd-panoramica", RdPanoramica);

@@ -6,6 +6,7 @@ import { aIso, daIso, giorniNelMese, giornoSettimana, piuGiorni, primoDelMese } 
 import { GIORNI, GIORNI_INIZIALI, MESI, T } from "../comune/testi";
 import { CardRaccolta, dataBrevissima, registra } from "./base";
 import "./editor";
+import { definisci } from "../comune/definisci";
 
 const TIPO = "foyer-raccolta-mese-card";
 
@@ -225,5 +226,5 @@ export class RaccoltaMeseCard extends CardRaccolta {
   ];
 }
 
-if (!customElements.get(TIPO)) customElements.define(TIPO, RaccoltaMeseCard);
+definisci(TIPO, RaccoltaMeseCard);
 registra(TIPO, T.card.nomeMese, T.card.descrizioneMese);

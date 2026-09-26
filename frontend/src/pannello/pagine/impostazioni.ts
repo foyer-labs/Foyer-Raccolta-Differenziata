@@ -15,6 +15,7 @@ import type {
   LetturaConfigurazione,
 } from "../../comune/tipi";
 import { avvisa, copia, proponi, ricarica } from "../contesto";
+import { definisci } from "../../comune/definisci";
 
 const DOMINIO = "foyer_raccolta_differenziata";
 const MASSIMO_BYTE = 1024 * 1024;
@@ -457,4 +458,4 @@ export class RdImpostazioni extends LitElement {
   ];
 }
 
-if (!customElements.get("rd-impostazioni")) customElements.define("rd-impostazioni", RdImpostazioni);
+definisci("rd-impostazioni", RdImpostazioni);

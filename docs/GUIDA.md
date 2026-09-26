@@ -163,14 +163,17 @@ non partono più, per nessuno in casa:
 
 ## Le card
 
-Tre card, già disponibili nel selettore delle card delle dashboard (*Aggiungi card* →
-cerca *Raccolta*): non serve aggiungere risorse.
+Tre card, già disponibili nel selettore delle card: non serve aggiungere risorse né
+scrivere YAML. Apri la plancia, *Modifica plancia* (la matita), **Aggiungi scheda →
+Per scheda** e cerca **Raccolta**: trovi *Raccolta: oggi e domani*, *Raccolta:
+settimana* e *Raccolta: mese*, con l'anteprima. Scegline una e regola titolo e opzioni
+nell'editor visuale.
 
 <p align="center"><img src="screenshots/card-chiaro.png" alt="Le tre card: stasera fuori umido e plastica con il pulsante Esposto, la settimana con le icone dei rifiuti, il calendario del mese con i pallini colorati" width="900"></p>
 
 <p align="center"><img src="screenshots/card-telefono.png" alt="Le card oggi e settimana su un telefono, in tema scuro" width="300"></p>
 
-In YAML:
+Se preferisci il YAML:
 
 ```yaml
 type: custom:foyer-raccolta-oggi-card
@@ -264,5 +267,10 @@ riferimento della regola: le prossime date nell'editor ti dicono subito se ora �
 **I promemoria non arrivano.** Controlla che il profilo sia attivo, che il destinatario
 esista ancora in Home Assistant, che l'interruttore *Sospendi promemoria* sia spento e che
 oggi non sia in vacanza. Gli errori di consegna finiscono nel registro di Home Assistant.
+
+**Non trovo le card nel selettore.** Dopo l'installazione o un aggiornamento ricarica
+la pagina del browser (o chiudi e riapri l'app Companion): le card si caricano con la
+pagina. Con le versioni precedenti alla 0.4.1 le card potevano non comparire affatto:
+aggiorna.
 
 **Dove chiedo aiuto?** Vedi [SUPPORT.md](../SUPPORT.md).

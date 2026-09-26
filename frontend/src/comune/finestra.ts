@@ -2,6 +2,7 @@
 import { LitElement, css, html } from "lit";
 import { base } from "./stili";
 import { T } from "./testi";
+import { definisci } from "./definisci";
 
 export class RdFinestra extends LitElement {
   static override properties = {
@@ -123,4 +124,4 @@ export class RdFinestra extends LitElement {
   }
 }
 
-if (!customElements.get("rd-finestra")) customElements.define("rd-finestra", RdFinestra);
+definisci("rd-finestra", RdFinestra);

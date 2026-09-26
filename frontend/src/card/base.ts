@@ -8,6 +8,7 @@ import { simbolo } from "../comune/simbolo";
 import { aIso } from "../comune/date";
 import { T } from "../comune/testi";
 import type { HomeAssistant, LetturaRitiri, Ritiro } from "../comune/tipi";
+import { quandoPronto } from "../comune/definisci";
 
 export const DOMINIO = "foyer_raccolta_differenziata";
 
@@ -204,6 +205,12 @@ export const coloreTesto = testoSu;
 
 /** Registra la card nel selettore delle card di Home Assistant. */
 export function registra(tipo: string, nome: string, descrizione: string) {
+  // Dopo la definizione (definisci.ts): una voce nell'elenco senza l'elemento
+  // registrato sarebbe una card che il selettore mostra e non sa creare.
+  quandoPronto(() => aggiungiAlSelettore(tipo, nome, descrizione));
+}
+
+function aggiungiAlSelettore(tipo: string, nome: string, descrizione: string) {
   const w = window as unknown as { customCards?: unknown[] };
   w.customCards = w.customCards ?? [];
   if (!(w.customCards as { type: string }[]).some((c) => c.type === tipo)) {

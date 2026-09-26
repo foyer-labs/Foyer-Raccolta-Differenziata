@@ -10,6 +10,7 @@ import { copia, proponi } from "../contesto";
 import "../../comune/finestra";
 import "../../comune/selettore";
 import { OPZIONI_ICONE } from "../../comune/icone";
+import { definisci } from "../../comune/definisci";
 
 const DOMINIO = "foyer_raccolta_differenziata";
 const COLORI = ["#795548", "#1e88e5", "#fdd835", "#43a047", "#757575", "#8bc34a", "#e53935", "#8e24aa", "#fb8c00", "#00897b"];
@@ -315,4 +316,4 @@ export class RdTipologie extends LitElement {
   ];
 }
 
-if (!customElements.get("rd-tipologie")) customElements.define("rd-tipologie", RdTipologie);
+definisci("rd-tipologie", RdTipologie);

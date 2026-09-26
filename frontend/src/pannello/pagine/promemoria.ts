@@ -9,6 +9,7 @@ import { copia, proponi } from "../contesto";
 import "../../comune/finestra";
 import "../../comune/selettore";
 import type { Opzione } from "../../comune/selettore";
+import { definisci } from "../../comune/definisci";
 
 // Servizi del dominio notify che non sono destinatari.
 const NON_DESTINATARI = new Set(["send_message", "persistent_notification", "notify"]);
@@ -389,4 +390,4 @@ export class RdPromemoria extends LitElement {
   ];
 }
 
-if (!customElements.get("rd-promemoria")) customElements.define("rd-promemoria", RdPromemoria);
+definisci("rd-promemoria", RdPromemoria);
