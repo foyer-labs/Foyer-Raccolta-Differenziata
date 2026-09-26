@@ -7,6 +7,14 @@ non solo "correzioni", e quello che richiede qualcosa da te viene prima di tutto
 
 ## [Non rilasciato]
 
+## [0.4.3] — 2026-09-26 — il modulo precompilato resta chiuso
+
+### Corretto
+- **"Annulla" chiude davvero il modulo aperto dalla Panoramica.** Con *Aggiungi una
+  data* o *Crea eccezione* si apre il modulo di un'eccezione già compilato; dopo
+  *Annulla* si riapriva da solo appena Home Assistant aggiornava qualcosa, cioè di
+  continuo in una casa con molti sensori. Succedeva sul computer come nell'app.
+
 ## [0.4.2] — 2026-09-26 — una finestra alla volta
 
 ### Corretto
