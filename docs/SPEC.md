@@ -978,6 +978,22 @@ Revisione, 2026-09-26.
       senza quel giorno;
     - i salvataggi della configurazione avvengono uno alla volta, così il controllo della
       revisione non si può eludere con due schede aperte (§9.4).
+57. Revisione di usabilità (0.3.0). Regole del frontend:
+    - ovunque si sceglie qualcosa da un elenco lungo (destinatari, icone) c'è un
+      selettore con ricerca per nome e identificativo, suggerimenti navigabili da
+      tastiera e, quando le voci sono di più tipi, filtri per gruppo; le scelte multiple
+      stanno in un elenco con un pulsante per togliere ciascuna, e un destinatario che
+      non esiste più resta visibile, segnalato;
+    - le icone di una tipologia si cercano per nome in italiano in un catalogo di icone
+      adatte ai rifiuti, e se ne può sempre scrivere un'altra `mdi:`;
+    - nelle finestre di modifica i pulsanti Salva e Annulla sono fissi in basso; su uno
+      schermo stretto la finestra sale dal basso e occupa la larghezza;
+    - le righe degli elenchi (regole, eccezioni, promemoria) si aprono toccandole;
+    - l'editor di una regola la riassume in una frase mentre si compila;
+    - su uno schermo stretto le cose da controllare stanno in cima alla Panoramica;
+    - bersagli di tocco di almeno 32 px e focus visibile da tastiera;
+    - le card dicono in che giorno si espone ("domani dalle 20:00"), e il mese ha la
+      legenda dei colori come la settimana.
 
 ---
 

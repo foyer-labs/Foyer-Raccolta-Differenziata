@@ -7,6 +7,29 @@ non solo "correzioni", e quello che richiede qualcosa da te viene prima di tutto
 
 ## [Non rilasciato]
 
+## [0.3.0] — 2026-09-26 — più facile da usare
+
+### Cambiato
+- **Destinatari dei promemoria con ricerca.** Invece di una fila di caselle, un campo in
+  cui scrivi e scegli dai suggerimenti, con filtri per telefoni, altri servizi ed entità
+  di notifica; ogni destinatario scelto ha la sua ✕ per toglierlo, e uno che non esiste
+  più in Home Assistant resta visibile e segnalato.
+- **Icona delle tipologie con ricerca** in un catalogo di icone per i rifiuti, cercabili
+  in italiano (*pannolini*, *divano*, *pile*…), con l'anteprima.
+- **Salva e Annulla sempre visibili** in fondo alle finestre di modifica; sul telefono la
+  finestra sale dal basso e usa tutta la larghezza.
+- **Righe da toccare**: regole, eccezioni e promemoria si aprono toccando la riga, senza
+  il pulsante *Modifica* che sul telefono andava a capo.
+- **L'editor di una regola la scrive in una frase** mentre la compili; *Ogni quante
+  settimane* e i giorni della settimana stanno su una riga anche sul telefono.
+- **Panoramica sul telefono:** le cose da controllare vengono prima dei ritiri.
+- **Impostazioni sul telefono:** il santo patrono non è più schiacciato.
+- **Card *Oggi e domani*:** dice in che giorno si espone ("da mettere fuori domani dalle
+  20:00"). **Card *Mese*:** la legenda dei colori e i giorni passati attenuati, come nella
+  settimana.
+- Pulsanti piccoli più facili da toccare, focus visibile con la tastiera, scheda attiva
+  sempre visibile.
+
 ## [0.2.0] — 2026-09-26 — pannolini e revisione completa
 
 ### Aggiunto

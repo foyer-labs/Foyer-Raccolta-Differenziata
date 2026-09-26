@@ -55,8 +55,8 @@ collegamento alla configurazione.
 ## Tipologie
 
 Una tipologia è un tipo di rifiuto: nome, colore, icona e una nota su cosa ci va, che le
-card mostrano. L'icona è un'icona di Material Design (per esempio `mdi:food-apple`,
-`mdi:baby-carriage` per i pannolini, `mdi:sofa` per gli ingombranti).
+card mostrano. Per l'icona scrivi cosa cerchi (*umido*, *pannolini*, *divano*…) e scegli
+dall'elenco, oppure scrivi direttamente un'icona di Material Design come `mdi:recycle`.
 
 <p align="center"><img src="screenshots/pannello-tipologie.png" alt="Le tipologie come riquadri colorati, ciascuno con la nota e la data del prossimo ritiro" width="820"></p>
 
@@ -128,6 +128,10 @@ Nella pagina *Promemoria* crei uno o più avvisi: quando (N giorni prima a un'or
 stesso, oppure quando si possono mettere fuori i sacchi), per quali rifiuti e a chi.
 
 <p align="center"><img src="screenshots/pannello-promemoria.png" alt="L'editor di un promemoria: il giorno prima alle 20:30, per tutte le tipologie, a due telefoni con pulsanti" width="820"></p>
+
+Nel campo *A chi* scrivi per cercare (un nome o un pezzo di `notify.…`), scegli dai
+suggerimenti, e togli un destinatario con la ✕ accanto. I filtri sopra i suggerimenti
+separano i telefoni con l'app Companion dagli altri servizi e dalle entità di notifica.
 
 Più rifiuti nello stesso giorno arrivano in un messaggio solo: *Stasera fuori: Umido e
 Plastica*. I telefoni con l'app Companion ricevono anche il pulsante **Esposto ✓**; gli
