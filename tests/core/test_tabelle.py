@@ -710,9 +710,73 @@ def test_gli_errori_della_piattaforma_tornano_alla_cella():
 def test_piattaforma_nuova_senza_nome_prende_quello_predefinito():
     esito = _importa(
         _foglio_minimo(
-            Piattaforma=[{"dal": "01/01/2027", "al": "31/12/2027", "giorno_0": "8-12"}]
+            Piattaforma=[{"dal": "01/01/2027", "al": "31/12/2027", "giorno_0": "8-12"}],
+            **{"Piattaforma eccezioni": []},
         ),
         grezza(),
     )
     assert esito.errori == []
     assert esito.configurazione["piattaforma"]["nome"] == "Piattaforma ecologica"
+
+
+# --- revisione (0.5.1) ------------------------------------------------------------------
+
+
+def test_una_riga_copiata_con_l_id_nascosto_e_un_periodo_nuovo():
+    config = _completa() | {"piattaforma": PIATTAFORMA}
+    righe = tb.in_tabelle(config)
+    copia_riga = dict(righe["Piattaforma"][0]) | {
+        "dal": date(2027, 4, 1),
+        "al": date(2027, 9, 30),
+    }
+    righe["Piattaforma"].append(copia_riga)
+    copia_ecc = dict(righe["Piattaforma eccezioni"][0]) | {"data": date(2026, 12, 26)}
+    righe["Piattaforma eccezioni"].append(copia_ecc)
+    for modo in ("sostituisci", "aggiungi"):
+        esito = _importa(righe, config, modo)
+        assert esito.errori == [], modo
+        periodi = esito.configurazione["piattaforma"]["periodi"]
+        assert [q["dal"] for q in periodi] == ["2026-10-01", "2027-04-01"], modo
+        assert periodi[0]["id"] == "inv" and periodi[1]["id"] != "inv"
+        assert len(esito.configurazione["piattaforma"]["eccezioni"]) == 3, modo
+
+
+def test_lo_stesso_giorno_due_volte_nel_file_e_un_errore():
+    config = _completa() | {"piattaforma": PIATTAFORMA}
+    righe = tb.in_tabelle(config)
+    righe["Piattaforma eccezioni"].append(
+        {"data": date(2026, 12, 24), "tipo": "Chiusa"}
+    )
+    esito = _importa(righe, config)
+    assert ("Piattaforma eccezioni", 7, None, "giorno_duplicato") in _errori(esito)
+
+
+def test_sostituire_con_un_solo_foglio_della_piattaforma_e_un_errore():
+    config = _completa() | {"piattaforma": PIATTAFORMA}
+    righe = tb.in_tabelle(config)
+    del righe["Piattaforma eccezioni"]
+    assert ("Piattaforma eccezioni", None, None, "foglio_mancante") in _errori(
+        _importa(righe, config)
+    )
+
+
+def test_fogli_della_piattaforma_vuoti_la_tolgono_anche_con_il_nome():
+    config = _completa() | {"piattaforma": PIATTAFORMA}
+    righe = tb.in_tabelle(config)
+    righe["Piattaforma"], righe["Piattaforma eccezioni"] = [], []
+    esito = _importa(righe, config)
+    assert esito.errori == []
+    assert esito.configurazione["piattaforma"] is None
+
+
+def test_senza_i_fogli_il_nome_vale_solo_per_una_piattaforma_che_c_e():
+    righe = tb.in_tabelle(_completa() | {"piattaforma": PIATTAFORMA})
+    del righe["Piattaforma"], righe["Piattaforma eccezioni"]
+    esito = _importa(righe, _completa())
+    assert esito.errori == []
+    assert "piattaforma" not in esito.configurazione
+
+
+def test_i_giorni_per_nome_intero_nelle_intestazioni():
+    assert tb.chiave_colonna(tb.PIATTAFORMA, "Lunedì") == "giorno_0"
+    assert tb.chiave_colonna(tb.PIATTAFORMA, "domenica") == "giorno_6"

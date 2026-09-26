@@ -5,7 +5,7 @@ import { chip, nuovoId } from "../../comune/chip";
 import { base, moduli, pagina } from "../../comune/stili";
 import { dataBreve, messaggioProblema, T } from "../../comune/testi";
 import type { Anteprima, Eccezione, HomeAssistant, LetturaConfigurazione, Problema } from "../../comune/tipi";
-import { copia, proponi, type Precompila } from "../contesto";
+import { avvisa, copia, proponi, type Precompila } from "../contesto";
 import "../../comune/finestra";
 import { definisci } from "../../comune/definisci";
 
@@ -46,6 +46,8 @@ export class RdEccezioni extends LitElement {
       this._usata = this.precompila;
       const p = this.precompila;
       this._nuova(p.tipo, p.tipologia, p.data);
+      // Usata: il pannello la dimentica, così non torna nemmeno ricreando la pagina.
+      this.dispatchEvent(new CustomEvent("precompilata", { bubbles: true, composed: true }));
     }
   }
 
@@ -69,13 +71,41 @@ export class RdEccezioni extends LitElement {
     return nuova;
   }
 
+  private _esisteva = false;
+  private _salvando = false;
+
+  override willUpdate(cambiati: Map<string, unknown>) {
+    if (cambiati.has("_bozza") && this._bozza && !cambiati.get("_bozza"))
+      this._esisteva = this.lettura.configurazione.eccezioni.some((e) => e.id === this._bozza!.id);
+  }
+
   private async _salva() {
+    if (this._salvando) return;
+    const bozza = this._bozza;
+    if (this._esisteva && !this.lettura.configurazione.eccezioni.some((e) => e.id === bozza?.id)) {
+      avvisa(this, T.eliminatoNelFrattempo);
+      this._bozza = undefined;
+      return;
+    }
     const candidata = this._candidata();
     // Un controllo prima della finestra "Prima di salvare", per mostrare l'errore
     // accanto al campo che lo causa.
-    const anteprima = await this.hass.callWS<Anteprima>({ type: `${DOMINIO}/anteprima`, configurazione: candidata });
-    this._problemi = anteprima.problemi;
-    if (!anteprima.problemi.length) proponi(this, candidata);
+    this._salvando = true;
+    let anteprima: Anteprima;
+    try {
+      anteprima = await this.hass.callWS<Anteprima>({ type: `${DOMINIO}/anteprima`, configurazione: candidata });
+    } catch {
+      avvisa(this, T.erroreConnessione);
+      return;
+    } finally {
+      this._salvando = false;
+    }
+    // Annullata o cambiata mentre si aspettava: niente "Prima di salvare".
+    if (this._bozza !== bozza) return;
+    // Solo i problemi di questa eccezione: quelli di altre sezioni non si correggono qui.
+    const indice = candidata.eccezioni.findIndex((e) => e.id === bozza!.id);
+    this._problemi = anteprima.problemi.filter((p) => p.percorso.startsWith(`eccezioni[${indice}]`) || p.percorso === "eccezioni");
+    if (!this._problemi.length) proponi(this, candidata);
   }
 
   private _elimina() {

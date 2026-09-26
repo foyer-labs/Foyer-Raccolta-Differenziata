@@ -1,6 +1,6 @@
 // Tutti i testi visibili del frontend (INV-5): nessun componente scrive testo suo.
 import { daIso, giornoSettimana } from "./date";
-import type { Anomalia, Conti, ErroreFile, Periodo, Problema, Quando, Regola, Ricorrenza } from "./tipi";
+import type { Anomalia, Configurazione, Conti, ErroreFile, Periodo, Problema, Quando, Regola, Ricorrenza } from "./tipi";
 
 export const GIORNI = ["lunedì", "martedì", "mercoledì", "giovedì", "venerdì", "sabato", "domenica"];
 export const GIORNI_BREVI = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
@@ -218,7 +218,14 @@ export const T = {
   aggiungiEccezionePiattaforma: "Aggiungi un giorno",
   aperta: "Aperta",
   togliPiattaforma: "Togli la piattaforma",
-  togliPiattaformaConferma: "Togliere gli orari della piattaforma ecologica? Spariscono anche dalle card, e il suo sensore.",
+  periodoDalAl: (dal: string, al: string) => `Periodo dal ${dal} al ${al}`,
+  piattaformaDaTogliere: "Gli orari della piattaforma verranno tolti quando salvi. Annulla per tenerli.",
+  togliPiattaformaAvviso: "Salvando, gli orari della piattaforma ecologica spariscono dalle card, e con loro il suo sensore.",
+  modificheNonSalvate: "Hai modifiche non salvate in questa pagina. Lasciarle?",
+  restaQui: "Resta qui",
+  lascia: "Lascia le modifiche",
+  eliminatoNelFrattempo: "Quello che stavi modificando è stato eliminato nel frattempo, da un'altra finestra o da un altro dispositivo.",
+  fileCambiato: "Il file è cambiato da quando l'hai scelto: sceglilo di nuovo.",
   orariDa: "dalle",
   orariA: "alle",
   // Card
@@ -324,13 +331,31 @@ export function frasePeriodo(p: Periodo): string {
 }
 
 const MESSAGGI_PROBLEMI: Record<string, string> = {
+  configurazione_non_valida: "la configurazione salvata non è leggibile",
+  destinatario_duplicato: "lo stesso destinatario compare due volte",
+  eccezione_non_valida: "un'eccezione non è valida",
+  elenco_non_valido: "un elenco della configurazione non è valido",
+  finestra_non_valida: "l'orario di esposizione non è valido",
+  id_mancante: "un elemento non ha l'identificativo",
+  inizio_giorno_non_valido: "scegli da quando si espone",
+  nota_troppo_lunga: "la nota è troppo lunga (al massimo 200 caratteri)",
+  patrono_non_valido: "il santo patrono non è valido",
+  periodo_non_valido: "il periodo non è valido",
+  promemoria_non_validi: "un promemoria non è valido",
+  regola_non_valida: "una regola non è valida",
+  ricorrenza_non_valida: "la ricorrenza non è valida",
+  solleciti_non_validi: "le impostazioni dei solleciti non sono valide",
+  sospensioni_non_valide: "le vacanze non sono valide",
+  tipologia_non_valida: "una tipologia non è valida",
+  valore_non_valido: "un valore non è valido",
   piattaforma_non_valida: "gli orari della piattaforma non sono validi",
   periodi_non_validi: "servono da uno a quattro periodi",
   periodi_sovrapposti: "due periodi della piattaforma si sovrappongono",
   orari_non_validi: "l'orario settimanale di un periodo non è valido",
   fasce_non_valide: "da una a tre fasce orarie per giorno",
-  fascia_non_valida: "in una fascia oraria la fine viene prima dell'inizio",
+  fascia_non_valida: "in una fascia oraria la fine deve venire dopo l'inizio",
   fasce_sovrapposte: "due fasce orarie dello stesso giorno si sovrappongono",
+  giorno_duplicato: "lo stesso giorno compare due volte tra i giorni con un orario diverso",
   valore_mancante: "manca un valore",
   scelta_non_valida: "scegli una delle voci del menu",
   si_no_non_valido: "scrivi Sì o No",
@@ -369,6 +394,58 @@ const MESSAGGI_PROBLEMI: Record<string, string> = {
 
 export const messaggioProblema = (p: Problema): string =>
   MESSAGGI_PROBLEMI[p.codice] ?? p.codice;
+
+/**
+ * Dove sta un problema della validazione, in parole: "Periodo dal 1 ottobre 2026 al 31
+ * marzo 2027 · gio", "Tipologia «Umido»". Gli indici del percorso si leggono sulla
+ * configurazione proposta, la stessa che il backend ha validato.
+ */
+export function luogoProblema(p: Problema, c: Configurazione): string {
+  const trovato = /^([a-z_]+(?:\.[a-z_]+)?)\[(\d+)\](?:\.(.+))?$/.exec(p.percorso);
+  const giorno = /settimana\[(\d)\]/.exec(p.percorso);
+  if (!trovato) {
+    const radice = p.percorso.split(".")[0];
+    return (
+      {
+        esposizione: T.esposizione,
+        patrono: T.patrono,
+        valido_fino_al: T.validita,
+        solleciti: T.solleciti,
+        piattaforma: T.piattaformaTitolo,
+      } as Record<string, string>
+    )[radice] ?? "";
+  }
+  const [, sezione, indice] = trovato;
+  const i = Number(indice);
+  switch (sezione) {
+    case "tipologie":
+      return c.tipologie[i] ? `${T.tipologia} «${c.tipologie[i].nome}»` : T.tipologia;
+    case "regole": {
+      const r = c.regole[i];
+      const t = r && c.tipologie.find((x) => x.id === r.tipologia);
+      return r ? `${T.ricorrenza}: ${t ? `${t.nome} · ` : ""}${nomeRegola(r)}` : T.ricorrenza;
+    }
+    case "eccezioni": {
+      const e = c.eccezioni[i];
+      return e ? `${T.pagine.eccezioni}: ${dataLunga(e.tipo === "sposta" ? e.da : e.data)}` : T.pagine.eccezioni;
+    }
+    case "promemoria":
+      return c.promemoria[i] ? `${T.pagine.promemoria} «${c.promemoria[i].nome}»` : T.pagine.promemoria;
+    case "sospensioni":
+      return T.vacanze;
+    case "piattaforma.periodi": {
+      const q = c.piattaforma?.periodi[i];
+      const dove = q && q.dal && q.al ? T.periodoDalAl(dataLunga(q.dal), dataLunga(q.al)) : T.periodo;
+      return giorno ? `${dove} · ${GIORNI_BREVI[Number(giorno[1])]}` : dove;
+    }
+    case "piattaforma.eccezioni": {
+      const e = c.piattaforma?.eccezioni[i];
+      return e?.data ? `${T.eccezioniPiattaforma}: ${dataLunga(e.data)}` : T.eccezioniPiattaforma;
+    }
+    default:
+      return "";
+  }
+}
 
 // In un file i codici della validazione vogliono un esempio di come si scrive.
 const MESSAGGI_FILE: Record<string, string> = {

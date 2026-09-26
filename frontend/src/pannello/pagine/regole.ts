@@ -12,13 +12,13 @@ import {
   fraseRicorrenza,
   GIORNI,
   GIORNI_BREVI,
-  MESI,
   messaggioProblema,
   POSIZIONI_BREVI,
   T,
 } from "../../comune/testi";
 import type { Anteprima, HomeAssistant, LetturaConfigurazione, Periodo, Problema, Regola, Ricorrenza } from "../../comune/tipi";
-import { copia, proponi } from "../contesto";
+import { avvisa, copia, proponi } from "../contesto";
+import { sceltaGiornoMese } from "../../comune/giorno-mese";
 import "../../comune/finestra";
 import { definisci } from "../../comune/definisci";
 
@@ -78,6 +78,22 @@ export class RdRegole extends LitElement {
     this._timer = window.setTimeout(() => void this._anteprima(), 250);
   }
 
+  private _esisteva = false;
+
+  override willUpdate(cambiati: Map<string, unknown>) {
+    // All'apertura del modulo: la regola c'era? Se sparisce nel frattempo (eliminata
+    // altrove), salvare non la deve ricreare.
+    if (cambiati.has("_bozza") && this._bozza && !cambiati.get("_bozza"))
+      this._esisteva = this.lettura.configurazione.regole.some((r) => r.id === this._bozza!.id);
+  }
+
+  private _sparita(): boolean {
+    if (!this._esisteva || this.lettura.configurazione.regole.some((r) => r.id === this._bozza?.id)) return false;
+    avvisa(this, T.eliminatoNelFrattempo);
+    this._bozza = undefined;
+    return true;
+  }
+
   private _candidata() {
     const nuova = copia(this.lettura.configurazione);
     const i = nuova.regole.findIndex((r) => r.id === this._bozza!.id);
@@ -99,6 +115,11 @@ export class RdRegole extends LitElement {
         giorni: 366,
       });
     } catch {
+      // Senza anteprima Salva non resta spento per sempre: il backend valida comunque.
+      if (numero === this._richiesta) {
+        this._inCorso = false;
+        avvisa(this, T.erroreConnessione);
+      }
       return;
     }
     // Solo l'ultima anteprima conta: una risposta lenta non copre quella nuova.
@@ -186,16 +207,7 @@ export class RdRegole extends LitElement {
   }
 
   private _meseGiorno(valore: string, cambia: (v: string) => void) {
-    const [m, g] = valore.split("-").map(Number);
-    const componi = (mese: number, giorno: number) => cambia(`${String(mese).padStart(2, "0")}-${String(giorno).padStart(2, "0")}`);
-    return html`<div class="riga-campi">
-      <select aria-label=${T.giorno} @change=${(e: Event) => componi(m, Number((e.target as HTMLSelectElement).value))}>
-        ${Array.from({ length: 31 }, (_, i) => i + 1).map((n) => html`<option value=${n} ?selected=${n === g}>${n}</option>`)}
-      </select>
-      <select aria-label=${T.mese} @change=${(e: Event) => componi(Number((e.target as HTMLSelectElement).value), g)}>
-        ${MESI.map((nome, i) => html`<option value=${i + 1} ?selected=${i + 1 === m}>${nome}</option>`)}
-      </select>
-    </div>`;
+    return html`<div class="riga-campi">${sceltaGiornoMese(valore, cambia)}</div>`;
   }
 
   private _editorPeriodo(p: Periodo) {
@@ -248,7 +260,7 @@ export class RdRegole extends LitElement {
         ${esistente ? html`<button class="bottone pericolo" @click=${this._elimina}>${T.elimina}</button>` : nothing}
         <span style="flex:1"></span>
         <button class="bottone" @click=${() => (this._bozza = undefined)}>${T.annulla}</button>
-        <button class="bottone primario" ?disabled=${this._problemi.length > 0 || this._inCorso} @click=${() => proponi(this, this._candidata())}>${T.salva}</button>
+        <button class="bottone primario" ?disabled=${this._problemi.length > 0 || this._inCorso} @click=${() => this._sparita() || proponi(this, this._candidata())}>${T.salva}</button>
       </div>
     </rd-finestra>`;
   }

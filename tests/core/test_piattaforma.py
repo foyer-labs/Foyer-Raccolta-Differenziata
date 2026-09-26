@@ -354,7 +354,7 @@ def test_una_piattaforma_valida():
                     {"id": "e2", "data": "2026-12-08", "tipo": "chiusa"},
                 ]
             },
-            ("piattaforma.eccezioni[1]", "eccezione_duplicata"),
+            ("piattaforma.eccezioni[1]", "giorno_duplicato"),
         ),
         (
             {"eccezioni": [{"id": "e1", "data": "2026-12-08", "tipo": "forse"}]},
@@ -364,3 +364,73 @@ def test_una_piattaforma_valida():
 )
 def test_i_problemi_della_piattaforma(modifica, atteso):
     assert atteso in _codici(dati() | modifica)
+
+
+# --- revisione (0.5.1) ------------------------------------------------------------------
+
+
+def test_un_festivo_fuori_dai_periodi_non_e_indicato():
+    # Periodo fino al 20/12: il 25 non è "chiusa" (decisione 69), come il 24 e il 27.
+    piattaforma = p(
+        periodi=[
+            {
+                "id": "x",
+                "dal": "2026-01-01",
+                "al": "2026-12-20",
+                "settimana": settimana(ven=MATTINA),
+            }
+        ]
+    )
+    assert [g.fasce for g in giorni(piattaforma, date(2026, 12, 24), 4, None)] == [
+        None
+    ] * 4
+    assert giorno(piattaforma, date(2026, 12, 8), None).motivo == "festivo"
+
+
+def test_le_fasce_che_si_toccano_sono_un_apertura_sola():
+    piattaforma = p(
+        periodi=[
+            {
+                "id": "x",
+                "dal": "2026-01-01",
+                "al": "2026-12-31",
+                "settimana": settimana(lun=[["12:00", "14:00"], ["08:00", "12:00"]]),
+            }
+        ]
+    )
+    s = stato(piattaforma, istante("2026-03-02T11:00"), ROMA, None)
+    assert s.aperta is True and s.chiude == istante("2026-03-02T14:00")
+    # E in ordine anche se inserite al contrario.
+    assert giorno(piattaforma, date(2026, 3, 2), None).fasce[0] == (time(8), time(12))
+
+
+def test_una_fascia_svuotata_dall_ora_legale_non_apre():
+    piattaforma = p(
+        periodi=[
+            {
+                "id": "x",
+                "dal": "2026-01-01",
+                "al": "2026-12-31",
+                "settimana": settimana(dom=[["02:00", "02:30"], ["10:00", "11:00"]]),
+            }
+        ]
+    )
+    s = stato(piattaforma, istante("2026-03-29T01:00"), ROMA, None)
+    assert s.apre == istante("2026-03-29T10:00")
+
+
+def test_nessun_avviso_se_oggi_ha_un_eccezione_aperta():
+    piattaforma = p(
+        periodi=[
+            {
+                "id": "x",
+                "dal": "2027-01-01",
+                "al": "2027-12-31",
+                "settimana": settimana(),
+            }
+        ],
+        eccezioni=[
+            {"id": "e", "data": "2026-12-24", "tipo": "aperta", "fasce": MATTINA}
+        ],
+    )
+    assert anomalie_piattaforma(piattaforma, date(2026, 12, 24)) == ()

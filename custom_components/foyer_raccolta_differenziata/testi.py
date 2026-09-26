@@ -152,6 +152,41 @@ EXCEL_AIUTO_COLONNE: dict[tuple[str, str], str] = {
     "un servizio, notify.telegram per un'entità. L'elenco è nel foglio Leggimi.",
     ("Piattaforma", "dal"): "Il primo giorno del periodo, con l'anno.",
     ("Piattaforma", "al"): "L'ultimo giorno del periodo, con l'anno.",
+    (
+        "Piattaforma",
+        "giorno_0",
+    ): "Le fasce orarie separate da virgola "
+    "(08:00-12:00, 14:00-18:00); vuota = chiusa.",
+    (
+        "Piattaforma",
+        "giorno_1",
+    ): "Le fasce orarie separate da virgola "
+    "(08:00-12:00, 14:00-18:00); vuota = chiusa.",
+    (
+        "Piattaforma",
+        "giorno_2",
+    ): "Le fasce orarie separate da virgola "
+    "(08:00-12:00, 14:00-18:00); vuota = chiusa.",
+    (
+        "Piattaforma",
+        "giorno_3",
+    ): "Le fasce orarie separate da virgola "
+    "(08:00-12:00, 14:00-18:00); vuota = chiusa.",
+    (
+        "Piattaforma",
+        "giorno_4",
+    ): "Le fasce orarie separate da virgola "
+    "(08:00-12:00, 14:00-18:00); vuota = chiusa.",
+    (
+        "Piattaforma",
+        "giorno_5",
+    ): "Le fasce orarie separate da virgola "
+    "(08:00-12:00, 14:00-18:00); vuota = chiusa.",
+    (
+        "Piattaforma",
+        "giorno_6",
+    ): "Le fasce orarie separate da virgola "
+    "(08:00-12:00, 14:00-18:00); vuota = chiusa.",
     ("Piattaforma eccezioni", "data"): "Il giorno con l'orario diverso.",
     ("Piattaforma eccezioni", "tipo"): "Chiusa, oppure Aperta con gli orari.",
     ("Piattaforma eccezioni", "fasce"): "Solo per Aperta: 09:00-12:00, anche più "

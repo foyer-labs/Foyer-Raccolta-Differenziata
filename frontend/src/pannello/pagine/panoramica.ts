@@ -57,6 +57,27 @@ export class RdPanoramica extends LitElement {
     ricarica(this);
   }
 
+  /** I festivi ignorati da oggi in poi, con il modo di tornare indietro. */
+  private _ignorati() {
+    const oggi = this.lettura.oggi;
+    const futuri = this.lettura.festivi_ignorati.filter((v) => v.data >= oggi).sort((a, b) => a.data.localeCompare(b.data));
+    if (!futuri.length) return nothing;
+    return html`<div class="ignorati">
+      <b>${T.festiviIgnorati}</b>
+      ${futuri.map(
+        (v) => html`<div class="ignorato">
+          <span>${this._nome(v.tipologia)} · ${dataLunga(v.data)}</span>
+          <button class="bottone piccolo" @click=${() => this._ripristina(v)}>${T.ripristina}</button>
+        </div>`,
+      )}
+    </div>`;
+  }
+
+  private async _ripristina(v: { data: string; tipologia: string }) {
+    await this.hass.callWS({ type: `${DOMINIO}/anomalie/ignora`, data: v.data, tipologia: v.tipologia, ignora: false });
+    ricarica(this);
+  }
+
   private _festivi(): Ritiro[] {
     const ignorati = new Set(this.lettura.festivi_ignorati.map((v) => `${v.data}|${v.tipologia}`));
     return (this._ritiri?.ritiri ?? []).filter((r) => r.festivo && !ignorati.has(`${r.data}|${r.tipologia}`));
@@ -158,6 +179,7 @@ export class RdPanoramica extends LitElement {
                 <div class="testo">${fraseAnomalia(a, this._nome)}<div class="riga-azioni">${this._azioni(a)}</div></div>
               </div>`,
             )}
+            ${this._ignorati()}
           </div>
           <div class="riquadro">
             <h2>${T.calendarioComune}</h2>
@@ -172,6 +194,20 @@ export class RdPanoramica extends LitElement {
     base,
     pagina,
     css`
+      .ignorati {
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px solid var(--rd-bordo);
+        font-size: 13.5px;
+      }
+      .ignorato {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 4px 0;
+        color: var(--rd-testo-2);
+      }
       .giorno {
         display: grid;
         grid-template-columns: 76px 1fr;

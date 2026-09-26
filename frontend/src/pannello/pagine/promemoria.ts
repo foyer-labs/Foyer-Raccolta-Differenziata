@@ -1,5 +1,6 @@
 // Promemoria (SPEC §4.7-§4.9, §10.1): profili, solleciti, vacanze.
 import { LitElement, css, html, nothing } from "lit";
+import { live } from "lit/directives/live.js";
 
 import { chip, nuovoId } from "../../comune/chip";
 import { base, moduli, pagina } from "../../comune/stili";
@@ -45,6 +46,11 @@ export class RdPromemoria extends LitElement {
   lettura!: LetturaConfigurazione;
   private _bozza?: Profilo;
   private _vacanza = { dal: "", al: "" };
+
+  propostaAnnullata() {
+    // "Indietro" su una modifica dei solleciti: i controlli tornano ai valori salvati.
+    this.requestUpdate();
+  }
 
   chiudiEditor() {
     this._bozza = undefined;
@@ -254,8 +260,8 @@ export class RdPromemoria extends LitElement {
                   </div>
                   <div class="campo">
                     <label for="minuti">${T.ogniMinuti}</label>
-                    <select id="minuti" @change=${(e: Event) => this._solleciti({ richiamo_dopo: Number((e.target as HTMLSelectElement).value) })}>
-                      ${MINUTI.map((m) => html`<option value=${m} ?selected=${s.richiamo_dopo === m}>${T.minuti(m)}</option>`)}
+                    <select id="minuti" .value=${live(String(s.richiamo_dopo))} @change=${(e: Event) => this._solleciti({ richiamo_dopo: Number((e.target as HTMLSelectElement).value) })}>
+                      ${[...new Set([...MINUTI, s.richiamo_dopo])].sort((a, b) => a - b).map((m) => html`<option value=${m} ?selected=${s.richiamo_dopo === m}>${T.minuti(m)}</option>`)}
                     </select>
                   </div>
                 </div>`

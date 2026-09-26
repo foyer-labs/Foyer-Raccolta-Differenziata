@@ -4,7 +4,7 @@
 import { LitElement, css, html, nothing } from "lit";
 
 import { chip } from "../comune/chip";
-import { dataBreve, fraseRiepilogo, messaggioProblema, T } from "../comune/testi";
+import { dataBreve, fraseRiepilogo, luogoProblema, messaggioProblema, T } from "../comune/testi";
 import { base } from "../comune/stili";
 import { simbolo } from "../comune/simbolo";
 import "../comune/finestra";
@@ -17,7 +17,7 @@ import type {
   Problema,
   Riepilogo,
 } from "../comune/tipi";
-import type { Precompila, Proposta } from "./contesto";
+import type { PaginaPannello, Precompila, Proposta } from "./contesto";
 import "./pagine/panoramica";
 import "./pagine/tipologie";
 import "./pagine/regole";
@@ -35,6 +35,7 @@ interface InAttesa {
   candidata: Configurazione;
   anteprima: Anteprima;
   riepilogo?: Riepilogo;
+  avviso?: string;
 }
 
 export class RaccoltaPannello extends LitElement {
@@ -49,6 +50,7 @@ export class RaccoltaPannello extends LitElement {
     _avviso: { state: true },
     _precompila: { state: true },
     _occupato: { state: true },
+    _paginaChiesta: { state: true },
   };
 
   hass!: HomeAssistant;
@@ -64,6 +66,10 @@ export class RaccoltaPannello extends LitElement {
   private _disiscrivi?: Promise<() => void>;
   private _timerAvviso?: number;
   private _occupato = false;
+  /** La scheda chiesta mentre la pagina aveva modifiche non salvate. */
+  private _paginaChiesta?: Pagina;
+  /** Solo l'ultima proposta conta: una risposta lenta non riapre "Prima di salvare". */
+  private _proposta = 0;
 
   override connectedCallback() {
     super.connectedCallback();
@@ -78,6 +84,10 @@ export class RaccoltaPannello extends LitElement {
   }
 
   override updated(cambiati: Map<string, unknown>) {
+    // L'avviso sta nello strato alto, sopra le finestre aperte (che sono <dialog>
+    // modali): senza, resterebbe dietro il velo di "Prima di salvare".
+    const avviso = this.renderRoot.querySelector<HTMLElement & { showPopover?: () => void }>(".avviso");
+    if (avviso?.showPopover && !avviso.matches(":popover-open")) avviso.showPopover();
     if (cambiati.has("_pagina")) {
       this.renderRoot
         .querySelector<HTMLElement>(".schede button.attiva")
@@ -98,8 +108,31 @@ export class RaccoltaPannello extends LitElement {
       this._lettura = await this.hass.callWS<LetturaConfigurazione>({ type: `${DOMINIO}/config/leggi` });
       this._errore = undefined;
     } catch {
-      this._errore = T.nonCaricata;
+      // Con una lettura già valida la pagina resta com'è, con le sue bozze: una
+      // rilettura fallita (Home Assistant che si riavvia) non deve buttarle via.
+      if (this._lettura) this._mostraAvviso(T.erroreConnessione);
+      else this._errore = T.nonCaricata;
     }
+  }
+
+  private get _paginaAperta(): PaginaPannello | null {
+    return this.renderRoot.querySelector<PaginaPannello>(".pagina > *");
+  }
+
+  private _vaiA(p: Pagina) {
+    if (p !== this._pagina && this._paginaAperta?.haModifiche?.()) {
+      this._paginaChiesta = p;
+      return;
+    }
+    this._pagina = p;
+    this._precompila = undefined;
+  }
+
+  private _annullaProposta() {
+    if (this._occupato) return;
+    this._inAttesa = undefined;
+    this._problemi = [];
+    this._paginaAperta?.propostaAnnullata?.();
   }
 
   private _mostraAvviso(testo: string) {
@@ -108,18 +141,22 @@ export class RaccoltaPannello extends LitElement {
     this._timerAvviso = window.setTimeout(() => (this._avviso = undefined), 4000);
   }
 
+
   private async _proponi(e: CustomEvent<Proposta>) {
     e.stopPropagation();
-    const { configurazione: candidata, riepilogo } = e.detail;
+    if (this._inAttesa) return; // un doppio clic su Salva non apre due proposte
+    const { configurazione: candidata, riepilogo, avviso } = e.detail;
+    const numero = ++this._proposta;
     try {
       const anteprima = await this.hass.callWS<Anteprima>({
         type: `${DOMINIO}/anteprima`,
         configurazione: candidata,
       });
+      if (numero !== this._proposta) return;
       this._problemi = anteprima.problemi;
-      this._inAttesa = { candidata, anteprima, riepilogo };
+      this._inAttesa = { candidata, anteprima, riepilogo, avviso };
     } catch {
-      this._mostraAvviso(T.erroreConnessione);
+      if (numero === this._proposta) this._mostraAvviso(T.erroreConnessione);
     }
   }
 
@@ -142,15 +179,17 @@ export class RaccoltaPannello extends LitElement {
       this._occupato = false;
     }
     if (esito.salvato) {
+      // Prima si chiude il modulo della pagina, poi "Prima di salvare": altrimenti
+      // il modulo ricompare per un attimo, con Salva attivo, mentre si rilegge.
+      this._chiudiEditor();
       this._inAttesa = undefined;
       this._problemi = [];
       await this._carica();
       this._mostraAvviso(T.salvato);
-      this._chiudiEditor();
       return;
     }
     if (esito.problemi.some((p) => p.codice === "revisione_superata")) {
-      this._inAttesa = undefined;
+      this._annullaProposta();
       await this._carica();
       this._mostraAvviso(T.altroHaSalvato);
       return;
@@ -160,7 +199,8 @@ export class RaccoltaPannello extends LitElement {
 
   private _chiudiEditor() {
     // Le pagine chiudono il loro modulo quando la configurazione cambia.
-    this.renderRoot.querySelector<HTMLElement & { chiudiEditor?: () => void }>(".pagina > *")?.chiudiEditor?.();
+    this._paginaAperta?.chiudiEditor?.();
+    this._precompila = undefined;
   }
 
   private _naviga(e: CustomEvent<{ pagina: Pagina; precompila?: Precompila }>) {
@@ -189,7 +229,8 @@ export class RaccoltaPannello extends LitElement {
     const riepilogo = Object.entries(attesa.riepilogo ?? {})
       .map(([sezione, conti]) => fraseRiepilogo(sezione, conti))
       .filter((f): f is string => f !== null);
-    return html`<rd-finestra aperta titolo=${T.primaDiSalvare} @chiudi=${() => (this._inAttesa = undefined)}>
+    return html`<rd-finestra aperta titolo=${T.primaDiSalvare} ?bloccata=${this._occupato} @chiudi=${this._annullaProposta}>
+      ${attesa.avviso && !this._problemi.length ? html`<div class="attenzione">${attesa.avviso}</div>` : nothing}
       ${attesa.riepilogo && !this._problemi.length
         ? html`<div class="riepilogo">
             <b>${T.dalFile}</b>
@@ -200,13 +241,16 @@ export class RaccoltaPannello extends LitElement {
         ? html`<div class="errori">
             ${T.nonSalvato}
             <ul>
-              ${this._problemi.map((p) => html`<li>${messaggioProblema(p)}</li>`)}
+              ${this._problemi.map((p) => {
+                const luogo = luogoProblema(p, attesa.candidata);
+                return html`<li>${luogo ? html`<b>${luogo}</b>: ` : nothing}${messaggioProblema(p)}</li>`;
+              })}
             </ul>
           </div>`
         : html`<p class="aiuto">${voci.length ? T.cosaCambia : T.nienteCambia}</p>
             <div class="differenze">${voci.slice(0, 40).map((v) => riga(v.segno, v))}</div>`}
       <div class="azioni-finestra" slot="azioni">
-        <button class="bottone" @click=${() => (this._inAttesa = undefined)}>${T.indietro}</button>
+        <button class="bottone" ?disabled=${this._occupato} @click=${this._annullaProposta}>${T.indietro}</button>
         ${this._problemi.length
           ? nothing
           : html`<button class="bottone primario" ?disabled=${this._occupato} @click=${this._salva}>${T.salva}</button>`}
@@ -247,10 +291,7 @@ export class RaccoltaPannello extends LitElement {
             role="tab"
             aria-selected=${p === this._pagina}
             class=${p === this._pagina ? "attiva" : ""}
-            @click=${() => {
-              this._pagina = p;
-              this._precompila = undefined;
-            }}
+            @click=${() => this._vaiA(p)}
           >
             ${T.pagine[p]}
           </button>`,
@@ -260,6 +301,7 @@ export class RaccoltaPannello extends LitElement {
         class="pagina ${this._inAttesa ? "in-attesa" : ""}"
         @proponi=${this._proponi}
         @naviga=${this._naviga}
+        @precompilata=${() => (this._precompila = undefined)}
         @ricarica=${() => void this._carica()}
         @avvisa=${(e: CustomEvent<string>) => this._mostraAvviso(e.detail)}
       >
@@ -270,7 +312,21 @@ export class RaccoltaPannello extends LitElement {
             : html`<div class="vuoto">${T.carica}</div>`}
       </main>
       ${this._finestraSalvataggio()}
-      ${this._avviso ? html`<div class="avviso" role="status">${this._avviso}</div>` : nothing}
+      ${this._paginaChiesta
+        ? html`<rd-finestra aperta titolo=${T.pagine[this._pagina]} @chiudi=${() => (this._paginaChiesta = undefined)}>
+            <p>${T.modificheNonSalvate}</p>
+            <div class="azioni-finestra" slot="azioni">
+              <button class="bottone" @click=${() => (this._paginaChiesta = undefined)}>${T.restaQui}</button>
+              <button class="bottone pericolo" @click=${() => {
+                const p = this._paginaChiesta!;
+                this._paginaChiesta = undefined;
+                this._pagina = p;
+                this._precompila = undefined;
+              }}>${T.lascia}</button>
+            </div>
+          </rd-finestra>`
+        : nothing}
+      ${this._avviso ? html`<div class="avviso" role="status" popover="manual">${this._avviso}</div>` : nothing}
     `;
   }
 
@@ -401,7 +457,19 @@ export class RaccoltaPannello extends LitElement {
         margin: 4px 0 0;
         padding-left: 18px;
       }
+      .attenzione {
+        background: color-mix(in srgb, var(--rd-avviso) 14%, transparent);
+        color: var(--rd-testo);
+        border-radius: 12px;
+        padding: 10px 14px;
+        margin-bottom: 8px;
+      }
       .avviso {
+        /* Un popover: nello strato alto, sopra le finestre; non ruba i tocchi. */
+        pointer-events: none;
+        margin: 0;
+        border: 0;
+        inset: auto;
         position: fixed;
         left: 50%;
         bottom: 24px;

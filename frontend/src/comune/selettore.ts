@@ -172,7 +172,16 @@ export class RdSelettore extends LitElement {
             this._attivo = 0;
           }}
           @focus=${() => (this._aperto = true)}
-          @blur=${() => (this._aperto = false)}
+          @blur=${() => {
+            // Un'icona scritta per intero vale anche se si esce dal campo senza Invio
+            // (per esempio premendo Salva): prima veniva ignorata in silenzio.
+            const testo = this._testo.trim();
+            if (this.libero && /^mdi:[a-z0-9-]+$/.test(testo)) {
+              this._cambia([testo]);
+              this._testo = "";
+            }
+            this._aperto = false;
+          }}
           @keydown=${this._tasto}
         />
       </div>

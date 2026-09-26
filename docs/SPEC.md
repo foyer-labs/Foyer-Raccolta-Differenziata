@@ -363,10 +363,12 @@ Facoltativa (decisioni 63-68). Una sola piattaforma per installazione.
 | `periodi` | da 1 a 4 | Ciascuno `dal`–`al` con l'anno (estremi inclusi), non sovrapposti, e un orario settimanale: per ogni giorno da 0 a 3 fasce `HH:MM`–`HH:MM` che non si sovrappongono; nessuna fascia = chiusa. |
 | `eccezioni` | elenco | Una data, `chiusa` oppure `aperta` con da 1 a 3 fasce, una nota; una sola per data. |
 
-In un giorno vale, in quest'ordine: l'eccezione di quella data; se il giorno è festivo
-(nazionale o del patrono, §4.4) è **chiusa**; altrimenti le fasce del periodo che copre
-il giorno. Se nessun periodo lo copre l'orario è **non indicato**, mai "chiusa": il
-sistema non lo sa, come in INV-2. *Perché i festivi chiusi:* è il caso comune, e
+In un giorno vale, in quest'ordine (decisione 69): l'eccezione di quella data; se nessun
+periodo copre il giorno l'orario è **non indicato**, mai "chiusa", nemmeno in un
+festivo: il sistema non lo sa, come in INV-2; se il giorno è festivo (nazionale o del
+patrono, §4.4) è **chiusa**; altrimenti le fasce del periodo. Le fasce si usano in
+ordine, e quelle che si toccano (08-12 e 12-14) sono un'apertura sola; una fascia che il
+passaggio all'ora legale svuota non apre. *Perché i festivi chiusi:* è il caso comune, e
 risparmia di inserire tredici date l'anno; chi è aperto aggiunge un'eccezione.
 
 Anomalie (§6.3), solo con la piattaforma configurata:
@@ -701,6 +703,12 @@ resta registrato e raggiungibile:
 
 Le pagine del pannello sono navigabili tra loro con il menu interno, quindi entrare da
 uno qualsiasi di questi punti dà accesso a tutto.
+
+Le finestre (moduli, "Prima di salvare", le finestre delle card) sono `<dialog>` nativi
+aperti come modali (decisione 70): stanno sopra tutto, nessun antenato le taglia, il resto
+della pagina è inerte finché sono aperte. Escape e il clic fuori (cominciato e finito
+fuori) chiudono solo la finestra in cima; durante un salvataggio non si chiudono.
+Cambiare scheda con modifiche non salvate chiede conferma.
 
 Ogni salvataggio passa dall'anteprima: l'utente vede cosa cambia nei prossimi 60 giorni
 prima di confermare (decisione 36). *Perché:* una regola sbagliata non dà errori,
@@ -1155,6 +1163,20 @@ proprietario; domande una alla volta).
     Scelte fatte in autonomia: la card riceve 14 giorni di orari come istanti e calcola
     lo stato da sola a ogni minuto, senza timer nel backend per le card; il sensore si
     riprogramma da solo ad aperture, chiusure e mezzanotte.
+
+Revisione approfondita, 2026-09-26 (quattro revisori, richiesta del proprietario; scelte
+in autonomia con l'opzione consigliata).
+
+69. Un giorno festivo fuori da ogni periodo della piattaforma ha l'orario non indicato,
+    non "chiusa": la decisione 65 ("fuori dai periodi mai chiusa") vince sull'ordine
+    scritto prima in §4.10, che faceva oscillare il sensore tra non disponibile e spento.
+70. Le finestre sono `<dialog>` nativi modali: con alcuni temi (vetro smerigliato) o
+    dentro un carosello, la finestra di una card restava tagliata dentro la card.
+    Conferme ed eliminazioni si leggono in "Prima di salvare", non in un `confirm()`
+    del browser, che nell'app Companion può non comparire. Nel file Excel una riga
+    copiata con l'ID nascosto è un elemento nuovo, e con "sostituisci" un solo foglio
+    della piattaforma è un errore. Le card usano il fuso di Home Assistant e si
+    riprendono da sole dopo un riavvio.
 
 ---
 
