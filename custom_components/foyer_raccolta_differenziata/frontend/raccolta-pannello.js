@@ -940,6 +940,7 @@ var I = o`
 	nessunRitiro: "Nessun ritiro",
 	salva: "Salva",
 	annulla: "Annulla",
+	indietro: "Indietro",
 	modifica: "Modifica",
 	elimina: "Elimina",
 	chiudi: "Chiudi",
@@ -1306,6 +1307,9 @@ q("rd-finestra", class extends M {
       }
       :host([aperta]) {
         display: block;
+        /* Il pannello nasconde le finestre delle pagine mentre "Prima di salvare" è
+           aperta sopra di loro: una sola finestra, un solo paio di pulsanti. */
+        visibility: var(--rd-visibilita-finestre, visible);
       }
       .velo {
         position: fixed;
@@ -3670,7 +3674,7 @@ var $ = "foyer_raccolta_differenziata", Ot = [
           </div>` : C`<p class="aiuto">${a.length ? H.cosaCambia : H.nienteCambia}</p>
             <div class="differenze">${a.slice(0, 40).map((e) => n(e.segno, e))}</div>`}
       <div class="azioni-finestra" slot="azioni">
-        <button class="bottone" @click=${() => this._inAttesa = void 0}>${H.annulla}</button>
+        <button class="bottone" @click=${() => this._inAttesa = void 0}>${H.indietro}</button>
         ${this._problemi.length ? T : C`<button class="bottone primario" ?disabled=${this._occupato} @click=${this._salva}>${H.salva}</button>`}
       </div>
     </rd-finestra>`;
@@ -3706,7 +3710,7 @@ var $ = "foyer_raccolta_differenziata", Ot = [
           </button>`)}
       </nav>
       <main
-        class="pagina"
+        class="pagina ${this._inAttesa ? "in-attesa" : ""}"
         @proponi=${this._proponi}
         @naviga=${this._naviga}
         @ricarica=${() => void this._carica()}
@@ -3775,6 +3779,13 @@ var $ = "foyer_raccolta_differenziata", Ot = [
       .schede button.attiva {
         color: var(--rd-primario);
         border-bottom-color: var(--rd-primario);
+      }
+      /* "Prima di salvare" sta sopra la finestra di modifica della pagina, che resta
+         aperta per tornarci con "Indietro": intanto non si vede. Due finestre
+         sovrapposte mostravano due "Annulla", e quello della finestra sotto chiudeva
+         soltanto quella sopra. */
+      main.in-attesa {
+        --rd-visibilita-finestre: hidden;
       }
       main {
         max-width: 1080px;
