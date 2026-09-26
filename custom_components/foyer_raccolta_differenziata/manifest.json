@@ -15,7 +15,9 @@
   "integration_type": "service",
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/issues",
-  "requirements": [],
+  "requirements": [
+    "openpyxl==3.1.5"
+  ],
   "single_config_entry": true,
-  "version": "0.3.1"
+  "version": "0.4.0"
 }
