@@ -29,6 +29,7 @@ export const T = {
   nessunRitiro: "Nessun ritiro",
   salva: "Salva",
   annulla: "Annulla",
+  indietro: "Indietro",
   modifica: "Modifica",
   elimina: "Elimina",
   chiudi: "Chiudi",

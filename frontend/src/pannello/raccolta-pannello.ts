@@ -205,7 +205,7 @@ export class RaccoltaPannello extends LitElement {
         : html`<p class="aiuto">${voci.length ? T.cosaCambia : T.nienteCambia}</p>
             <div class="differenze">${voci.slice(0, 40).map((v) => riga(v.segno, v))}</div>`}
       <div class="azioni-finestra" slot="azioni">
-        <button class="bottone" @click=${() => (this._inAttesa = undefined)}>${T.annulla}</button>
+        <button class="bottone" @click=${() => (this._inAttesa = undefined)}>${T.indietro}</button>
         ${this._problemi.length
           ? nothing
           : html`<button class="bottone primario" ?disabled=${this._occupato} @click=${this._salva}>${T.salva}</button>`}
@@ -254,7 +254,7 @@ export class RaccoltaPannello extends LitElement {
         )}
       </nav>
       <main
-        class="pagina"
+        class="pagina ${this._inAttesa ? "in-attesa" : ""}"
         @proponi=${this._proponi}
         @naviga=${this._naviga}
         @ricarica=${() => void this._carica()}
@@ -329,6 +329,13 @@ export class RaccoltaPannello extends LitElement {
       .schede button.attiva {
         color: var(--rd-primario);
         border-bottom-color: var(--rd-primario);
+      }
+      /* "Prima di salvare" sta sopra la finestra di modifica della pagina, che resta
+         aperta per tornarci con "Indietro": intanto non si vede. Due finestre
+         sovrapposte mostravano due "Annulla", e quello della finestra sotto chiudeva
+         soltanto quella sopra. */
+      main.in-attesa {
+        --rd-visibilita-finestre: hidden;
       }
       main {
         max-width: 1080px;
