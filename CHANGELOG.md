@@ -7,6 +7,16 @@ non solo "correzioni", e quello che richiede qualcosa da te viene prima di tutto
 
 ## [Non rilasciato]
 
+## [0.4.1] — 2026-09-26 — le card nel selettore
+
+### Corretto
+- **Le card si aggiungono di nuovo dall'interfaccia.** Nel selettore delle card
+  (*Modifica plancia → Aggiungi scheda*, cerca «Raccolta») le tre card comparivano senza
+  poter essere aggiunte, o non comparivano: il loro codice poteva caricarsi prima che
+  Home Assistant preparasse il registro degli elementi, e lì restavano invisibili. Ora
+  aspettano che Home Assistant sia pronto. Dopo l'aggiornamento ricarica la pagina del
+  browser (o chiudi e riapri l'app).
+
 ## [0.4.0] — 2026-09-26 — il calendario in Excel
 
 ### Aggiunto
