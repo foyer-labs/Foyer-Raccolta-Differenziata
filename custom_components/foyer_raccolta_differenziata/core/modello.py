@@ -120,6 +120,41 @@ class Patrono:
     nome: str
 
 
+Fascia = tuple[time, time]
+
+
+@dataclass(frozen=True)
+class PeriodoPiattaforma:
+    """Un orario della piattaforma ecologica, dal `dal` all'`al` compresi.
+
+    `settimana` ha sette elenchi di fasce, dal lunedì alla domenica; un elenco vuoto
+    è un giorno di chiusura (SPEC §4.10).
+    """
+
+    id: str
+    dal: date
+    al: date
+    settimana: tuple[tuple[Fascia, ...], ...]
+
+
+@dataclass(frozen=True)
+class EccezionePiattaforma:
+    """Un giorno con un orario diverso: chiusa (nessuna fascia) o aperta."""
+
+    id: str
+    data: date
+    fasce: tuple[Fascia, ...]
+    nota: str
+
+
+@dataclass(frozen=True)
+class Piattaforma:
+    nome: str
+    nota: str
+    periodi: tuple[PeriodoPiattaforma, ...]
+    eccezioni: tuple[EccezionePiattaforma, ...]
+
+
 @dataclass(frozen=True)
 class Configurazione:
     """La parte di configurazione che serve al calendario."""
@@ -130,6 +165,7 @@ class Configurazione:
     esposizione: Finestra
     patrono: Patrono | None
     valido_fino_al: date | None
+    piattaforma: Piattaforma | None = None
 
     def finestra_di(self, tipologia: Tipologia) -> Finestra:
         return tipologia.esposizione or self.esposizione
@@ -176,6 +212,37 @@ def carica_periodo(dati: dict[str, Any]) -> Periodo:
         return Annuale(dal=_mese_giorno(dati["dal"]), al=_mese_giorno(dati["al"]))
     return ConAnno(
         dal=date.fromisoformat(dati["dal"]), al=date.fromisoformat(dati["al"])
+    )
+
+
+def _fasce(elenco: list[list[str]]) -> tuple[Fascia, ...]:
+    return tuple((_ora(inizio), _ora(fine)) for inizio, fine in elenco)
+
+
+def carica_piattaforma(dati: dict[str, Any] | None) -> Piattaforma | None:
+    if not dati:
+        return None
+    return Piattaforma(
+        nome=dati["nome"],
+        nota=dati.get("nota") or "",
+        periodi=tuple(
+            PeriodoPiattaforma(
+                id=p["id"],
+                dal=date.fromisoformat(p["dal"]),
+                al=date.fromisoformat(p["al"]),
+                settimana=tuple(_fasce(giorno) for giorno in p["settimana"]),
+            )
+            for p in dati.get("periodi", [])
+        ),
+        eccezioni=tuple(
+            EccezionePiattaforma(
+                id=e["id"],
+                data=date.fromisoformat(e["data"]),
+                fasce=_fasce(e.get("fasce") or []) if e["tipo"] == "aperta" else (),
+                nota=e.get("nota") or "",
+            )
+            for e in dati.get("eccezioni", [])
+        ),
     )
 
 
@@ -227,4 +294,5 @@ def carica(dati: dict[str, Any]) -> Configurazione:
         esposizione=carica_finestra(dati["esposizione"]),
         patrono=patrono,
         valido_fino_al=date.fromisoformat(valido) if valido else None,
+        piattaforma=carica_piattaforma(dati.get("piattaforma")),
     )

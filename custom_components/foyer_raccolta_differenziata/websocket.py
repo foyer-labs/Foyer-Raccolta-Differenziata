@@ -20,12 +20,16 @@ import voluptuous as vol
 from .const import DOMINIO, OPZIONE_BARRA_LATERALE, SEGNALE_AGGIORNATO
 from .coordinatore import Coordinatore
 from .core import serializza
-from .core.calendario import anomalie, calcola
+from .core.calendario import anomalie, calcola, istante_locale
 from .core.modello import carica
+from .core.piattaforma import giorni
 from .core.promemoria import AnnullaConferma, Conferma
 from .core.validazione import problemi
 
 GIORNI_ANTEPRIMA = 60
+# I giorni di orario della piattaforma che le card ricevono: la settimana mostrata
+# nella finestra degli orari e la prossima apertura, oltre la settimana.
+GIORNI_PIATTAFORMA = 14
 MASSIMO_GIORNI = 400
 
 
@@ -76,6 +80,42 @@ def _tipologie(coordinatore: Coordinatore) -> list[dict[str, Any]]:
         }
         for t in coordinatore.tipologie
     ]
+
+
+def _piattaforma(coordinatore: Coordinatore) -> dict[str, Any] | None:
+    """Gli orari dei prossimi giorni come istanti: la card calcola "aperta adesso"
+    da sola a ogni minuto, senza chiedere di nuovo (SPEC §10.2)."""
+    config = coordinatore.config
+    if config is None or config.piattaforma is None:
+        return None
+    fuso = coordinatore.fuso
+    return {
+        "nome": config.piattaforma.nome,
+        "nota": config.piattaforma.nota,
+        "giorni": [
+            {
+                "data": g.data.isoformat(),
+                "fasce": None
+                if g.fasce is None
+                else [
+                    [
+                        istante_locale(g.data, inizio, fuso).isoformat(),
+                        istante_locale(g.data, fine, fuso).isoformat(),
+                    ]
+                    for inizio, fine in g.fasce
+                ],
+                "motivo": g.motivo,
+                "festivo": g.festivo,
+                "nota": g.nota,
+            }
+            for g in giorni(
+                config.piattaforma,
+                coordinatore.oggi,
+                GIORNI_PIATTAFORMA,
+                config.patrono,
+            )
+        ],
+    }
 
 
 @callback
@@ -142,6 +182,7 @@ def ws_ritiri(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
             ],
             "sospeso": _sospeso(coordinatore),
             "valido_fino_al": coordinatore.archivi.configurazione.get("valido_fino_al"),
+            "piattaforma": _piattaforma(coordinatore),
         },
     )
 

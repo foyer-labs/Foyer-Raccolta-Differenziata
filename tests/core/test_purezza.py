@@ -29,6 +29,7 @@ MODULI_PURI = [
     "custom_components.foyer_raccolta_differenziata.core.festivita",
     "custom_components.foyer_raccolta_differenziata.core.modello",
     "custom_components.foyer_raccolta_differenziata.core.preset",
+    "custom_components.foyer_raccolta_differenziata.core.piattaforma",
     "custom_components.foyer_raccolta_differenziata.core.promemoria",
     "custom_components.foyer_raccolta_differenziata.core.ricorrenze",
     "custom_components.foyer_raccolta_differenziata.core.serializza",
