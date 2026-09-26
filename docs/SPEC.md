@@ -1,6 +1,6 @@
 # Foyer Raccolta Differenziata — Specifica
 
-Stato: bozza 5 (2026-09-26). Tutto il progetto è in italiano: interfaccia, documentazione,
+Stato: bozza 6 (2026-09-26). Tutto il progetto è in italiano: interfaccia, documentazione,
 codice, commenti e commit (decisione 19).
 
 Questo documento è la fonte di verità. Dove una scelta sembra arbitraria, il motivo è
@@ -39,7 +39,8 @@ della spec.
 - **Turni** su chi porta fuori il bidone (decisione 18).
 - **Filtri di presenza** ("solo chi è in casa") sui promemoria (decisione 9).
 - **Spostamento automatico** dei ritiri nei giorni festivi (decisione 2).
-- **Orari dell'isola ecologica**, prenotazioni degli ingombranti presso il gestore.
+- **Prenotazioni degli ingombranti** presso il gestore. Gli orari della piattaforma
+  (isola) ecologica invece ci sono, dalla 0.5.0 (§4.10, decisione 63).
 - **Configurazione YAML**: la configurazione è solo da interfaccia.
 - **Lingue diverse dall'italiano** (decisione 19).
 
@@ -351,6 +352,30 @@ esistere. Le card mostrano "Promemoria sospesi fino al …".
 
 ---
 
+### 4.10 Piattaforma ecologica
+
+Facoltativa (decisioni 63-68). Una sola piattaforma per installazione.
+
+| Campo | Tipo | Note |
+|---|---|---|
+| `nome` | 1–40 caratteri | "Piattaforma ecologica", "Isola ecologica", "Ecocentro"… |
+| `nota` | max 200, facoltativa | Indirizzo, cosa serve per entrare. |
+| `periodi` | da 1 a 4 | Ciascuno `dal`–`al` con l'anno (estremi inclusi), non sovrapposti, e un orario settimanale: per ogni giorno da 0 a 3 fasce `HH:MM`–`HH:MM` che non si sovrappongono; nessuna fascia = chiusa. |
+| `eccezioni` | elenco | Una data, `chiusa` oppure `aperta` con da 1 a 3 fasce, una nota; una sola per data. |
+
+In un giorno vale, in quest'ordine: l'eccezione di quella data; se il giorno è festivo
+(nazionale o del patrono, §4.4) è **chiusa**; altrimenti le fasce del periodo che copre
+il giorno. Se nessun periodo lo copre l'orario è **non indicato**, mai "chiusa": il
+sistema non lo sa, come in INV-2. *Perché i festivi chiusi:* è il caso comune, e
+risparmia di inserire tredici date l'anno; chi è aperto aggiunge un'eccezione.
+
+Anomalie (§6.3), solo con la piattaforma configurata:
+
+| Codice | Gravità | Quando |
+|---|---|---|
+| `piattaforma_senza_orario` | avviso | Oggi nessun periodo copre la data; `data` è l'inizio del prossimo periodo, se c'è. |
+| `piattaforma_in_scadenza` | avviso | L'orario continuo da oggi (periodi che si susseguono senza buchi) finisce entro 30 giorni. |
+
 ## 5. Configurazione complessiva
 
 Un'unica voce di configurazione per installazione (decisione 13). La configurazione
@@ -577,6 +602,7 @@ Il nome di un sensore per tipologia segue il nome della tipologia; il suo `entit
 | `binary_sensor.…_da_esporre` | acceso se c'è un ritiro con finestra aperta e non confermato | `ritiri`, `fine_finestra` |
 | `button.…_esposto` | — | vedi §8.4 |
 | `switch.…_sospendi_promemoria` | acceso = promemoria sospesi | `intervalli` |
+| `binary_sensor.…_piattaforma_ecologica` | acceso = aperta; non disponibile quando l'orario di oggi non è indicato. Esiste solo se la piattaforma è configurata. | `nome`, `chiude_alle`, `apre_alle` |
 
 Calendario: un evento di un'intera giornata per ogni ritiro, titolo = nome della tipologia,
 descrizione = note, più "(spostato dal gg/mm)" o "(da verificare)" dove serve.
@@ -611,7 +637,7 @@ Le entità per tipologia nascono e spariscono con la tipologia.
 
 | Comando | Chi | Scopo |
 |---|---|---|
-| `…/ritiri` | tutti | Ritiri in un intervallo, tipologie, conferme, sospensione, validità. Per le card. |
+| `…/ritiri` | tutti | Ritiri in un intervallo, tipologie, conferme, sospensione, validità e gli orari della piattaforma dei prossimi 14 giorni come istanti. Per le card. |
 | `…/iscriviti` | tutti | Notifica le card quando qualcosa cambia. |
 | `…/conferma`, `…/annulla_conferma` | tutti | Dalle card. |
 | `…/config/leggi` | amministratori | |
@@ -651,7 +677,9 @@ barra laterale se l'utente non lo nasconde (§10.1.1). Pagine:
    prossime date.
 4. **Eccezioni** — elenco per data, filtrabile per tipologia; modulo aggiungi/togli/sposta.
 5. **Promemoria** — profili, solleciti (§4.9), vacanze.
-6. **Impostazioni** — finestra di esposizione globale, patrono, validità, "Mostra nella
+6. **Piattaforma** — nome, nota, periodi con l'orario settimanale, giorni con un
+   orario diverso (§4.10). Senza orari, un invito a inserirli.
+7. **Impostazioni** — finestra di esposizione globale, patrono, validità, "Mostra nella
    barra laterale", configurazione in Excel (§10.1.2). La finestra sta qui e non tra i promemoria perché governa anche il
    calendario, i sensori e le card (decisione 50).
 
@@ -688,8 +716,11 @@ si modifica in Excel, LibreOffice o Google Fogli, si reimporta.
 
 Il file (`.xlsx`) ha un foglio *Leggimi* con la guida alla compilazione e l'elenco dei
 destinatari di notifica della casa, poi un foglio per sezione: *Tipologie*, *Regole*,
-*Eccezioni*, *Promemoria*, *Vacanze*, *Impostazioni* (finestra, validità, patrono,
-solleciti). In ogni foglio di dati: titolo, aiuto, una riga d'esempio in grigio **sopra**
+*Eccezioni*, *Promemoria*, *Vacanze*, *Piattaforma* (un periodo per riga, le fasce di
+ogni giorno in una cella: "08:00-12:00, 14:00-18:00"), *Piattaforma eccezioni*,
+*Impostazioni* (finestra, validità, patrono, solleciti, nome e nota della piattaforma).
+Un file senza i fogli della piattaforma (della 0.4) la lascia com'è, in entrambi i
+modi di importazione. In ogni foglio di dati: titolo, aiuto, una riga d'esempio in grigio **sopra**
 le intestazioni (così non si importa mai, anche se lo stile va perso), intestazioni con un
 commento che spiega la colonna, menu a tendina per le scelte chiuse e per la tipologia,
 una colonna nascosta *ID*.
@@ -736,6 +767,16 @@ giorno.
 - **Mese** (`foyer-raccolta-mese-card`): griglia mensile con pallini colorati per
   tipologia, navigazione tra i mesi, dettaglio del giorno al tocco.
 
+Nella testata di ogni card (decisioni 62 e 64):
+
+- un **"?"** apre *Cosa va dove*: tutte le tipologie con la loro nota. C'è solo se
+  almeno una tipologia ha una nota;
+- toccando la chip di una tipologia con una nota si vede la sua nota;
+- con la piattaforma configurata, un indicatore: *Aperta fino alle 12:00*, *Chiusa ·
+  apre giovedì alle 14:00*, *Orario non indicato*. Un tocco apre gli orari dei prossimi
+  sette giorni e le chiusure della settimana dopo. La card lo calcola dai 14 giorni
+  ricevuti a ogni ridisegno; l'editor lo nasconde con `piattaforma: false`.
+
 Requisiti comuni: editor visuale nella dashboard, stati vuoti curati ("Nessun ritiro questa
 settimana"), contrasto testo/colore calcolato, animazioni sobrie, funzionanti a 320 px di
 larghezza.
@@ -747,6 +788,8 @@ Come sono fatte (decisione 52):
 | Oggi e domani | `custom:foyer-raccolta-oggi-card` | `titolo` |
 | Settimana | `custom:foyer-raccolta-settimana-card` | `titolo`, `inizio`: `oggi` (predefinito) o `lunedi` |
 | Mese | `custom:foyer-raccolta-mese-card` | `titolo` |
+
+Tutte e tre accettano anche `piattaforma: false`.
 
 - Compaiono nel selettore delle card di Home Assistant, con l'editor visuale. Tutti gli
   elementi si definiscono con `definisci` (`frontend/src/comune/definisci.ts`), che aspetta
@@ -1089,6 +1132,29 @@ Correzione, 2026-09-26 (segnalazione di un tester, Firefox).
     sotto, coperta dal velo di quella sopra, chiudeva solo "Prima di salvare", e la
     modifica sembrava non potersi annullare. "Annulla" resta il pulsante che chiude la
     finestra di modifica senza salvare.
+
+Note e piattaforma ecologica, 2026-09-26 (richieste di un tester, riportate dal
+proprietario; domande una alla volta).
+
+62. Nelle card si vede cosa va in ogni bidone in due modi: un "?" nella testata apre
+    l'elenco di tutte le tipologie con la nota, e un tocco sulla chip di una tipologia
+    mostra la sua (scelta del proprietario: entrambi).
+63. Gli orari della piattaforma ecologica entrano nel progetto (prima esclusi, §1.1):
+    da 1 a 4 periodi con le date e l'anno, ciascuno con da 1 a 3 fasce al giorno, più
+    le eccezioni per data (§4.10).
+64. Le card mostrano nella testata se è aperta adesso, e un tocco apre gli orari;
+    in tutte e tre, nascondibile dall'editor.
+65. Nei festivi nazionali e del patrono risulta chiusa, salvo eccezione. Fuori da
+    ogni periodo l'orario è "non indicato", mai "chiusa", e la Panoramica avvisa 30
+    giorni prima che l'orario inserito finisca.
+66. Un'entità `binary_sensor.…_piattaforma_ecologica`, acceso quando è aperta, non
+    disponibile quando l'orario non è indicato; nasce e sparisce con la piattaforma.
+67. Il file Excel ha due fogli nuovi, *Piattaforma* e *Piattaforma eccezioni*; nome e
+    nota nel foglio Impostazioni.
+68. La piattaforma si configura in una scheda propria del pannello, dopo Promemoria.
+    Scelte fatte in autonomia: la card riceve 14 giorni di orari come istanti e calcola
+    lo stato da sola a ogni minuto, senza timer nel backend per le card; il sensore si
+    riprogramma da solo ad aperture, chiusure e mezzanotte.
 
 ---
 

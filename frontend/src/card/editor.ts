@@ -29,6 +29,11 @@ export class RaccoltaEditor extends LitElement {
         <label for="titolo">${T.card.campoTitolo}</label>
         <input id="titolo" .value=${this._config.titolo ?? ""} @input=${(e: InputEvent) => this._cambia({ titolo: (e.target as HTMLInputElement).value })} />
       </div>
+      <label class="spunta">
+        <input type="checkbox" .checked=${this._config.piattaforma !== false}
+          @change=${(e: Event) => this._cambia({ piattaforma: (e.target as HTMLInputElement).checked ? undefined : false })} />
+        ${T.card.campoPiattaforma}
+      </label>
       ${settimana
         ? html`<div class="campo">
             <span class="etichetta">${T.card.campoInizio}</span>
@@ -44,7 +49,22 @@ export class RaccoltaEditor extends LitElement {
     </div>`;
   }
 
-  static override styles = [base, moduli, css`:host { display: block; }`];
+  static override styles = [
+    base,
+    moduli,
+    css`
+      :host {
+        display: block;
+      }
+      .spunta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 4px 0 12px;
+        font-size: 14px;
+      }
+    `,
+  ];
 }
 
 definisci("foyer-raccolta-editor", RaccoltaEditor);

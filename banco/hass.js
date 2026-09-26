@@ -71,6 +71,18 @@ export const CONFIG = {
   ],
   solleciti: { attivi: false, richiami: 1, richiamo_dopo: 30 },
   sospensioni: [{ dal: "2027-08-08", al: "2027-08-23" }],
+  // ?piattaforma=no: senza orari.
+  piattaforma: new URLSearchParams(location.search).get("piattaforma") === "no" ? null : {
+    nome: "Piattaforma ecologica",
+    nota: "Via dell'Industria 12. Serve la tessera sanitaria.",
+    periodi: [
+      { id: "pp1", dal: "2026-04-01", al: "2026-09-30",
+        settimana: [[["08:00", "12:00"], ["14:00", "18:30"]], [], [["14:00", "18:30"]], [], [["14:00", "18:30"]], [["08:00", "12:30"]], []] },
+      { id: "pp2", dal: "2026-10-01", al: "2027-03-31",
+        settimana: [[["08:30", "12:00"], ["14:00", "17:30"]], [], [["14:00", "17:30"]], [], [], [["08:30", "12:30"]], []] },
+    ],
+    eccezioni: [{ id: "pe1", data: "2026-10-03", tipo: "chiusa", fasce: [], nota: "Inventario" }],
+  },
 };
 
 // --- un calcolo semplificato, sufficiente per le immagini --------------------------
@@ -122,6 +134,28 @@ export function calcola(config, dal, al, ignorati = []) {
 }
 
 // --- il finto hass -------------------------------------------------------------------
+// Gli orari della piattaforma dei prossimi 14 giorni, come li manda il backend.
+function giorniPiattaforma(config, dal) {
+  const p = config.piattaforma;
+  if (!p) return null;
+  const off = "+02:00";
+  const giorni = [];
+  for (let i = 0; i < 14; i++) {
+    const s = piu(dal, i);
+    const e = p.eccezioni.find((x) => x.data === s);
+    const festivo = FESTIVI[s.slice(5)] ?? (config.patrono && config.patrono.data === s.slice(5) ? config.patrono.nome : null);
+    const periodo = p.periodi.find((q) => q.dal <= s && s <= q.al);
+    let fasce, motivo = null, nota = "";
+    if (e) { fasce = e.tipo === "aperta" ? e.fasce : []; motivo = "eccezione"; nota = e.nota; }
+    else if (festivo) { fasce = []; motivo = "festivo"; }
+    else if (periodo) { fasce = periodo.settimana[gs(s)]; motivo = "periodo"; }
+    else fasce = null;
+    giorni.push({ data: s, motivo, festivo: motivo === "festivo" ? festivo : null, nota,
+      fasce: fasce === null ? null : fasce.map(([a, b]) => [`${s}T${a}:00${off}`, `${s}T${b}:00${off}`]) });
+  }
+  return { nome: p.nome, nota: p.nota, giorni };
+}
+
 const SOSPESO = new URLSearchParams(location.search).get("sospeso");
 export function creaHass({ conferme = [] } = {}) {
   const ascoltatori = [];
@@ -151,7 +185,8 @@ export function creaHass({ conferme = [] } = {}) {
       }
       if (t === "ritiri") {
         return { disponibile: true, oggi: OGGI, tipologie: config.tipologie, ritiri: calcola(config, msg.dal, msg.al),
-          conferme, valido_fino_al: config.valido_fino_al, sospeso: { manuale: false, fino_al: SOSPESO } };
+          conferme, valido_fino_al: config.valido_fino_al, sospeso: { manuale: false, fino_al: SOSPESO },
+          piattaforma: giorniPiattaforma(config, OGGI) };
       }
       if (t === "conferma") {
         for (const r of calcola(config, msg.data, msg.data).filter((r) => !msg.tipologie || msg.tipologie.includes(r.tipologia)))

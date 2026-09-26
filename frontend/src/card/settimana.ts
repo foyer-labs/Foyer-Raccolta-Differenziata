@@ -1,7 +1,6 @@
 // La card "Settimana" (SPEC §10.2): sette giorni, oggi evidenziato, dettaglio al tocco.
 import { css, html, nothing } from "lit";
 
-import { chip } from "../comune/chip";
 import { daIso, giornoSettimana, lunediDi, piuGiorni } from "../comune/date";
 import { GIORNI, GIORNI_BREVI, T } from "../comune/testi";
 import { CardRaccolta, coloreTesto, dataBrevissima, registra } from "./base";
@@ -74,7 +73,7 @@ export class RaccoltaSettimanaCard extends CardRaccolta {
               ? delScelto.map((r) => {
                   const t = this.tipologia(r.tipologia);
                   return html`<div class="riga">
-                    ${t ? chip(t) : r.tipologia}
+                    ${t ? this.chipNota(t) : r.tipologia}
                     <span class="note">
                       ${[t?.note, r.spostato_dal ? T.card.spostatoDal(dataBrevissima(r.spostato_dal)) : ""].filter(Boolean).join(" · ")}
                     </span>
@@ -86,6 +85,7 @@ export class RaccoltaSettimanaCard extends CardRaccolta {
           ? html`<div class="legenda">${usate.map((t) => html`<span><i class="pallino" style="background:${t.colore}"></i>${t.nome}</span>`)}</div>`
           : html`<div class="vuota">${T.card.nessunRitiroSettimana}</div>`}
       ${this.banner()}
+    ${this.finestre()}
     </ha-card>`;
   }
 

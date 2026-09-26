@@ -22,6 +22,7 @@ export const T = {
     regole: "Regole",
     eccezioni: "Eccezioni",
     promemoria: "Promemoria",
+    piattaforma: "Piattaforma",
     impostazioni: "Impostazioni",
   },
   oggi: "Oggi",
@@ -196,6 +197,30 @@ export const T = {
   nessunaVacanza: "Nessuna vacanza in programma.",
   aggiungiVacanza: "Aggiungi vacanza",
   dalAl: (dal: string, al: string) => `dal ${dataLunga(dal)} al ${dataLunga(al)}`,
+  // Piattaforma ecologica (SPEC §4.10)
+  piattaformaTitolo: "Piattaforma ecologica",
+  piattaformaAiuto: "Gli orari della piattaforma (o isola) ecologica: le card mostrano se è aperta adesso, e un tocco apre gli orari. Nei giorni festivi risulta chiusa, salvo eccezione.",
+  piattaformaVuota: "Non hai ancora inserito gli orari della piattaforma ecologica.",
+  inserisciOrari: "Inserisci gli orari",
+  nomePiattaforma: "Nome",
+  nomePiattaformaAiuto: "Come la chiamate: Piattaforma ecologica, Isola ecologica, Ecocentro…",
+  notaPiattaforma: "Nota (facoltativa)",
+  notaPiattaformaAiuto: "Indirizzo, cosa serve per entrare, cosa si porta…",
+  periodi: "Periodi",
+  periodiAiuto: "Fino a quattro periodi con le date e l'anno, per esempio l'orario invernale e quello estivo. Fuori da ogni periodo l'orario non è indicato.",
+  aggiungiPeriodo: "Aggiungi un periodo",
+  togliPeriodo: "Togli il periodo",
+  chiusa: "Chiusa",
+  aggiungiFascia: "Aggiungi una fascia oraria",
+  togliFascia: "Togli la fascia",
+  eccezioniPiattaforma: "Giorni con un orario diverso",
+  eccezioniPiattaformaAiuto: "Una chiusura straordinaria, o un'apertura in un giorno festivo.",
+  aggiungiEccezionePiattaforma: "Aggiungi un giorno",
+  aperta: "Aperta",
+  togliPiattaforma: "Togli la piattaforma",
+  togliPiattaformaConferma: "Togliere gli orari della piattaforma ecologica? Spariscono anche dalle card, e il suo sensore.",
+  orariDa: "dalle",
+  orariA: "alle",
   // Card
   card: {
     titolo: "Raccolta",
@@ -235,6 +260,21 @@ export const T = {
     campoInizio: "La settimana inizia",
     inizioOggi: "Da oggi",
     inizioLunedi: "Dal lunedì",
+    cosaVaDove: "Cosa va dove",
+    nessunaNotaCard: "Nessuna nota: si aggiunge nel pannello, in Tipologie.",
+    apriNote: "Cosa va in ogni bidone",
+    campoPiattaforma: "Mostra la piattaforma ecologica",
+    piattaformaAperta: (fino: string) => `Aperta fino alle ${fino}`,
+    piattaformaChiusa: "Chiusa",
+    piattaformaApre: (quando: string) => `Chiusa · apre ${quando}`,
+    piattaformaNonIndicato: "Orario non indicato",
+    alle: (ora: string) => `alle ${ora}`,
+    domaniAlle: (ora: string) => `domani alle ${ora}`,
+    giornoAlle: (giorno: string, ora: string) => `${giorno} alle ${ora}`,
+    oggiMaiuscolo: "Oggi",
+    chiusaFestivo: (nome: string) => `Chiusa · ${nome}`,
+    orarioNonIndicato: "Orario non indicato",
+    piuAvanti: "Più avanti",
   },
   profiloRimosso: (n: number) => (n === 1 ? "Un promemoria riguardava solo questa tipologia e verrà eliminato." : `${n} promemoria riguardavano solo questa tipologia e verranno eliminati.`),
 };
@@ -284,6 +324,13 @@ export function frasePeriodo(p: Periodo): string {
 }
 
 const MESSAGGI_PROBLEMI: Record<string, string> = {
+  piattaforma_non_valida: "gli orari della piattaforma non sono validi",
+  periodi_non_validi: "servono da uno a quattro periodi",
+  periodi_sovrapposti: "due periodi della piattaforma si sovrappongono",
+  orari_non_validi: "l'orario settimanale di un periodo non è valido",
+  fasce_non_valide: "da una a tre fasce orarie per giorno",
+  fascia_non_valida: "in una fascia oraria la fine viene prima dell'inizio",
+  fasce_sovrapposte: "due fasce orarie dello stesso giorno si sovrappongono",
   valore_mancante: "manca un valore",
   scelta_non_valida: "scegli una delle voci del menu",
   si_no_non_valido: "scrivi Sì o No",
@@ -348,6 +395,7 @@ const SEZIONI_RIEPILOGO: Record<string, [string, boolean]> = {
   eccezioni: ["Eccezioni", true],
   promemoria: ["Promemoria", false],
   sospensioni: ["Vacanze", true],
+  piattaforma: ["Orari della piattaforma", false],
   impostazioni: ["Impostazioni", true],
 };
 
@@ -388,6 +436,12 @@ export function fraseAnomalia(a: Anomalia, nome: (id: string) => string): string
       return `Il calendario vale fino al ${dataLunga(a.data!)}: controlla quello nuovo del comune.`;
     case "calendario_scaduto":
       return `Il calendario è scaduto il ${dataLunga(a.data!)}: i ritiri successivi sono da verificare.`;
+    case "piattaforma_senza_orario":
+      return a.data
+        ? `Piattaforma ecologica: oggi l'orario non è indicato; il prossimo periodo inizia il ${dataLunga(a.data)}.`
+        : "Piattaforma ecologica: gli orari inseriti sono finiti. Inserisci quelli nuovi.";
+    case "piattaforma_in_scadenza":
+      return `Piattaforma ecologica: gli orari inseriti finiscono il ${dataLunga(a.data!)}. Inserisci quelli nuovi.`;
     default:
       return a.codice;
   }

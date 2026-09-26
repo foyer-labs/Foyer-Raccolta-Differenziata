@@ -23,11 +23,12 @@ import "./pagine/tipologie";
 import "./pagine/regole";
 import "./pagine/eccezioni";
 import "./pagine/promemoria";
+import "./pagine/piattaforma";
 import "./pagine/impostazioni";
 import { definisci } from "../comune/definisci";
 
 const DOMINIO = "foyer_raccolta_differenziata";
-const PAGINE = ["panoramica", "tipologie", "regole", "eccezioni", "promemoria", "impostazioni"] as const;
+const PAGINE = ["panoramica", "tipologie", "regole", "eccezioni", "promemoria", "piattaforma", "impostazioni"] as const;
 type Pagina = (typeof PAGINE)[number];
 
 interface InAttesa {
@@ -224,6 +225,8 @@ export class RaccoltaPannello extends LitElement {
         return html`<rd-eccezioni .hass=${this.hass} .lettura=${l} .precompila=${this._precompila}></rd-eccezioni>`;
       case "promemoria":
         return html`<rd-promemoria .hass=${this.hass} .lettura=${l}></rd-promemoria>`;
+      case "piattaforma":
+        return html`<rd-piattaforma .hass=${this.hass} .lettura=${l}></rd-piattaforma>`;
       case "impostazioni":
         return html`<rd-impostazioni .hass=${this.hass} .lettura=${l}></rd-impostazioni>`;
       default:

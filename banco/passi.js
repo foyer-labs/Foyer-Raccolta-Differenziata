@@ -24,7 +24,7 @@ export async function esegui() {
       continue;
     }
     const [nome, n] = testo.split("#");
-    const trovati = [...tutti(document)].filter((el) => el.tagName === "BUTTON" && el.textContent.trim().startsWith(nome));
+    const trovati = [...tutti(document)].filter((el) => el.tagName === "BUTTON" && (el.textContent.trim().startsWith(nome) || (el.getAttribute("aria-label") ?? "").startsWith(nome)));
     trovati[Number(n ?? 0)]?.click();
   }
 }
