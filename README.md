@@ -6,6 +6,8 @@
 
 <p align="center"><em>Il calendario della raccolta differenziata dentro Home Assistant: sai sempre cosa esporre stasera, e se te lo dimentichi te lo ricorda lui.</em></p>
 
+<p align="center"><strong><a href="https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/docs/GUIDA.md">📖 Leggi la guida</a></strong> · <a href="https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/CHANGELOG.md">Novità</a> · <a href="https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/SUPPORT.md">Aiuto</a></p>
+
 <p align="center">
   <a href="https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/releases"><img src="https://img.shields.io/github/v/release/foyer-labs/Foyer-Raccolta-Differenziata?sort=semver&include_prereleases&label=versione" alt="Ultima versione"></a>
   <img src="https://img.shields.io/badge/Home%20Assistant-2026.6%2B-41BDF5" alt="Home Assistant 2026.6 o successivo">
@@ -71,8 +73,16 @@ notifica funzionante (l'app Companion va benissimo). Nessun account cloud.
    Differenziata*: scegli le tipologie di partenza e quando si espongono i sacchi.
 3. Apri **Raccolta** nella barra laterale e inserisci i giorni del tuo comune.
 
-La [guida](docs/GUIDA.md) spiega tutto il resto: regole, eccezioni, promemoria, card e
-automazioni, in dieci minuti.
+Poi segui la **[guida](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/docs/GUIDA.md)**: spiega passo passo come inserire le regole del
+tuo comune, le eccezioni, i promemoria, le card e le automazioni, in dieci minuti.
+
+## Documentazione
+
+| | |
+|---|---|
+| [Guida](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/docs/GUIDA.md) | Installazione, tipologie, regole, eccezioni, festività, promemoria, *Esposto ✓*, card, entità e automazioni, domande frequenti |
+| [Novità](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/CHANGELOG.md) | Cosa cambia in ogni versione |
+| [Aiuto](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/SUPPORT.md) | Come chiedere aiuto e segnalare un problema |
 
 ## Da sapere
 
@@ -83,15 +93,15 @@ il calendario nuovo, va aggiornato — e per questo te lo ricorda.
 ## Stato
 
 Questa è la prima versione. Ogni versione è una release GitHub, proposta da HACS per
-numero di versione, e il [changelog](CHANGELOG.md) dice cosa cambia in ognuna: quello che
+numero di versione, e il [changelog](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/CHANGELOG.md) dice cosa cambia in ognuna: quello che
 ti chiede di fare qualcosa viene per primo. La configurazione salvata porta la versione
 del suo schema e viene migrata in avanti a ogni aggiornamento.
 
 ## Contribuire e licenza
 
 Issue e pull request sono benvenute e ricevono risposta al meglio delle possibilità,
-senza garanzia di una risposta né di una correzione ([SUPPORT.md](SUPPORT.md),
-[CONTRIBUTING.md](CONTRIBUTING.md)). Foyer è il progetto personale e non commerciale di
+senza garanzia di una risposta né di una correzione ([SUPPORT.md](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/SUPPORT.md),
+[CONTRIBUTING.md](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/CONTRIBUTING.md)). Foyer è il progetto personale e non commerciale di
 una persona, pubblicato come Foyer Labs; non c'è una società dietro.
 
 <p align="center">
@@ -100,4 +110,4 @@ una persona, pubblicato come Foyer Labs; non c'è una società dietro.
 
 Una donazione è un ringraziamento e non compra né supporto né priorità.
 
-Apache-2.0. Vedi [LICENSE](LICENSE) e [NOTICE](NOTICE).
+Apache-2.0. Vedi [LICENSE](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/LICENSE) e [NOTICE](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/NOTICE).
