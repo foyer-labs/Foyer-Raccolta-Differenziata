@@ -170,9 +170,9 @@ export abstract class CardRaccolta extends LitElement {
 
   protected intestazione(titolo: string, sotto?: string) {
     return html`<div class="intestazione">
-      <span class="simbolo">${simbolo}</span><b>${this._config?.titolo || titolo}</b>
-      ${sotto ? html`<span class="sotto">${sotto}</span>` : ""}
-      <span class="azioni ${sotto ? "" : "spinta"}">${this._pillola()}${this._punto()}</span>
+      <span class="simbolo">${simbolo}</span>
+      <span class="titoli"><b>${this._config?.titolo || titolo}</b>${sotto ? html`<span class="sotto">${sotto}</span>` : ""}</span>
+      <span class="azioni">${this._pillola()}${this._punto()}</span>
     </div>`;
   }
 
@@ -328,22 +328,33 @@ export abstract class CardRaccolta extends LitElement {
         font-size: 16px;
         font-weight: 600;
       }
-      .intestazione {
-        flex-wrap: wrap;
+      /* Titolo e data uno sopra l'altro: pillola e "?" restano sulla stessa riga anche
+         in una card stretta (app sul telefono). Lo spazio va prima alla pillola, che dice
+         l'orario; titolo e data vanno a capo, e solo al limite la pillola accorcia il suo testo. */
+      .titoli {
+        display: flex;
+        flex-direction: column;
+        min-width: 64px;
+        flex: 1 1 0;
+      }
+      .titoli b {
+        line-height: 1.25;
+        overflow-wrap: anywhere;
       }
       .intestazione .sotto {
-        margin-left: auto;
         color: var(--rd-testo-2);
         font-size: 13px;
-        text-align: right;
+        line-height: 1.25;
       }
       .azioni {
         display: flex;
         align-items: center;
         gap: 4px;
-      }
-      .azioni.spinta {
         margin-left: auto;
+        flex: 0 1 auto;
+      }
+      .azioni .punto {
+        flex: none;
       }
       .azioni:empty {
         display: none;
@@ -411,19 +422,35 @@ export abstract class CardRaccolta extends LitElement {
         margin-left: 4px;
         opacity: 0.75;
       }
+      /* Una sola griglia per tutte le righe: le descrizioni partono tutte dallo stesso
+         margine, qualunque sia la lunghezza del nome. */
       .elenco-note {
         display: grid;
-        gap: 10px;
-      }
-      .nota-riga {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 10px;
+        grid-template-columns: max-content 1fr;
+        gap: 12px;
         align-items: start;
         font-size: 14px;
       }
+      .nota-riga {
+        display: contents;
+      }
+      .nota-riga > .chip {
+        justify-self: start;
+      }
       .nota-riga > span:last-child {
         padding-top: 3px;
+        overflow-wrap: anywhere;
+      }
+      @media (max-width: 420px) {
+        /* Sul telefono il nome sta sopra la sua descrizione, che usa tutta la larghezza. */
+        .elenco-note {
+          grid-template-columns: 1fr;
+          gap: 6px;
+        }
+        .nota-riga > span:last-child {
+          padding-top: 0;
+          margin-bottom: 8px;
+        }
       }
       .piattaforma .pillola {
         font-size: 14px;
