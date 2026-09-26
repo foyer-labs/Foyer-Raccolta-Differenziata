@@ -82,7 +82,7 @@ tuo comune, le eccezioni, i promemoria, le card e le automazioni, in dieci minut
 
 | | |
 |---|---|
-| [Guida](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/docs/GUIDA.md) | Installazione, tipologie, regole, eccezioni, festività, promemoria, *Esposto ✓*, card, entità e automazioni, domande frequenti |
+| [Guida](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/docs/GUIDA.md) | Installazione, tipologie, regole, eccezioni, festività, promemoria, *Esposto ✓*, card, entità e automazioni, il calendario in Excel, domande frequenti |
 | [Novità](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/CHANGELOG.md) | Cosa cambia in ogni versione |
 | [Aiuto](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/SUPPORT.md) | Come chiedere aiuto e segnalare un problema |
 
