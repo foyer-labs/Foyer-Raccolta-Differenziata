@@ -44,7 +44,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.runtime_data = coordinatore
     coordinatore.gestore = GestorePromemoria(hass, coordinatore)
     coordinatore.avvia()
+    # Registrati subito: se qualcosa più sotto fallisce, Home Assistant scarica la voce
+    # e i timer non restano accesi a mandare promemoria doppi al tentativo successivo.
+    entry.async_on_unload(coordinatore.arresta)
     coordinatore.gestore.avvia()
+    entry.async_on_unload(coordinatore.gestore.arresta)
     await hass.config_entries.async_forward_entry_setups(entry, PIATTAFORME)
 
     from . import pannello, websocket
@@ -67,9 +71,17 @@ async def _opzioni_cambiate(hass: HomeAssistant, entry: ConfigEntry) -> None:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     scaricata = await hass.config_entries.async_unload_platforms(entry, PIATTAFORME)
     if scaricata:
+        from homeassistant.helpers import issue_registry as ir
+
+        from .const import DOMINIO
+
         coordinatore = entry.runtime_data
         coordinatore.gestore.arresta()
         coordinatore.arresta()
+        # Un problema in Riparazioni di un'integrazione spenta non si può correggere.
+        for problema in list(ir.async_get(hass).issues.values()):
+            if problema.domain == DOMINIO:
+                ir.async_delete_issue(hass, DOMINIO, problema.issue_id)
         # Un salvataggio ritardato ancora in attesa si scrive adesso: un
         # ricaricamento non deve perdere lo stato (INV-3).
         await coordinatore.archivi.archivio_stato.async_save(coordinatore.archivi.stato)

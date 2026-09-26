@@ -174,6 +174,15 @@ class RinnovaValidita(RepairsFlow):
 async def async_create_fix_flow(
     hass: HomeAssistant, issue_id: str, data: dict[str, Any] | None
 ) -> RepairsFlow:
-    voci = hass.config_entries.async_entries(DOMINIO)
-    coordinatore = voci[0].runtime_data
-    return RinnovaValidita(coordinatore)
+    for voce in hass.config_entries.async_loaded_entries(DOMINIO):
+        return RinnovaValidita(voce.runtime_data)
+    return NonCaricata()
+
+
+class NonCaricata(RepairsFlow):
+    """L'integrazione non è caricata: non c'è niente da rinnovare adesso."""
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> data_entry_flow.FlowResult:
+        return self.async_abort(reason="non_caricata")

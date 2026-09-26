@@ -893,6 +893,7 @@ var I = o`
 	cosaCambia: "Ecco cosa cambia nei prossimi 60 giorni.",
 	nienteCambia: "Nessun ritiro cambia nei prossimi 60 giorni.",
 	salvato: "Salvato",
+	erroreConnessione: "Non è stato possibile raggiungere Home Assistant. Riprova.",
 	altroHaSalvato: "Qualcun altro ha salvato nel frattempo: la pagina è stata aggiornata, riprova.",
 	nonSalvato: "Non salvato: correggi questi punti.",
 	prossimiRitiri: "Prossimi ritiri",
@@ -1173,6 +1174,7 @@ var Qe = Ce`<svg viewBox="0 0 64 64" aria-hidden="true" style="width:100%;height
         overflow-y: auto;
       }
       .dialogo {
+        outline: none;
         background: var(--rd-superficie);
         border-radius: 20px;
         max-width: 560px;
@@ -1206,6 +1208,12 @@ var Qe = Ce`<svg viewBox="0 0 64 64" aria-hidden="true" style="width:100%;height
       }
     `];
 	}
+	updated(e) {
+		e.has("aperta") && this.aperta && (this._prima = document.activeElement, this.renderRoot.querySelector(".dialogo")?.focus());
+	}
+	disconnectedCallback() {
+		super.disconnectedCallback(), this._prima?.focus?.();
+	}
 	_chiudi() {
 		this.dispatchEvent(new CustomEvent("chiudi"));
 	}
@@ -1215,7 +1223,7 @@ var Qe = Ce`<svg viewBox="0 0 64 64" aria-hidden="true" style="width:100%;height
       @click=${(e) => e.target === e.currentTarget && this._chiudi()}
       @keydown=${(e) => e.key === "Escape" && this._chiudi()}
     >
-      <div class="dialogo" role="dialog" aria-modal="true" aria-label=${this.titolo}>
+      <div class="dialogo" role="dialog" aria-modal="true" aria-label=${this.titolo} tabindex="-1">
         <header>
           <h3>${this.titolo}</h3>
           <button aria-label=${H.chiudi} @click=${this._chiudi}><ha-icon icon="mdi:close"></ha-icon></button>
@@ -1753,7 +1761,7 @@ var at = "foyer_raccolta_differenziata", ot = {
 	})
 }, X = (e, t) => e.includes(t) ? e.filter((e) => e !== t) : [...e, t], ct = class extends M {
 	constructor(...e) {
-		super(...e), this._date = [], this._problemi = [];
+		super(...e), this._date = [], this._problemi = [], this._richiesta = 0, this._inCorso = !1;
 	}
 	static {
 		this.properties = {
@@ -1761,7 +1769,8 @@ var at = "foyer_raccolta_differenziata", ot = {
 			lettura: { attribute: !1 },
 			_bozza: { state: !0 },
 			_date: { state: !0 },
-			_problemi: { state: !0 }
+			_problemi: { state: !0 },
+			_inCorso: { state: !0 }
 		};
 	}
 	chiudiEditor() {
@@ -1778,7 +1787,7 @@ var at = "foyer_raccolta_differenziata", ot = {
 		});
 	}
 	_imposta(e) {
-		this._bozza = e, clearTimeout(this._timer), this._timer = window.setTimeout(() => void this._anteprima(), 250);
+		e.id !== this._bozza?.id && (this._date = [], this._problemi = []), this._bozza = e, this._inCorso = !0, clearTimeout(this._timer), this._timer = window.setTimeout(() => void this._anteprima(), 250);
 	}
 	_candidata() {
 		let e = J(this.lettura.configurazione), t = e.regole.findIndex((e) => e.id === this._bozza.id), n = {
@@ -1789,12 +1798,17 @@ var at = "foyer_raccolta_differenziata", ot = {
 	}
 	async _anteprima() {
 		if (!this._bozza) return;
-		let e = this._bozza.id, t = await this.hass.callWS({
-			type: `${at}/anteprima`,
-			configurazione: this._candidata(),
-			giorni: 366
-		});
-		this._bozza?.id === e && (this._problemi = t.problemi.filter((e) => e.percorso.startsWith("regole")), this._date = t.ritiri.filter((t) => t.regole.includes(e)).slice(0, 4).map((e) => e.data));
+		let e = this._bozza.id, t = ++this._richiesta, n;
+		try {
+			n = await this.hass.callWS({
+				type: `${at}/anteprima`,
+				configurazione: this._candidata(),
+				giorni: 366
+			});
+		} catch {
+			return;
+		}
+		t === this._richiesta && this._bozza?.id === e && (this._inCorso = !1, this._problemi = n.problemi.filter((e) => e.percorso.startsWith("regole")), this._date = n.ritiri.filter((t) => t.regole.includes(e)).slice(0, 4).map((e) => e.data));
 	}
 	_ricorrenza(e) {
 		this._imposta({
@@ -1932,7 +1946,7 @@ var at = "foyer_raccolta_differenziata", ot = {
           ${n ? C`<button class="bottone pericolo" @click=${this._elimina}>${H.elimina}</button>` : T}
           <span style="flex:1"></span>
           <button class="bottone" @click=${() => this._bozza = void 0}>${H.annulla}</button>
-          <button class="bottone primario" ?disabled=${this._problemi.length > 0} @click=${() => K(this, this._candidata())}>${H.salva}</button>
+          <button class="bottone primario" ?disabled=${this._problemi.length > 0 || this._inCorso} @click=${() => K(this, this._candidata())}>${H.salva}</button>
         </div>
       </div>
     </rd-finestra>`;
@@ -2538,8 +2552,10 @@ var gt = "foyer_raccolta_differenziata", _t = class extends M {
 			_bozza: { state: !0 }
 		};
 	}
-	updated(e) {
-		e.has("lettura") && (this._bozza = J(this.lettura.configurazione));
+	willUpdate(e) {
+		if (!e.has("lettura")) return;
+		let t = !this._bozza || JSON.stringify(this._bozza) === this._base;
+		this._revisione !== this.lettura.revisione && t && (this._bozza = J(this.lettura.configurazione), this._base = JSON.stringify(this._bozza), this._revisione = this.lettura.revisione);
 	}
 	async _barra() {
 		await this.hass.callWS({
@@ -2569,6 +2585,9 @@ var gt = "foyer_raccolta_differenziata", _t = class extends M {
 			}
 		};
 	}
+	chiudiEditor() {
+		this._base = void 0, this._bozza = void 0;
+	}
 	_salva() {
 		let e = J(this._bozza);
 		e.patrono && !e.patrono.nome.trim() && (e.patrono = null), e.patrono && (e.patrono.nome = e.patrono.nome.trim()), e.valido_fino_al ||= null, K(this, e);
@@ -2576,7 +2595,7 @@ var gt = "foyer_raccolta_differenziata", _t = class extends M {
 	render() {
 		let e = this._bozza;
 		if (!e) return C``;
-		let [t, n] = (e.patrono?.data ?? "01-01").split("-").map(Number), r = (e, t) => this._patrono({ data: `${String(e).padStart(2, "0")}-${String(t).padStart(2, "0")}` }), i = JSON.stringify(e) !== JSON.stringify(this.lettura.configurazione);
+		let [t, n] = (e.patrono?.data ?? "01-01").split("-").map(Number), r = (e, t) => this._patrono({ data: `${String(e).padStart(2, "0")}-${String(t).padStart(2, "0")}` }), i = JSON.stringify(e) !== this._base;
 		return C`<div class="colonna">
       <div class="riquadro">
         <h2>${H.pagine.impostazioni}</h2>
@@ -2630,7 +2649,9 @@ var gt = "foyer_raccolta_differenziata", _t = class extends M {
         </div>
       </div>
       <div class="azioni-modulo">
-        <button class="bottone" ?disabled=${!i} @click=${() => this._bozza = J(this.lettura.configurazione)}>${H.annulla}</button>
+        <button class="bottone" ?disabled=${!i} @click=${() => {
+			this._bozza = J(this.lettura.configurazione), this._base = JSON.stringify(this._bozza), this._revisione = this.lettura.revisione;
+		}}>${H.annulla}</button>
         <button class="bottone primario" ?disabled=${!i} @click=${this._salva}>${H.salva}</button>
       </div>
     </div>`;
@@ -2680,7 +2701,7 @@ var $ = "foyer_raccolta_differenziata", vt = [
 	"impostazioni"
 ], yt = class extends M {
 	constructor(...e) {
-		super(...e), this.narrow = !1, this._pagina = "panoramica", this._problemi = [];
+		super(...e), this.narrow = !1, this._pagina = "panoramica", this._problemi = [], this._occupato = !1;
 	}
 	static {
 		this.properties = {
@@ -2692,7 +2713,8 @@ var $ = "foyer_raccolta_differenziata", vt = [
 			_inAttesa: { state: !0 },
 			_problemi: { state: !0 },
 			_avviso: { state: !0 },
-			_precompila: { state: !0 }
+			_precompila: { state: !0 },
+			_occupato: { state: !0 }
 		};
 	}
 	connectedCallback() {
@@ -2704,7 +2726,7 @@ var $ = "foyer_raccolta_differenziata", vt = [
 		super.disconnectedCallback(), this._disiscrivi?.then((e) => e()).catch(() => void 0), this._disiscrivi = void 0;
 	}
 	updated(e) {
-		e.has("hass") && this.hass && !this._lettura && !this._errore && (this._carica(), this._disiscrivi = this.hass.connection.subscribeMessage(() => void this._carica(), { type: `${$}/iscriviti` }).catch(() => () => void 0));
+		e.has("hass") && this.hass && !this._disiscrivi && (this._carica(), this._disiscrivi = this.hass.connection.subscribeMessage(() => void this._carica(), { type: `${$}/iscriviti` }).catch(() => () => void 0));
 	}
 	async _carica() {
 		try {
@@ -2718,22 +2740,36 @@ var $ = "foyer_raccolta_differenziata", vt = [
 	}
 	async _proponi(e) {
 		e.stopPropagation();
-		let t = e.detail, n = await this.hass.callWS({
-			type: `${$}/anteprima`,
-			configurazione: t
-		});
-		this._problemi = n.problemi, this._inAttesa = {
-			candidata: t,
-			anteprima: n
-		};
+		let t = e.detail;
+		try {
+			let e = await this.hass.callWS({
+				type: `${$}/anteprima`,
+				configurazione: t
+			});
+			this._problemi = e.problemi, this._inAttesa = {
+				candidata: t,
+				anteprima: e
+			};
+		} catch {
+			this._mostraAvviso(H.erroreConnessione);
+		}
 	}
 	async _salva() {
-		if (!this._inAttesa || !this._lettura) return;
-		let e = await this.hass.callWS({
-			type: `${$}/config/salva`,
-			configurazione: this._inAttesa.candidata,
-			revisione: this._lettura.revisione
-		});
+		if (!this._inAttesa || this._occupato) return;
+		this._occupato = !0;
+		let e;
+		try {
+			e = await this.hass.callWS({
+				type: `${$}/config/salva`,
+				configurazione: this._inAttesa.candidata,
+				revisione: this._inAttesa.candidata.revisione
+			});
+		} catch {
+			this._mostraAvviso(H.erroreConnessione);
+			return;
+		} finally {
+			this._occupato = !1;
+		}
 		if (e.salvato) {
 			this._inAttesa = void 0, this._problemi = [], await this._carica(), this._mostraAvviso(H.salvato), this._chiudiEditor();
 			return;
@@ -2777,7 +2813,7 @@ var $ = "foyer_raccolta_differenziata", vt = [
             <div class="differenze">${a.slice(0, 40).map((e) => n(e.segno, e))}</div>`}
       <div class="azioni-finestra">
         <button class="bottone" @click=${() => this._inAttesa = void 0}>${H.annulla}</button>
-        ${this._problemi.length ? T : C`<button class="bottone primario" @click=${this._salva}>${H.salva}</button>`}
+        ${this._problemi.length ? T : C`<button class="bottone primario" ?disabled=${this._occupato} @click=${this._salva}>${H.salva}</button>`}
       </div>
     </rd-finestra>`;
 	}

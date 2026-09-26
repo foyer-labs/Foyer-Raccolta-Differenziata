@@ -13,6 +13,7 @@ from homeassistant.util import dt as dt_util
 from .coordinatore import Coordinatore
 from .core.promemoria import Sospensione, carica_promemoria, sospeso
 from .entita import EntitaRaccolta
+from .websocket import sospensioni_valide
 
 
 async def async_setup_entry(
@@ -48,16 +49,12 @@ class InterruttoreSospensione(EntitaRaccolta, SwitchEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        configurazione = self.coordinatore.archivi.configurazione
+        # Anche da una configurazione non valida: l'interruttore resta disponibile.
+        intervalli = sospensioni_valide(self.coordinatore)
         return {
-            "intervalli": [
-                {"dal": v["dal"], "al": v["al"]}
-                for v in configurazione.get("sospensioni", [])
-            ],
+            "intervalli": [{"dal": v["dal"], "al": v["al"]} for v in intervalli],
             "sospeso_ora": sospeso(
-                carica_promemoria(configurazione)
-                if not self.coordinatore.problemi
-                else carica_promemoria({}),
+                carica_promemoria({"sospensioni": intervalli}),
                 self.coordinatore.archivi.stato,
                 dt_util.now(),
             ),

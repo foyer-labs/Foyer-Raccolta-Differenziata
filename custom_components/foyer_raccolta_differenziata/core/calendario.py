@@ -12,6 +12,7 @@ Nessuna delle due legge l'orologio: `oggi` e il fuso orario sono parametri (INV-
 
 from __future__ import annotations
 
+from calendar import monthrange
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta, tzinfo
@@ -20,6 +21,7 @@ from typing import Literal
 
 from .festivita import festivita_del_giorno
 from .modello import (
+    Annuale,
     ConAnno,
     Configurazione,
     Eccezione,
@@ -153,14 +155,28 @@ def _mappa(
     return giorni
 
 
-def _istante(giorno: date, ora: time, fuso: tzinfo) -> datetime:
-    """L'istante locale di `giorno` alle `ora`.
+def istante_locale(giorno: date, ora: time, fuso: tzinfo) -> datetime:
+    """L'istante locale di `giorno` alle `ora` (SPEC §8.1).
 
-    Un orario che il cambio dell'ora legale salta slitta avanti dell'ampiezza del
-    salto; uno che esiste due volte vale alla prima occorrenza (SPEC §8.1).
+    Un orario che esiste due volte (il ritorno all'ora solare) vale alla prima
+    occorrenza. Un orario che il passaggio all'ora legale salta (le 02:30 dell'ultima
+    domenica di marzo) vale al primo minuto valido dopo il salto: le 03:00.
     """
     ingenuo = datetime.combine(giorno, ora, tzinfo=fuso)
-    return ingenuo.astimezone(UTC).astimezone(fuso)
+    istante = ingenuo.astimezone(UTC).astimezone(fuso)
+    voluto = ingenuo.replace(tzinfo=None)
+    if istante.replace(tzinfo=None) == voluto:
+        return istante
+    # Orario saltato: si torna indietro, un minuto alla volta in UTC, finché il minuto
+    # precedente cadrebbe prima dell'orario voluto. Al massimo l'ampiezza del salto.
+    while True:
+        precedente = (istante.astimezone(UTC) - timedelta(minutes=1)).astimezone(fuso)
+        if precedente.replace(tzinfo=None) < voluto:
+            return istante
+        istante = precedente
+
+
+_istante = istante_locale
 
 
 def calcola(
@@ -223,6 +239,35 @@ def _intervalli(giorni: Iterable[date]) -> tuple[tuple[date, date], ...]:
     return tuple(risultato)
 
 
+def _unisci(intervalli: Iterable[tuple[date, date]]) -> tuple[tuple[date, date], ...]:
+    """Ordina e unisce intervalli che si toccano o si sovrappongono."""
+    risultato: list[tuple[date, date]] = []
+    for dal, al in sorted(intervalli):
+        if risultato and dal <= risultato[-1][1] + timedelta(days=1):
+            risultato[-1] = (risultato[-1][0], max(risultato[-1][1], al))
+        else:
+            risultato.append((dal, al))
+    return tuple(risultato)
+
+
+def _coperti(periodo, dal: date, al: date) -> tuple[tuple[date, date], ...]:
+    """I giorni di [dal, al] che un periodo annuale o "sempre" copre, come intervalli.
+
+    Calcolati anno per anno e non giorno per giorno: una regola con anno può arrivare
+    al 2099, e il conto si rifà a ogni ricalcolo.
+    """
+    if not isinstance(periodo, Annuale):
+        return ((dal, al),)
+    pezzi = []
+    for anno in range(dal.year - 1, al.year + 1):
+        inizio = date(anno, *periodo.dal)
+        fine = date(anno if periodo.dal <= periodo.al else anno + 1, *periodo.al)
+        inizio, fine = max(inizio, dal), min(fine, al)
+        if inizio <= fine:
+            pezzi.append((inizio, fine))
+    return _unisci(pezzi)
+
+
 def _ancora_rilevante(regola: Regola, oggi: date) -> bool:
     """Una regola con anno finita prima di oggi non conta più."""
     return not (isinstance(regola.periodo, ConAnno) and regola.periodo.al < oggi)
@@ -245,10 +290,7 @@ def _sovrapposizioni_miste(
             continue
         dal = max(vince.periodo.dal, oggi)
         for cede in senza_anno:
-            giorni = (
-                g for g in _giorni(dal, vince.periodo.al) if copre(cede.periodo, g)
-            )
-            intervalli = _intervalli(giorni)
+            intervalli = _coperti(cede.periodo, dal, vince.periodo.al)
             if intervalli:
                 trovate.append(
                     Anomalia(
@@ -338,6 +380,30 @@ def _anomalie_eccezioni(
     return trovate
 
 
+def _mese_piu_corto(regola: Regola, oggi: date) -> int:
+    """Quanti giorni ha il mese più corto in cui la regola vale, da oggi in poi.
+
+    Per i periodi senza anno conta febbraio non bisestile (28): prima o poi arriva.
+    """
+    periodo = regola.periodo
+    if isinstance(periodo, ConAnno):
+        dal, al = max(periodo.dal, oggi), periodo.al
+        corto, mese = 31, date(dal.year, dal.month, 1)
+        while mese <= al:
+            corto = min(corto, monthrange(mese.year, mese.month)[1])
+            mese = date(mese.year + mese.month // 12, mese.month % 12 + 1, 1)
+        return corto
+    # Un anno non bisestile qualsiasi: i mesi che il periodo tocca.
+    corto = 31
+    for mese in range(1, 13):
+        primo, ultimo = date(2027, mese, 1), date(2027, mese, monthrange(2027, mese)[1])
+        if any(copre(periodo, g) for g in (primo, ultimo)) or (
+            isinstance(periodo, Annuale) and _coperti(periodo, primo, ultimo)
+        ):
+            corto = min(corto, monthrange(2027, mese)[1])
+    return corto
+
+
 def anomalie(config: Configurazione, oggi: date) -> tuple[Anomalia, ...]:
     """Le anomalie della configurazione, viste da `oggi` (SPEC §6.3).
 
@@ -356,8 +422,12 @@ def anomalie(config: Configurazione, oggi: date) -> tuple[Anomalia, ...]:
         trovate += _anomalie_eccezioni(tipologia, proprie, eccezioni, oggi)
         for regola in proprie:
             if isinstance(regola.ricorrenza, MensileData):
-                # Decisione 26: nei mesi che non hanno il giorno, niente ritiro.
-                mancanti = tuple(sorted(g for g in regola.ricorrenza.giorni if g >= 29))
+                # Decisione 26: nei mesi che non hanno il giorno, niente ritiro. Si
+                # segnala solo se il periodo della regola comprende un mese così.
+                corto = _mese_piu_corto(regola, oggi)
+                mancanti = tuple(
+                    sorted(g for g in regola.ricorrenza.giorni if g > corto)
+                )
                 if mancanti:
                     trovate.append(
                         Anomalia(

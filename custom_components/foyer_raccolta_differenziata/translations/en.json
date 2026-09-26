@@ -63,6 +63,9 @@
   "exceptions": {
     "archivio_illeggibile": {
       "message": "L'archivio della raccolta differenziata non si può leggere. Controlla il registro di Home Assistant."
+    },
+    "niente_da_confermare": {
+      "message": "Nessun ritiro da confermare oggi o domani."
     }
   },
   "issues": {
@@ -72,6 +75,9 @@
     },
     "calendario_in_scadenza": {
       "fix_flow": {
+        "abort": {
+          "non_caricata": "L'integrazione della raccolta non è caricata: riattivala e riprova."
+        },
         "error": {
           "data_nel_passato": "La nuova data deve essere nel futuro.",
           "salvataggio_non_riuscito": "Non è stato possibile salvare la nuova data."
@@ -90,6 +96,9 @@
     },
     "calendario_scaduto": {
       "fix_flow": {
+        "abort": {
+          "non_caricata": "L'integrazione della raccolta non è caricata: riattivala e riprova."
+        },
         "error": {
           "data_nel_passato": "La nuova data deve essere nel futuro.",
           "salvataggio_non_riuscito": "Non è stato possibile salvare la nuova data."

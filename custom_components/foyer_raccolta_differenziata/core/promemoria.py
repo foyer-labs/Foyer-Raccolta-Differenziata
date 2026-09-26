@@ -13,11 +13,11 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
-from datetime import UTC, date, datetime, time, timedelta, tzinfo
+from datetime import date, datetime, time, timedelta, tzinfo
 import hashlib
 from typing import Any, Literal
 
-from .calendario import Risultato, Ritiro
+from .calendario import Risultato, Ritiro, istante_locale
 
 GIORNI_CONSERVA_INVII = 9
 GIORNI_CONSERVA_CONFERME = 7
@@ -93,7 +93,7 @@ def carica_promemoria(dati: Mapping[str, Any]) -> ConfigPromemoria:
         quando = Quando(
             tipo=q["tipo"],
             giorni=q.get("giorni", 0) or 0,
-            ora=_ora(q["ora"]) if q.get("ora") else None,
+            ora=_ora(q["ora"]) if q["tipo"] != "apertura" else None,
         )
         tipologie = p.get("tipologie")
         profili.append(
@@ -146,7 +146,7 @@ class Invio:
 @dataclass(frozen=True)
 class Scartato:
     chiave: str
-    motivo: Literal["finestra_chiusa", "sospeso", "confermato"]
+    motivo: Literal["finestra_chiusa", "sospeso", "confermato", "profilo_non_attivo"]
 
 
 @dataclass(frozen=True)
@@ -166,9 +166,8 @@ class _Previsto:
     istante: datetime
 
 
-def _istante(giorno: date, ora: time, fuso: tzinfo) -> datetime:
-    """Stessa regola del calendario per l'ora legale (SPEC §8.1)."""
-    return datetime.combine(giorno, ora, tzinfo=fuso).astimezone(UTC).astimezone(fuso)
+# Stessa regola del calendario per l'ora legale (SPEC §8.1).
+_istante = istante_locale
 
 
 def gettone(chiave: str) -> str:
@@ -442,11 +441,16 @@ def decidi(
             continue
         if p.istante <= soglia:
             continue
-        restanti = tuple(r for r in p.ritiri if (r.data, r.tipologia) not in conferme)
+        non_confermati = tuple(
+            r for r in p.ritiri if (r.data, r.tipologia) not in conferme
+        )
+        # Un invio può mettere insieme tipologie con finestre diverse: si tolgono solo
+        # quelle con la finestra già chiusa, non l'invio intero.
+        restanti = tuple(r for r in non_confermati if r.fine_esposizione > ora)
         motivo = None
-        if not restanti:
+        if not non_confermati:
             motivo = "confermato"
-        elif min(r.fine_esposizione for r in restanti) <= ora:
+        elif not restanti:
             motivo = "finestra_chiusa"
         elif zitto:
             motivo = "sospeso"
@@ -491,23 +495,30 @@ def decidi(
         nuovo["pendenti"] = []
     rimasti = []
     for v in nuovo["pendenti"]:
+        if v["tipo"] == "richiamo" and v["numero"] > config.solleciti.richiami:
+            # Il limite dei richiami è sceso nel frattempo.
+            continue
         istante = datetime.fromisoformat(v["istante"])
         if istante > ora:
             rimasti.append(v)
             _candidato(istante)
             continue
         giorno = date.fromisoformat(v["data"])
-        ritiri = [
+        non_confermati = [
             per_data_tipologia[(giorno, t)]
             for t in v["tipologie"]
             if (giorno, t) in per_data_tipologia and (giorno, t) not in conferme
         ]
+        ritiri = [r for r in non_confermati if r.fine_esposizione > ora]
         profilo = profili.get(v["profilo"])
         chiave = f"{v['chiave']}|{v['tipo']}|{v['numero']}|{v['istante']}"
-        if not ritiri or profilo is None:
+        if profilo is None or not profilo.attivo:
+            scartati.append(Scartato(chiave, "profilo_non_attivo"))
+            continue
+        if not non_confermati:
             scartati.append(Scartato(chiave, "confermato"))
             continue
-        if min(r.fine_esposizione for r in ritiri) <= ora:
+        if not ritiri:
             scartati.append(Scartato(chiave, "finestra_chiusa"))
             continue
         if zitto:

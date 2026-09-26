@@ -12,6 +12,7 @@ Se la configurazione salvata non è valida, non calcola nulla: le entità divent
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Callable
 from datetime import date, datetime, timedelta
 import logging
@@ -19,6 +20,7 @@ from typing import TYPE_CHECKING, Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.event import (
     async_track_point_in_time,
     async_track_time_change,
@@ -26,6 +28,7 @@ from homeassistant.helpers.event import (
 from homeassistant.util import dt as dt_util
 
 from .archivio import Archivi
+from .const import SEGNALE_AGGIORNATO
 from .core.calendario import ORIZZONTE_GIORNI, Anomalia, Risultato, anomalie, calcola
 from .core.modello import Configurazione, Tipologia, carica
 from .core.validazione import Problema, problemi
@@ -53,6 +56,7 @@ class Coordinatore:
         self._ascoltatori: list[Callable[[], None]] = []
         self._timer_confine: CALLBACK_TYPE | None = None
         self._timer_mezzanotte: CALLBACK_TYPE | None = None
+        self._salvataggio = asyncio.Lock()
         # Il gestore dei promemoria, impostato all'avvio dell'integrazione.
         self.gestore: GestorePromemoria
 
@@ -156,6 +160,9 @@ class Coordinatore:
         aggiorna_problemi(self.hass, self)
         for ascoltatore in list(self._ascoltatori):
             ascoltatore()
+        # Per chi ascolta da fuori (pannello e card via WebSocket): un segnale che non
+        # dipende da questo coordinatore, così sopravvive a un ricaricamento.
+        async_dispatcher_send(self.hass, SEGNALE_AGGIORNATO)
 
     @callback
     def ascolta(self, ascoltatore: Callable[[], None]) -> Callable[[], None]:
@@ -178,18 +185,50 @@ class Coordinatore:
         Una configurazione con problemi non si salva, mai a metà. Se `revisione_letta`
         non è quella attuale, qualcun altro ha salvato nel frattempo: si rifiuta.
         """
-        attuale = self.archivi.configurazione.get("revisione", 0)
-        if revisione_letta is not None and revisione_letta != attuale:
-            return [Problema("revisione", "revisione_superata")]
-        trovati = problemi(nuova)
-        if trovati:
-            return trovati
-        salvata = {**nuova, "revisione": attuale + 1}
-        await self.archivi.archivio_configurazione.async_save(salvata)
-        self.archivi.configurazione = salvata
-        self._carica_modello()
-        self.aggiorna()
-        return []
+        # Un salvataggio alla volta: controllo della revisione e scrittura non si
+        # intrecciano con quelli di un'altra scheda aperta.
+        async with self._salvataggio:
+            attuale = self.archivi.configurazione.get("revisione", 0)
+            if revisione_letta is not None and revisione_letta != attuale:
+                return [Problema("revisione", "revisione_superata")]
+            trovati = problemi(nuova)
+            if trovati:
+                return trovati
+            salvata = {**nuova, "revisione": attuale + 1}
+            await self.archivi.archivio_configurazione.async_save(salvata)
+            self.archivi.configurazione = salvata
+            self._carica_modello()
+            if self._pulisci_stato():
+                await self.archivi.archivio_stato.async_save(self.archivi.stato)
+            self.aggiorna()
+            return []
+
+    def _pulisci_stato(self) -> bool:
+        """Toglie dallo stato le tipologie che non esistono più (SPEC §4.1).
+
+        Conferme, festivi ignorati e solleciti in attesa di una tipologia eliminata
+        non devono restare a comparire nelle card. Vero se qualcosa è cambiato.
+        """
+        if self.config is None:
+            return False
+        esistenti = {t.id for t in self.config.tipologie}
+        stato = self.archivi.stato
+        cambiato = False
+        for chiave in ("conferme", "anomalie_ignorate"):
+            prima = stato.get(chiave, [])
+            dopo = [v for v in prima if v.get("tipologia") in esistenti]
+            if len(dopo) != len(prima):
+                stato[chiave] = dopo
+                cambiato = True
+        pendenti = []
+        for v in stato.get("pendenti", []):
+            tipologie = [t for t in v.get("tipologie", []) if t in esistenti]
+            if tipologie != v.get("tipologie"):
+                cambiato = True
+            if tipologie:
+                pendenti.append({**v, "tipologie": tipologie})
+        stato["pendenti"] = pendenti
+        return cambiato
 
     async def async_salva_stato(self) -> None:
         await self.archivi.archivio_stato.async_save(self.archivi.stato)

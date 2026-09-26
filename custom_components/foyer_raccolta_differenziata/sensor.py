@@ -32,6 +32,15 @@ async def async_setup_entry(
     )
 
     presenti: set[str] = set()
+    prefisso = f"{entry.entry_id}_prossimo_"
+    registro = er.async_get(hass)
+    # Le tipologie che hanno un sensore nel registro, anche da prima di un riavvio: se
+    # una è stata eliminata mentre il calcolo non era disponibile, va tolta lo stesso.
+    registrate = {
+        voce.unique_id.removeprefix(prefisso)
+        for voce in er.async_entries_for_config_entry(registro, entry.entry_id)
+        if voce.domain == "sensor" and voce.unique_id.startswith(prefisso)
+    }
 
     @callback
     def _allinea_tipologie() -> None:
@@ -43,9 +52,9 @@ async def async_setup_entry(
         if nuove:
             presenti.update(nuove)
             async_add_entities(SensoreProssimo(coordinatore, t) for t in sorted(nuove))
-        registro = er.async_get(hass)
-        for tolta in presenti - attuali:
+        for tolta in (presenti | registrate) - attuali:
             presenti.discard(tolta)
+            registrate.discard(tolta)
             entity_id = registro.async_get_entity_id(
                 "sensor", DOMINIO, f"{entry.entry_id}_prossimo_{tolta}"
             )

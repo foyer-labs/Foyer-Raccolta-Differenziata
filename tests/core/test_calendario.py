@@ -292,8 +292,8 @@ def test_la_finestra_della_tipologia_sovrascrive_la_globale():
     assert ritiro.fine_esposizione == datetime(2026, 9, 24, 12, 0, tzinfo=ROMA)
 
 
-def test_un_orario_saltato_dall_ora_legale_slitta_avanti():
-    """29 marzo 2026: alle 02:00 in Italia si passa alle 03:00."""
+def test_un_orario_saltato_dall_ora_legale_vale_al_primo_minuto_valido():
+    """29 marzo 2026: alle 02:00 in Italia si passa alle 03:00 (SPEC §8.1)."""
     notturna = tipologia(
         "umido",
         esposizione={
@@ -308,7 +308,7 @@ def test_un_orario_saltato_dall_ora_legale_slitta_avanti():
 
     ritiro = calcola(config, d("2026-03-29"), d("2026-03-29"), ROMA).ritiri[0]
 
-    assert ritiro.inizio_esposizione.isoformat() == "2026-03-29T03:30:00+02:00"
+    assert ritiro.inizio_esposizione.isoformat() == "2026-03-29T03:00:00+02:00"
 
 
 def test_un_orario_ripetuto_dall_ora_solare_vale_alla_prima_occorrenza():
@@ -595,3 +595,40 @@ def test_nessuna_anomalia_per_una_configurazione_normale():
     )
 
     assert anomalie(config, OGGI) == ()
+
+
+def test_sovrapposizione_mista_lunga_e_veloce():
+    """Una regola con anno fino al 2099 non si scorre giorno per giorno."""
+    import time
+
+    config = configura(
+        regole=[
+            regola("estate", "umido", settimanale([MER]), annuale("04-01", "10-31")),
+            regola("inverno", "umido", settimanale([MER]), annuale("11-01", "03-31")),
+            regola("sempre", "umido", settimanale([LUN])),
+            regola("lungo", "umido", settimanale([SAB]), con_anno("2026-01-01", "2099-12-31")),
+        ]
+    )  # fmt: skip
+
+    inizio = time.perf_counter()
+    trovate = [a for a in anomalie(config, OGGI) if a.codice == "sovrapposizione_mista"]
+    assert time.perf_counter() - inizio < 0.2
+
+    per_regola = {a.regole[0]: a.intervalli for a in trovate}
+    assert per_regola["sempre"] == ((OGGI, d("2099-12-31")),)
+    assert per_regola["estate"][:2] == (
+        (OGGI, d("2026-10-31")),
+        (d("2027-04-01"), d("2027-10-31")),
+    )
+    assert per_regola["inverno"][0] == (OGGI.replace(month=11, day=1), d("2027-03-31"))
+    assert per_regola["estate"][-1] == (d("2099-04-01"), d("2099-10-31"))
+
+
+def test_giorno_inesistente_solo_se_il_periodo_ha_un_mese_corto():
+    luglio_agosto = configura(
+        regole=[regola("r1", "umido", mensile_data([31]), con_anno("2027-07-01", "2027-08-31"))]
+    )  # fmt: skip
+    tutto_l_anno = configura(regole=[regola("r1", "umido", mensile_data([29]))])
+
+    assert "giorno_inesistente" not in _codici(anomalie(luglio_agosto, OGGI))
+    assert anomalie(tutto_l_anno, OGGI)[0].giorni == (29,)

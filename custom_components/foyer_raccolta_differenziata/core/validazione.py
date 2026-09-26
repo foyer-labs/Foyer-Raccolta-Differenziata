@@ -49,9 +49,16 @@ def _testo(valore: Any, minimo: int, massimo: int) -> bool:
     return isinstance(valore, str) and minimo <= len(valore.strip()) <= massimo
 
 
+_DATA = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
 def _data(valore: Any) -> date | None:
-    """La data se è ISO e nell'intervallo ammesso, altrimenti None."""
-    if not isinstance(valore, str):
+    """La data se è "AAAA-MM-GG" e nell'intervallo ammesso, altrimenti None.
+
+    Solo quella forma: `fromisoformat` accetta anche "20261005", e due scritture
+    della stessa data eluderebbero i controlli sui duplicati.
+    """
+    if not isinstance(valore, str) or not _DATA.match(valore):
         return None
     try:
         giorno = date.fromisoformat(valore)
@@ -295,7 +302,8 @@ def _promemoria(v: _Validatore, elenco: Any) -> None:
                 _e_intero(q.get("giorni")) and 1 <= q["giorni"] <= 7
             ):
                 v.segnala(f"{percorso}.quando.giorni", "giorni_prima_non_validi")
-            if q["tipo"] != "apertura" and not (
+            ora_richiesta = q["tipo"] != "apertura" or "ora" in q
+            if ora_richiesta and not (
                 isinstance(q.get("ora"), str) and _ORA.match(q["ora"])
             ):
                 v.segnala(f"{percorso}.quando.ora", "orario_non_valido")
@@ -310,6 +318,11 @@ def _promemoria(v: _Validatore, elenco: Any) -> None:
         if not isinstance(destinatari, list) or not destinatari:
             v.segnala(f"{percorso}.destinatari", "destinatari_mancanti")
             continue
+        chiavi = [
+            (d.get("tipo"), d.get("id")) for d in destinatari if isinstance(d, dict)
+        ]
+        if len(chiavi) != len(set(chiavi)):
+            v.segnala(f"{percorso}.destinatari", "destinatario_duplicato")
         for d in destinatari:
             valido = (
                 isinstance(d, dict)
@@ -354,12 +367,21 @@ def _sospensioni(v: _Validatore, elenco: Any) -> None:
 
 
 def problemi(dati: dict[str, Any]) -> list[Problema]:
-    """Tutti i problemi della parte di calendario di una configurazione grezza."""
+    """Tutti i problemi di una configurazione grezza."""
     validatore = _Validatore()
+    if not isinstance(dati, dict):
+        return [Problema("", "configurazione_non_valida")]
     _finestra(dati.get("esposizione"), "esposizione", validatore.trovati)
-    validatore.tipologie_(dati.get("tipologie", []))
-    validatore.regole(dati.get("regole", []))
-    validatore.eccezioni(dati.get("eccezioni", []))
+    sezioni = {}
+    for sezione in ("tipologie", "regole", "eccezioni"):
+        valore = dati.get(sezione, [])
+        if not isinstance(valore, list):
+            validatore.segnala(sezione, "elenco_non_valido")
+            valore = []
+        sezioni[sezione] = valore
+    validatore.tipologie_(sezioni["tipologie"])
+    validatore.regole(sezioni["regole"])
+    validatore.eccezioni(sezioni["eccezioni"])
     validatore.patrono(dati.get("patrono"))
     valido = dati.get("valido_fino_al")
     if valido is not None and _data(valido) is None:
