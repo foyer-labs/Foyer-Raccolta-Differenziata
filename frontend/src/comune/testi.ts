@@ -1,6 +1,6 @@
 // Tutti i testi visibili del frontend (INV-5): nessun componente scrive testo suo.
 import { daIso, giornoSettimana } from "./date";
-import type { Anomalia, Periodo, Problema, Quando, Regola, Ricorrenza } from "./tipi";
+import type { Anomalia, Conti, ErroreFile, Periodo, Problema, Quando, Regola, Ricorrenza } from "./tipi";
 
 export const GIORNI = ["lunedì", "martedì", "mercoledì", "giovedì", "venerdì", "sabato", "domenica"];
 export const GIORNI_BREVI = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
@@ -118,6 +118,30 @@ export const T = {
   mostraBarraAiuto: "Se la nascondi, trovi il pannello nella pagina del dispositivo «Raccolta differenziata», o in Impostazioni → Dispositivi e servizi.",
   validita: "Calendario valido fino al",
   validitaAiuto: "Un mese prima ti ricordiamo di controllare il calendario nuovo del comune.",
+  excel: "Configurazione in Excel",
+  excelAiuto: "Compila o cambia il calendario in un foglio di calcolo e importalo qui. Il file ha una guida e un foglio per ogni sezione; lo stesso file serve per esportare e per importare.",
+  scaricaModello: "Scarica il modello",
+  esporta: "Esporta in Excel",
+  importa: "Importa da Excel…",
+  importaTitolo: "Importa da Excel",
+  scegliFile: "Scegli il file",
+  cambiaFile: "Cambia file",
+  nessunFile: "Un file .xlsx, dal modello o da un'esportazione.",
+  comeImportare: "Come importarlo",
+  sostituisci: "Sostituisci tutto",
+  sostituisciAiuto: "Il file diventa la configurazione: quello che nel file non c'è viene tolto. Dopo aver esportato e modificato.",
+  aggiungiSoltanto: "Aggiungi soltanto",
+  aggiungiSoltantoAiuto: "Le righe del file si aggiungono; quelle che corrispondono a qualcosa che c'è lo aggiornano. Non si toglie niente.",
+  continua: "Continua",
+  leggoIlFile: "Leggo il file…",
+  fileConProblemi: "Il file ha dei problemi: correggili nel foglio di calcolo e riprova.",
+  altriProblemi: (n: number) => (n === 1 ? "e un altro problema" : `e altri ${n} problemi`),
+  esportaNonValida: "La configurazione salvata non è valida: correggila prima di esportarla.",
+  scaricamentoFallito: "Il file non si è potuto preparare. Riprova.",
+  dalFile: "Dal file",
+  nienteDalFile: "Il file è uguale alla configurazione attuale.",
+  riga: (n: number) => `riga ${n}`,
+  configurazioneAttuale: "configurazione attuale",
   patrono: "Santo patrono",
   patronoAiuto: "Segnalato come festivo, come le feste nazionali.",
   nomePatrono: "Nome",
@@ -259,6 +283,17 @@ export function frasePeriodo(p: Periodo): string {
 }
 
 const MESSAGGI_PROBLEMI: Record<string, string> = {
+  valore_mancante: "manca un valore",
+  scelta_non_valida: "scegli una delle voci del menu",
+  si_no_non_valido: "scrivi Sì o No",
+  un_solo_giorno: "per il mensile va un solo giorno della settimana",
+  foglio_mancante: "manca il foglio: per sostituire tutto servono tutti i fogli del modello",
+  colonna_mancante: "manca la colonna",
+  troppe_righe: "troppe righe (al massimo 2000)",
+  file_non_valido: "non è un file Excel (.xlsx) leggibile",
+  file_troppo_grande: "il file è troppo grande (al massimo 1 MB)",
+  impostazione_sconosciuta: "impostazione sconosciuta: controlla il nome nella prima colonna",
+  nessun_foglio: "nel file non c'è nessuno dei fogli del modello (Tipologie, Regole, …)",
   nome_non_valido: "il nome è vuoto o troppo lungo",
   nome_duplicato: "c'è già una tipologia con questo nome",
   colore_non_valido: "il colore non è valido",
@@ -286,6 +321,48 @@ const MESSAGGI_PROBLEMI: Record<string, string> = {
 
 export const messaggioProblema = (p: Problema): string =>
   MESSAGGI_PROBLEMI[p.codice] ?? p.codice;
+
+// In un file i codici della validazione vogliono un esempio di come si scrive.
+const MESSAGGI_FILE: Record<string, string> = {
+  tipologia_sconosciuta: "tipologia non trovata nel foglio Tipologie",
+  giorni_non_validi: "giorni non riconosciuti (per esempio Lun, Gio oppure 1, 15)",
+  posizioni_non_valide: "posizioni non riconosciute (per esempio 2°, ultimo)",
+  data_non_valida: "data non valida (per esempio 22/09/2026, o 01/06 per «Ogni anno»)",
+  orario_non_valido: "orario non valido (per esempio 20:00)",
+  colore_non_valido: "colore non valido (per esempio #795548)",
+  destinatario_non_valido: "destinatario non valido (per esempio mobile_app_telefono o notify.telegram)",
+  destinatari_mancanti: "manca almeno un destinatario",
+};
+
+export const messaggioErroreFile = (e: ErroreFile): string => MESSAGGI_FILE[e.codice] ?? MESSAGGI_PROBLEMI[e.codice] ?? e.codice;
+
+/** "Regole · riga 5 · Giorni della settimana" */
+export function luogoErroreFile(e: ErroreFile): string {
+  return [e.foglio, e.riga ? T.riga(e.riga) : "", e.colonna ?? ""].filter(Boolean).join(" · ");
+}
+
+const SEZIONI_RIEPILOGO: Record<string, [string, boolean]> = {
+  tipologie: ["Tipologie", true],
+  regole: ["Regole", true],
+  eccezioni: ["Eccezioni", true],
+  promemoria: ["Promemoria", false],
+  sospensioni: ["Vacanze", true],
+  impostazioni: ["Impostazioni", true],
+};
+
+/** "Regole: 2 nuove, 1 modificata" — null se la sezione non cambia. */
+export function fraseRiepilogo(sezione: string, c: Conti): string | null {
+  const voce = SEZIONI_RIEPILOGO[sezione];
+  if (!voce) return null;
+  const [nome, femminile] = voce;
+  const parola = (n: number, radice: string) => `${n} ${radice}${n === 1 ? (femminile ? "a" : "o") : femminile ? "e" : "i"}`;
+  const parti = [
+    c.aggiunte ? parola(c.aggiunte, "nuov") : null,
+    c.modificate ? parola(c.modificate, "modificat") : null,
+    c.tolte ? parola(c.tolte, "tolt") : null,
+  ].filter(Boolean);
+  return parti.length ? `${nome}: ${parti.join(", ")}` : null;
+}
 
 /** Il testo di un'anomalia; `nome` risolve gli id di tipologie e regole. */
 export function fraseAnomalia(a: Anomalia, nome: (id: string) => string): string {

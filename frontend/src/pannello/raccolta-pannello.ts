@@ -4,7 +4,7 @@
 import { LitElement, css, html, nothing } from "lit";
 
 import { chip } from "../comune/chip";
-import { dataBreve, messaggioProblema, T } from "../comune/testi";
+import { dataBreve, fraseRiepilogo, messaggioProblema, T } from "../comune/testi";
 import { base } from "../comune/stili";
 import { simbolo } from "../comune/simbolo";
 import "../comune/finestra";
@@ -15,8 +15,9 @@ import type {
   HomeAssistant,
   LetturaConfigurazione,
   Problema,
+  Riepilogo,
 } from "../comune/tipi";
-import type { Precompila } from "./contesto";
+import type { Precompila, Proposta } from "./contesto";
 import "./pagine/panoramica";
 import "./pagine/tipologie";
 import "./pagine/regole";
@@ -31,6 +32,7 @@ type Pagina = (typeof PAGINE)[number];
 interface InAttesa {
   candidata: Configurazione;
   anteprima: Anteprima;
+  riepilogo?: Riepilogo;
 }
 
 export class RaccoltaPannello extends LitElement {
@@ -104,16 +106,16 @@ export class RaccoltaPannello extends LitElement {
     this._timerAvviso = window.setTimeout(() => (this._avviso = undefined), 4000);
   }
 
-  private async _proponi(e: CustomEvent<Configurazione>) {
+  private async _proponi(e: CustomEvent<Proposta>) {
     e.stopPropagation();
-    const candidata = e.detail;
+    const { configurazione: candidata, riepilogo } = e.detail;
     try {
       const anteprima = await this.hass.callWS<Anteprima>({
         type: `${DOMINIO}/anteprima`,
         configurazione: candidata,
       });
       this._problemi = anteprima.problemi;
-      this._inAttesa = { candidata, anteprima };
+      this._inAttesa = { candidata, anteprima, riepilogo };
     } catch {
       this._mostraAvviso(T.erroreConnessione);
     }
@@ -182,7 +184,16 @@ export class RaccoltaPannello extends LitElement {
       ...aggiunti.map((v) => ({ ...v, segno: "+" as const })),
       ...tolti.map((v) => ({ ...v, segno: "−" as const })),
     ].sort((a, b) => a.data.localeCompare(b.data));
+    const riepilogo = Object.entries(attesa.riepilogo ?? {})
+      .map(([sezione, conti]) => fraseRiepilogo(sezione, conti))
+      .filter((f): f is string => f !== null);
     return html`<rd-finestra aperta titolo=${T.primaDiSalvare} @chiudi=${() => (this._inAttesa = undefined)}>
+      ${attesa.riepilogo && !this._problemi.length
+        ? html`<div class="riepilogo">
+            <b>${T.dalFile}</b>
+            ${riepilogo.length ? html`<ul>${riepilogo.map((f) => html`<li>${f}</li>`)}</ul>` : html`<p>${T.nienteDalFile}</p>`}
+          </div>`
+        : nothing}
       ${this._problemi.length
         ? html`<div class="errori">
             ${T.nonSalvato}
@@ -246,6 +257,7 @@ export class RaccoltaPannello extends LitElement {
         @proponi=${this._proponi}
         @naviga=${this._naviga}
         @ricarica=${() => void this._carica()}
+        @avvisa=${(e: CustomEvent<string>) => this._mostraAvviso(e.detail)}
       >
         ${this._errore
           ? html`<div class="vuoto">${this._errore}</div>`
@@ -354,6 +366,19 @@ export class RaccoltaPannello extends LitElement {
         display: flex;
         justify-content: flex-end;
         gap: 8px;
+      }
+      .riepilogo {
+        background: color-mix(in srgb, var(--rd-primario) 8%, transparent);
+        border-radius: 12px;
+        padding: 10px 14px;
+        margin-bottom: 8px;
+      }
+      .riepilogo ul {
+        margin: 4px 0 0;
+        padding-left: 18px;
+      }
+      .riepilogo p {
+        margin: 4px 0 0;
       }
       .errori {
         background: color-mix(in srgb, var(--rd-errore) 12%, transparent);

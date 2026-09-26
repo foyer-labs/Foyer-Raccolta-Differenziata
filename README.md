@@ -39,6 +39,8 @@ dice ogni sera cosa mettere fuori.
   il resto dell'anno: una regola per stagione, e ciascuna vale solo nel suo periodo.
 - **Le eccezioni che arrivano col calendario nuovo.** Il ritiro del 25 dicembre spostato
   al 27, un passaggio in più, uno annullato: si aggiungono con un tocco.
+- **Anche in Excel.** Scarica il modello, scrivi il calendario in un foglio di calcolo e
+  importalo; oppure esporta quello che hai, cambialo in Excel e reimportalo.
 - **Le festività le vede lui.** Se un ritiro cade in un giorno festivo te lo segnala
   prima, così controlli cosa ha deciso il comune. Non sposta niente da solo.
 - **Prima di salvare, vedi cosa cambia.** Ogni modifica mostra i ritiri che si aggiungono

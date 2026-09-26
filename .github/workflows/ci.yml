@@ -80,7 +80,9 @@ jobs:
           # cambio di versione riparte da capo.
           cache: pip
           cache-dependency-path: .github/workflows/ci.yml
-      - run: pip install ${{ matrix.pacchetti }} pytest-xdist
+      # openpyxl è un requisito del manifest: Home Assistant lo installa da solo, i
+      # test no.
+      - run: pip install ${{ matrix.pacchetti }} pytest-xdist openpyxl==3.1.5
       # L'integrazione dipende da frontend: serve il pacchetto del frontend alla
       # versione che quella Home Assistant fissa nel suo manifest.
       - name: Installa il frontend fissato da quella Home Assistant
