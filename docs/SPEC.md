@@ -118,7 +118,7 @@ riutilizzate. Rinominare una tipologia non cambia il suo identificatore, né gli
 | `note` | stringa, max 500, facoltativa | "Cosa ci va". Mostrata nelle card al tocco. |
 | `esposizione` | finestra, facoltativa | Sovrascrive la finestra globale (§4.5). |
 
-Preset proposti all'installazione (tutti selezionati, deselezionabili):
+Preset proposti all'installazione (selezionati tutti tranne i pannolini, decisione 55):
 
 | Nome | Colore | Icona |
 |---|---|---|
@@ -128,6 +128,7 @@ Preset proposti all'installazione (tutti selezionati, deselezionabili):
 | Vetro | `#43a047` verde | `mdi:glass-fragile` |
 | Secco | `#757575` grigio | `mdi:trash-can` |
 | Verde | `#8bc34a` verde chiaro | `mdi:leaf` |
+| Pannolini | `#ec407a` rosa | `mdi:baby-carriage` |
 
 *Perché questi colori:* sono quelli dei contenitori più diffusi in Italia. Molti comuni ne
 usano altri (la plastica in blu, il secco in rosso); il colore è modificabile.
@@ -956,6 +957,27 @@ Fase 7, 2026-09-26 (in autonomia).
 54. Gli screenshot della documentazione vengono dal banco di prova (`banco/`, nel
     repository) con Chrome headless, con data e ora fisse: si rifanno identici da
     qualunque installazione.
+
+Revisione, 2026-09-26.
+
+55. Il preset dei pannolini (anche pannoloni) completa il set standard, ma non è
+    selezionato all'installazione: serve solo a chi li usa, e agli altri darebbe una
+    tipologia senza ritiri segnalata come anomalia. Richiesta del proprietario, 2026-09-26.
+56. Revisione completa del codice (0.2.0). Regole precisate:
+    - un invio che mette insieme tipologie con finestre diverse perde solo quelle con la
+      finestra chiusa, non tutto l'invio (§8.6);
+    - i solleciti in attesa di un profilo spento o eliminato non partono, e abbassare il
+      numero di richiami vale anche per quelli già programmati (§8.5);
+    - la conferma dalle card vale come il pulsante: oggi o domani, finestra non chiusa
+      (§8.4);
+    - eliminare una tipologia toglie dallo stato le sue conferme, i festivi ignorati e i
+      solleciti in attesa (§4.1);
+    - le date dell'archivio sono solo `AAAA-MM-GG`;
+    - un destinatario non può comparire due volte nello stesso promemoria;
+    - `giorno_inesistente` si segnala solo se il periodo della regola comprende un mese
+      senza quel giorno;
+    - i salvataggi della configurazione avvengono uno alla volta, così il controllo della
+      revisione non si può eludere con due schede aperte (§9.4).
 
 ---
 

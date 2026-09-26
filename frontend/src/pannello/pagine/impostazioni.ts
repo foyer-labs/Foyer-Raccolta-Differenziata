@@ -20,8 +20,19 @@ export class RdImpostazioni extends LitElement {
   lettura!: LetturaConfigurazione;
   private _bozza?: Configurazione;
 
-  override updated(cambiati: Map<string, unknown>) {
-    if (cambiati.has("lettura")) this._bozza = copia(this.lettura.configurazione);
+  private _revisione?: number;
+  private _base?: string;
+
+  override willUpdate(cambiati: Map<string, unknown>) {
+    // Un ricalcolo (una conferma, mezzanotte) rilegge la configurazione identica: la
+    // bozza si rimpiazza solo se la revisione è cambiata e non ci sono modifiche.
+    if (!cambiati.has("lettura")) return;
+    const intatta = !this._bozza || JSON.stringify(this._bozza) === this._base;
+    if (this._revisione !== this.lettura.revisione && intatta) {
+      this._bozza = copia(this.lettura.configurazione);
+      this._base = JSON.stringify(this._bozza);
+      this._revisione = this.lettura.revisione;
+    }
   }
 
   private async _barra() {
@@ -38,6 +49,12 @@ export class RdImpostazioni extends LitElement {
     this._bozza = { ...this._bozza!, patrono: { ...attuale, ...parziale } };
   }
 
+  chiudiEditor() {
+    // Salvato: la prossima lettura porta la configurazione nuova.
+    this._base = undefined;
+    this._bozza = undefined;
+  }
+
   private _salva() {
     const bozza = copia(this._bozza!);
     if (bozza.patrono && !bozza.patrono.nome.trim()) bozza.patrono = null;
@@ -52,7 +69,7 @@ export class RdImpostazioni extends LitElement {
     const [mese, giorno] = (b.patrono?.data ?? "01-01").split("-").map(Number);
     const componi = (m: number, g: number) =>
       this._patrono({ data: `${String(m).padStart(2, "0")}-${String(g).padStart(2, "0")}` });
-    const modificata = JSON.stringify(b) !== JSON.stringify(this.lettura.configurazione);
+    const modificata = JSON.stringify(b) !== this._base;
     return html`<div class="colonna">
       <div class="riquadro">
         <h2>${T.pagine.impostazioni}</h2>
@@ -103,7 +120,11 @@ export class RdImpostazioni extends LitElement {
         </div>
       </div>
       <div class="azioni-modulo">
-        <button class="bottone" ?disabled=${!modificata} @click=${() => (this._bozza = copia(this.lettura.configurazione))}>${T.annulla}</button>
+        <button class="bottone" ?disabled=${!modificata} @click=${() => {
+          this._bozza = copia(this.lettura.configurazione);
+          this._base = JSON.stringify(this._bozza);
+          this._revisione = this.lettura.revisione;
+        }}>${T.annulla}</button>
         <button class="bottone primario" ?disabled=${!modificata} @click=${this._salva}>${T.salva}</button>
       </div>
     </div>`;

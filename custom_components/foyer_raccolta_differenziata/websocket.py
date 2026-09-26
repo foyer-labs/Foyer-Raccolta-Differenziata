@@ -13,10 +13,11 @@ from typing import Any
 
 from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.util import dt as dt_util
 import voluptuous as vol
 
-from .const import DOMINIO, OPZIONE_BARRA_LATERALE
+from .const import DOMINIO, OPZIONE_BARRA_LATERALE, SEGNALE_AGGIORNATO
 from .coordinatore import Coordinatore
 from .core import serializza
 from .core.calendario import anomalie, calcola
@@ -38,12 +39,24 @@ def _senza_coordinatore(connection, msg) -> None:
     connection.send_error(msg["id"], "non_caricata", "Integrazione non caricata")
 
 
+def sospensioni_valide(coordinatore: Coordinatore) -> list[dict[str, str]]:
+    """Gli intervalli di vacanza leggibili, anche da una configurazione non valida."""
+    if coordinatore.problemi:
+        return []
+    return [
+        v
+        for v in coordinatore.archivi.configurazione.get("sospensioni", [])
+        if isinstance(v, dict)
+        and isinstance(v.get("dal"), str)
+        and isinstance(v.get("al"), str)
+    ]
+
+
 def _sospeso(coordinatore: Coordinatore) -> dict[str, Any]:
     """Se i promemoria tacciono ora, e fino a quando (per il banner delle card)."""
-    configurazione = coordinatore.archivi.configurazione
     oggi = dt_util.now().date().isoformat()
     fino = None
-    for v in configurazione.get("sospensioni", []):
+    for v in sospensioni_valide(coordinatore):
         if v["dal"] <= oggi <= v["al"]:
             fino = max(fino or v["al"], v["al"])
     return {
@@ -137,10 +150,6 @@ def ws_ritiri(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
 @callback
 def ws_iscriviti(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
     """Avvisa chi è iscritto a ogni ricalcolo: le card rileggono i ritiri."""
-    coordinatore = _coordinatore(hass)
-    if coordinatore is None:
-        _senza_coordinatore(connection, msg)
-        return
 
     @callback
     def _avvisa() -> None:
@@ -148,7 +157,11 @@ def ws_iscriviti(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
             websocket_api.event_message(msg["id"], {"evento": "aggiornato"})
         )
 
-    connection.subscriptions[msg["id"]] = coordinatore.ascolta(_avvisa)
+    # Un segnale e non il coordinatore: dopo un ricaricamento dell'integrazione il
+    # coordinatore è un altro, e chi era iscritto continua a ricevere gli avvisi.
+    connection.subscriptions[msg["id"]] = async_dispatcher_connect(
+        hass, SEGNALE_AGGIORNATO, _avvisa
+    )
     connection.send_result(msg["id"])
 
 
@@ -171,17 +184,25 @@ async def ws_conferma(hass: HomeAssistant, connection, msg: dict[str, Any]) -> N
     except ValueError:
         connection.send_error(msg["id"], "data_non_valida", "Data non valida")
         return
+    # Come il pulsante (SPEC §8.4): si conferma un ritiro la cui finestra non è chiusa,
+    # di oggi o di domani. Non la settimana prossima, non un giorno passato.
+    ora = dt_util.now()
+    if not ora.date() <= giorno <= ora.date() + timedelta(days=1):
+        connection.send_error(msg["id"], "non_confermabile", "Solo oggi o domani")
+        return
     risultato = coordinatore.calcola_intervallo(giorno, giorno)
     volute = set(msg.get("tipologie") or [])
     ritiri = tuple(
         (r.data, r.tipologia)
         for r in (risultato.ritiri if risultato else ())
-        if not volute or r.tipologia in volute
+        if (not volute or r.tipologia in volute) and r.fine_esposizione > ora
     )
+    confermati = 0
     if ritiri:
         utente = await coordinatore.gestore.async_utente(connection.context(msg))
-        coordinatore.gestore.decidi(Conferma(ritiri, utente))
-    connection.send_result(msg["id"], {"confermati": len(ritiri)})
+        if coordinatore.gestore.decidi(Conferma(ritiri, utente)):
+            confermati = len(ritiri)
+    connection.send_result(msg["id"], {"confermati": confermati})
 
 
 @websocket_api.websocket_command(

@@ -39,6 +39,7 @@ async def test_il_modulo_propone_tutti_i_preset_e_la_finestra_predefinita(hass):
         str(chiave): chiave.default() for chiave in risultato["data_schema"].schema
     }
     assert predefiniti == {
+        # I pannolini ci sono ma non sono selezionati (decisione 55).
         "tipologie": ["umido", "carta", "plastica", "vetro", "secco", "verde"],
         "inizio_giorno": "giorno_prima",
         "inizio_ora": "20:00",

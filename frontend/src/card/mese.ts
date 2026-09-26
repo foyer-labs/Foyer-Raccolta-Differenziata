@@ -67,7 +67,7 @@ export class RaccoltaMeseCard extends CardRaccolta {
           const fuori = daIso(g).getMonth() !== mese;
           return html`<button
             class="c ${fuori ? "fuori" : ""} ${g === oggi ? "oggi" : ""} ${g === scelto && g !== oggi ? "scelto" : ""}"
-            aria-label=${`${daIso(g).getDate()} ${MESI[daIso(g).getMonth()]}`}
+            aria-label=${`${daIso(g).getDate()} ${MESI[daIso(g).getMonth()]}${ritiri.length ? `: ${ritiri.map((r) => this.tipologia(r.tipologia)?.nome ?? r.tipologia).join(", ")}` : ""}`}
             @click=${() => (this._scelto = g)}
           >
             <span>${daIso(g).getDate()}</span>

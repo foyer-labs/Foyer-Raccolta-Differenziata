@@ -44,6 +44,7 @@ export class RdRegole extends LitElement {
     _bozza: { state: true },
     _date: { state: true },
     _problemi: { state: true },
+    _inCorso: { state: true },
   };
 
   hass!: HomeAssistant;
@@ -52,6 +53,8 @@ export class RdRegole extends LitElement {
   private _date: string[] = [];
   private _problemi: Problema[] = [];
   private _timer?: number;
+  private _richiesta = 0;
+  private _inCorso = false;
 
   chiudiEditor() {
     this._bozza = undefined;
@@ -63,7 +66,12 @@ export class RdRegole extends LitElement {
   }
 
   private _imposta(bozza: Regola) {
+    if (bozza.id !== this._bozza?.id) {
+      this._date = [];
+      this._problemi = [];
+    }
     this._bozza = bozza;
+    this._inCorso = true;
     clearTimeout(this._timer);
     this._timer = window.setTimeout(() => void this._anteprima(), 250);
   }
@@ -80,12 +88,20 @@ export class RdRegole extends LitElement {
   private async _anteprima() {
     if (!this._bozza) return;
     const id = this._bozza.id;
-    const anteprima = await this.hass.callWS<Anteprima>({
-      type: `${DOMINIO}/anteprima`,
-      configurazione: this._candidata(),
-      giorni: 366,
-    });
-    if (this._bozza?.id !== id) return;
+    const numero = ++this._richiesta;
+    let anteprima: Anteprima;
+    try {
+      anteprima = await this.hass.callWS<Anteprima>({
+        type: `${DOMINIO}/anteprima`,
+        configurazione: this._candidata(),
+        giorni: 366,
+      });
+    } catch {
+      return;
+    }
+    // Solo l'ultima anteprima conta: una risposta lenta non copre quella nuova.
+    if (numero !== this._richiesta || this._bozza?.id !== id) return;
+    this._inCorso = false;
     this._problemi = anteprima.problemi.filter((p) => p.percorso.startsWith("regole"));
     this._date = anteprima.ritiri.filter((r) => r.regole.includes(id)).slice(0, 4).map((r) => r.data);
   }
@@ -217,7 +233,7 @@ export class RdRegole extends LitElement {
           ${esistente ? html`<button class="bottone pericolo" @click=${this._elimina}>${T.elimina}</button>` : nothing}
           <span style="flex:1"></span>
           <button class="bottone" @click=${() => (this._bozza = undefined)}>${T.annulla}</button>
-          <button class="bottone primario" ?disabled=${this._problemi.length > 0} @click=${() => proponi(this, this._candidata())}>${T.salva}</button>
+          <button class="bottone primario" ?disabled=${this._problemi.length > 0 || this._inCorso} @click=${() => proponi(this, this._candidata())}>${T.salva}</button>
         </div>
       </div>
     </rd-finestra>`;

@@ -32,6 +32,7 @@ export class RdFinestra extends LitElement {
         overflow-y: auto;
       }
       .dialogo {
+        outline: none;
         background: var(--rd-superficie);
         border-radius: 20px;
         max-width: 560px;
@@ -66,6 +67,21 @@ export class RdFinestra extends LitElement {
     `,
   ];
 
+  private _prima?: Element | null;
+
+  override updated(cambiati: Map<string, unknown>) {
+    if (!cambiati.has("aperta")) return;
+    if (this.aperta) {
+      this._prima = document.activeElement;
+      this.renderRoot.querySelector<HTMLElement>(".dialogo")?.focus();
+    }
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    (this._prima as HTMLElement | null)?.focus?.();
+  }
+
   private _chiudi() {
     this.dispatchEvent(new CustomEvent("chiudi"));
   }
@@ -76,7 +92,7 @@ export class RdFinestra extends LitElement {
       @click=${(e: Event) => e.target === e.currentTarget && this._chiudi()}
       @keydown=${(e: KeyboardEvent) => e.key === "Escape" && this._chiudi()}
     >
-      <div class="dialogo" role="dialog" aria-modal="true" aria-label=${this.titolo}>
+      <div class="dialogo" role="dialog" aria-modal="true" aria-label=${this.titolo} tabindex="-1">
         <header>
           <h3>${this.titolo}</h3>
           <button aria-label=${T.chiudi} @click=${this._chiudi}><ha-icon icon="mdi:close"></ha-icon></button>

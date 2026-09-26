@@ -269,23 +269,33 @@ async def test_un_destinatario_che_non_esiste_non_blocca_gli_altri(
 
 async def test_conferma_e_annulla_dalle_card(hass, hass_storage, hass_ws_client):
     """Senza orologio congelato: il client di prova usa l'ora vera."""
-    await installa(hass, hass_storage, _config())
+    config = _config()
+    # Umido tutti i giorni: domani c'è sempre un ritiro da confermare.
+    config["regole"][0]["ricorrenza"]["giorni"] = [0, 1, 2, 3, 4, 5, 6]
+    await installa(hass, hass_storage, config)
     client = await hass_ws_client(hass)
-
-    oggi = date.today()
-    giovedi = oggi + timedelta(days=(3 - oggi.weekday()) % 7 + 7)
+    domani = date.today() + timedelta(days=1)
 
     await client.send_json_auto_id(
         {
             "type": f"{DOMINIO}/conferma",
-            "data": giovedi.isoformat(),
+            "data": domani.isoformat(),
             "tipologie": ["umido"],
         }
     )
     risposta = await client.receive_json()
     assert risposta["result"] == {"confermati": 1}
     voce = hass.config_entries.async_entries(DOMINIO)[0]
-    assert voce.runtime_data.conferme == frozenset({(giovedi, "umido")})
+    assert voce.runtime_data.conferme == frozenset({(domani, "umido")})
+
+    # Come il pulsante: non la settimana prossima (SPEC §8.4).
+    await client.send_json_auto_id(
+        {
+            "type": f"{DOMINIO}/conferma",
+            "data": (domani + timedelta(days=7)).isoformat(),
+        }
+    )
+    assert (await client.receive_json())["error"]["code"] == "non_confermabile"
 
     await client.send_json_auto_id(
         {
@@ -295,3 +305,18 @@ async def test_conferma_e_annulla_dalle_card(hass, hass_storage, hass_ws_client)
         }
     )
     assert (await client.receive_json())["error"]["code"] == "finestra_chiusa"
+
+
+async def test_il_pulsante_senza_niente_da_confermare_lo_dice(
+    hass, hass_storage, freezer
+):
+    from homeassistant.exceptions import HomeAssistantError
+    import pytest
+
+    _a(freezer, "2026-09-21T12:00:00")  # lunedì: il prossimo ritiro è giovedì
+    await installa(hass, hass_storage, _config())
+
+    with pytest.raises(HomeAssistantError):
+        await hass.services.async_call(
+            "button", "press", {"entity_id": PULSANTE}, blocking=True
+        )

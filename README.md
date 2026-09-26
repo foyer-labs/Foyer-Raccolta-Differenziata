@@ -30,9 +30,9 @@ dice ogni sera cosa mettere fuori.
 - **Il tuo calendario, qualunque sia.** Ogni settimana, una settimana sì e una no,
   due volte a settimana, il secondo e il quarto giovedì del mese, il giorno 15: le
   regole si scrivono come le scrive il comune, e le prossime date compaiono mentre compili.
-- **Le tipologie che servono a casa tua.** Umido, carta, plastica, vetro, secco e verde
-  sono già pronti, con i colori di sempre; aggiungi i pannolini, gli ingombranti o
-  quello che raccoglie il tuo comune, e togli quello che non ti serve.
+- **Le tipologie che servono a casa tua.** Umido, carta, plastica, vetro, secco, verde e
+  pannolini sono già pronti, con i colori di sempre; aggiungi gli ingombranti o quello
+  che raccoglie il tuo comune, e togli quello che non ti serve.
 - **Estate e inverno.** Il verde ogni settimana da aprile a ottobre e ogni due settimane
   il resto dell'anno: una regola per stagione, e ciascuna vale solo nel suo periodo.
 - **Le eccezioni che arrivano col calendario nuovo.** Il ritiro del 25 dicembre spostato

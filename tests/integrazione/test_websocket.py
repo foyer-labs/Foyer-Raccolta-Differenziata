@@ -230,3 +230,81 @@ async def test_ritiri_dicono_se_i_promemoria_sono_sospesi(
     )
 
     assert risposta["result"]["sospeso"] == {"manuale": False, "fino_al": "2099-12-31"}
+
+
+async def test_l_iscrizione_sopravvive_a_un_ricaricamento(
+    hass, hass_storage, hass_ws_client
+):
+    voce = await installa(hass, hass_storage)
+    client = await hass_ws_client(hass)
+    assert (await _invia(client, type=f"{DOMINIO}/iscriviti"))["success"]
+
+    await hass.config_entries.async_reload(voce.entry_id)
+    await hass.async_block_till_done()
+    while True:  # gli avvisi del ricaricamento stesso
+        evento = await client.receive_json()
+        if evento.get("event") == {"evento": "aggiornato"}:
+            break
+    voce.runtime_data.aggiorna()
+
+    assert (await client.receive_json())["event"] == {"evento": "aggiornato"}
+
+
+async def test_due_salvataggi_insieme_uno_solo_passa(hass, hass_storage):
+    import asyncio
+
+    voce = await installa(hass, hass_storage)
+    coordinatore = voce.runtime_data
+    base = coordinatore.archivi.configurazione
+
+    esiti = await asyncio.gather(
+        coordinatore.async_salva_configurazione(
+            {**base, "valido_fino_al": "2027-01-01"}, 3
+        ),
+        coordinatore.async_salva_configurazione(
+            {**base, "valido_fino_al": "2027-02-01"}, 3
+        ),
+    )
+
+    assert sorted(len(e) for e in esiti) == [0, 1]
+    assert coordinatore.archivi.configurazione["revisione"] == 4
+
+
+async def test_eliminare_una_tipologia_pulisce_lo_stato(hass, hass_storage):
+    voce = await installa(
+        hass,
+        hass_storage,
+        stato={
+            "conferme": [{"data": "2026-12-24", "tipologia": "carta"}],
+            "invii_fatti": [],
+            "pendenti": [],
+            "anomalie_ignorate": [{"data": "2026-12-25", "tipologia": "carta"}],
+            "sospensione_manuale": False,
+            "ultimo_istante_attivo": None,
+        },
+    )
+    coordinatore = voce.runtime_data
+    nuova = {**coordinatore.archivi.configurazione}
+    nuova["tipologie"] = [nuova["tipologie"][0]]
+    nuova["regole"] = [nuova["regole"][0]]
+
+    assert await coordinatore.async_salva_configurazione(nuova) == []
+
+    assert coordinatore.archivi.stato["conferme"] == []
+    assert coordinatore.archivi.stato["anomalie_ignorate"] == []
+
+
+async def test_sospensioni_rovinate_non_rompono_ne_card_ne_interruttore(
+    hass, hass_storage, hass_ws_client
+):
+    config = configurazione(sospensioni=[{}, "x"])
+    await installa(hass, hass_storage, config)
+    client = await hass_ws_client(hass)
+
+    oggi = date.today().isoformat()
+    risposta = await _invia(client, type=f"{DOMINIO}/ritiri", dal=oggi, al=oggi)
+
+    assert risposta["result"]["disponibile"] is False
+    assert risposta["result"]["sospeso"] == {"manuale": False, "fino_al": None}
+    interruttore = hass.states.get("switch.raccolta_differenziata_sospendi_promemoria")
+    assert interruttore.attributes["intervalli"] == []

@@ -16,6 +16,8 @@ from .core.calendario import Ritiro
 from .core.viste import prossimo_evento
 from .entita import EntitaRaccolta
 
+MASSIMO_GIORNI_CALENDARIO = 731
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -67,6 +69,9 @@ class CalendarioRaccolta(EntitaRaccolta, CalendarEntity):
         al = (dt_util.as_local(end_date) - timedelta(microseconds=1)).date()
         if al < dal:
             return []
+        # Il calcolo gira nel ciclo degli eventi: oltre due anni per richiesta non serve
+        # a nessuna vista del calendario.
+        al = min(al, dal + timedelta(days=MASSIMO_GIORNI_CALENDARIO))
         risultato = self.coordinatore.calcola_intervallo(dal, al)
         if risultato is None:
             return []

@@ -318,3 +318,38 @@ def test_sospensione_al_rovescio():
     assert _codici(grezza(sospensioni=[{"dal": "2027-08-23", "al": "2027-08-08"}])) == [
         ("sospensioni[0]", "fine_prima_di_inizio")
     ]
+
+
+def test_le_date_si_scrivono_solo_aaaa_mm_gg():
+    """ "20261005" è la stessa data di "2026-10-05": ammetterla eluderebbe i duplicati."""
+    dati = grezza(
+        eccezioni=[
+            togli("e1", "umido", "2026-10-05"),
+            aggiungi("e2", "umido", "20261005"),
+        ]
+    )
+
+    assert ("eccezioni[1].data", "data_non_valida") in _codici(dati)
+
+
+def test_sezioni_che_non_sono_elenchi():
+    dati = grezza()
+    dati["tipologie"] = None
+    dati["regole"] = {"r1": {}}
+
+    assert ("tipologie", "elenco_non_valido") in _codici(dati)
+    assert ("regole", "elenco_non_valido") in _codici(dati)
+
+
+def test_ora_presente_ma_sbagliata_anche_all_apertura():
+    dati = grezza(promemoria=[{**PROFILO, "quando": {"tipo": "apertura", "ora": "99"}}])
+
+    assert ("promemoria[0].quando.ora", "orario_non_valido") in _codici(dati)
+
+
+def test_destinatario_ripetuto():
+    dati = grezza(
+        promemoria=[{**PROFILO, "destinatari": [PROFILO["destinatari"][0]] * 2}]
+    )
+
+    assert ("promemoria[0].destinatari", "destinatario_duplicato") in _codici(dati)

@@ -828,10 +828,10 @@ var L = (e) => D`<span class="chip" style="background:${e.colore};color:${Ne(e.c
   >`, R = (e) => {
 	let [t, n, r] = e.split("-").map(Number);
 	return new Date(t, n - 1, r);
-}, Pe = (e) => `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, "0")}-${String(e.getDate()).padStart(2, "0")}`, z = (e, t) => {
+}, z = (e) => `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, "0")}-${String(e.getDate()).padStart(2, "0")}`, B = (e, t) => {
 	let n = R(e);
-	return n.setDate(n.getDate() + t), Pe(n);
-}, B = (e) => (R(e).getDay() + 6) % 7, Fe = (e, t) => Math.round((R(t).getTime() - R(e).getTime()) / 864e5), Ie = (e) => z(e, -B(e)), V = (e) => `${e.slice(0, 7)}-01`, Le = (e, t) => new Date(e, t, 0).getDate(), H = (e) => e.slice(11, 16), U = [
+	return n.setDate(n.getDate() + t), z(n);
+}, V = (e) => (R(e).getDay() + 6) % 7, Pe = (e, t) => Math.round((R(t).getTime() - R(e).getTime()) / 864e5), Fe = (e) => B(e, -V(e)), H = (e) => `${e.slice(0, 7)}-01`, Ie = (e, t) => new Date(e, t, 0).getDate(), U = (e) => e.slice(11, 16), W = [
 	"lunedì",
 	"martedì",
 	"mercoledì",
@@ -839,7 +839,7 @@ var L = (e) => D`<span class="chip" style="background:${e.colore};color:${Ne(e.c
 	"venerdì",
 	"sabato",
 	"domenica"
-], Re = [
+], Le = [
 	"Lun",
 	"Mar",
 	"Mer",
@@ -847,7 +847,7 @@ var L = (e) => D`<span class="chip" style="background:${e.colore};color:${Ne(e.c
 	"Ven",
 	"Sab",
 	"Dom"
-], ze = [
+], Re = [
 	"L",
 	"M",
 	"M",
@@ -855,7 +855,7 @@ var L = (e) => D`<span class="chip" style="background:${e.colore};color:${Ne(e.c
 	"V",
 	"S",
 	"D"
-], W = [
+], G = [
 	"gennaio",
 	"febbraio",
 	"marzo",
@@ -868,7 +868,7 @@ var L = (e) => D`<span class="chip" style="background:${e.colore};color:${Ne(e.c
 	"ottobre",
 	"novembre",
 	"dicembre"
-], G = {
+], K = {
 	titolo: "Raccolta differenziata",
 	carica: "Caricamento…",
 	nonCaricata: "L'integrazione Raccolta differenziata non è caricata. Controlla Impostazioni → Dispositivi e servizi.",
@@ -892,6 +892,7 @@ var L = (e) => D`<span class="chip" style="background:${e.colore};color:${Ne(e.c
 	cosaCambia: "Ecco cosa cambia nei prossimi 60 giorni.",
 	nienteCambia: "Nessun ritiro cambia nei prossimi 60 giorni.",
 	salvato: "Salvato",
+	erroreConnessione: "Non è stato possibile raggiungere Home Assistant. Riprova.",
 	altroHaSalvato: "Qualcun altro ha salvato nel frattempo: la pagina è stata aggiornata, riprova.",
 	nonSalvato: "Non salvato: correggi questi punti.",
 	prossimiRitiri: "Prossimi ritiri",
@@ -900,8 +901,8 @@ var L = (e) => D`<span class="chip" style="background:${e.colore};color:${Ne(e.c
 	tuttoInOrdine: "Tutto in ordine: nessuna segnalazione.",
 	calendarioComune: "Calendario del comune",
 	giorniValidita: "giorni di validità",
-	validoFino: (e) => `fino al ${K(e)}`,
-	scaduto: (e) => `scaduto il ${K(e)}: i ritiri successivi sono da verificare`,
+	validoFino: (e) => `fino al ${q(e)}`,
+	scaduto: (e) => `scaduto il ${q(e)}: i ritiri successivi sono da verificare`,
 	senzaValidita: "Non hai indicato fino a quando vale. Indicalo in Impostazioni: un mese prima ti ricorderemo di controllare quello nuovo.",
 	creaEccezione: "Crea eccezione",
 	ignora: "Ignora",
@@ -1012,7 +1013,7 @@ var L = (e) => D`<span class="chip" style="background:${e.colore};color:${Ne(e.c
 	vacanzeAiuto: "Nelle date indicate i promemoria tacciono; il calendario, i sensori e le card restano.",
 	nessunaVacanza: "Nessuna vacanza in programma.",
 	aggiungiVacanza: "Aggiungi vacanza",
-	dalAl: (e, t) => `dal ${K(e)} al ${K(t)}`,
+	dalAl: (e, t) => `dal ${q(e)} al ${q(t)}`,
 	card: {
 		titolo: "Raccolta",
 		nonDisponibile: "Il calendario della raccolta non è disponibile. Controlla Riparazioni in Impostazioni.",
@@ -1052,21 +1053,21 @@ var L = (e) => D`<span class="chip" style="background:${e.colore};color:${Ne(e.c
 	},
 	profiloRimosso: (e) => e === 1 ? "Un promemoria riguardava solo questa tipologia e verrà eliminato." : `${e} promemoria riguardavano solo questa tipologia e verranno eliminati.`
 };
-function K(e) {
+function q(e) {
 	let t = R(e);
-	return `${t.getDate()} ${W[t.getMonth()]} ${t.getFullYear()}`;
+	return `${t.getDate()} ${G[t.getMonth()]} ${t.getFullYear()}`;
 }
 //#endregion
 //#region src/comune/simbolo.ts
-var Be = ye`<svg viewBox="0 0 64 64" aria-hidden="true" style="width:100%;height:100%">
+var ze = ye`<svg viewBox="0 0 64 64" aria-hidden="true" style="width:100%;height:100%">
   <g fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M26 13.5 V9 H38 V13.5"/><path d="M10 14.5 H54"/><path d="M13.5 20 L17 57 H47 L50.5 20 Z"/>
     <polyline points="21,34 32,25 43,34" opacity="0.5"/><polyline points="25.5,40.5 32,35 38.5,40.5"/>
   </g>
   <rect x="28.5" y="46.5" width="7" height="7" fill="#F0A835"/><circle cx="32" cy="46.5" r="3.5" fill="#F0A835"/>
-</svg>`, q = "foyer_raccolta_differenziata", J = class extends I {
+</svg>`, J = "foyer_raccolta_differenziata", Y = class extends I {
 	constructor(...e) {
-		super(...e), this._errore = !1, this._connessa = !1;
+		super(...e), this._errore = !1, this._connessa = !1, this._richiesta = 0;
 	}
 	static {
 		this.properties = {
@@ -1077,10 +1078,13 @@ var Be = ye`<svg viewBox="0 0 64 64" aria-hidden="true" style="width:100%;height
 		};
 	}
 	setConfig(e) {
-		this._config = { ...e };
+		let t = this._config;
+		this._config = { ...e }, t && this._dati && this.hass && this.carica(this._dati.oggi);
 	}
 	connectedCallback() {
-		super.connectedCallback(), this._connessa = !0, this._minuto = window.setInterval(() => this.requestUpdate(), 6e4), this.hass && this._avvia();
+		super.connectedCallback(), this._connessa = !0, this._minuto = window.setInterval(() => {
+			this._dati && z(/* @__PURE__ */ new Date()) !== this._dati.oggi ? this.carica() : this.requestUpdate();
+		}, 6e4), this.hass && this._avvia();
 	}
 	disconnectedCallback() {
 		super.disconnectedCallback(), this._connessa = !1, clearInterval(this._minuto), this._disiscrivi?.then((e) => e()).catch(() => void 0), this._disiscrivi = void 0;
@@ -1089,19 +1093,21 @@ var Be = ye`<svg viewBox="0 0 64 64" aria-hidden="true" style="width:100%;height
 		e.has("hass") && this.hass && this._connessa && !this._disiscrivi && this._avvia();
 	}
 	_avvia() {
-		this._disiscrivi = this.hass.connection.subscribeMessage(() => void this.carica(), { type: `${q}/iscriviti` }).catch(() => (this._errore = !0, () => void 0)), this.carica();
+		this._disiscrivi = this.hass.connection.subscribeMessage(() => void this.carica(), { type: `${J}/iscriviti` }).catch(() => (this._errore = !0, () => void 0)), this.carica();
 	}
 	async carica(e) {
+		let t = ++this._richiesta;
 		try {
-			let t = e ?? this._dati?.oggi ?? (/* @__PURE__ */ new Date()).toISOString().slice(0, 10), [n, r] = this.intervallo(t), i = await this.hass.callWS({
-				type: `${q}/ritiri`,
-				dal: n,
-				al: r
+			let n = e ?? z(/* @__PURE__ */ new Date()), [r, i] = this.intervallo(n), a = await this.hass.callWS({
+				type: `${J}/ritiri`,
+				dal: r,
+				al: i
 			});
-			if (!e && i.oggi !== t) return this.carica(i.oggi);
-			this._dati = i, this._errore = !i.disponibile;
+			if (t !== this._richiesta) return;
+			if (a.oggi !== n) return this.carica(a.oggi);
+			this._dati = a, this._errore = !a.disponibile;
 		} catch {
-			this._errore = !0;
+			t === this._richiesta && (this._errore = !0);
 		}
 	}
 	tipologia(e) {
@@ -1112,30 +1118,31 @@ var Be = ye`<svg viewBox="0 0 64 64" aria-hidden="true" style="width:100%;height
 	}
 	async conferma(e, t) {
 		await this.hass.callWS({
-			type: `${q}/conferma`,
+			type: `${J}/conferma`,
 			data: e,
 			tipologie: t
-		});
+		}).catch(() => this.carica());
 	}
 	async annulla(e, t) {
 		for (let n of t) await this.hass.callWS({
-			type: `${q}/annulla_conferma`,
+			type: `${J}/annulla_conferma`,
 			data: e,
 			tipologia: n
 		}).catch(() => void 0);
+		await this.carica();
 	}
 	intestazione(e, t) {
 		return D`<div class="intestazione">
-      <span class="simbolo">${Be}</span><b>${this._config?.titolo || e}</b>
+      <span class="simbolo">${ze}</span><b>${this._config?.titolo || e}</b>
       ${t ? D`<span class="sotto">${t}</span>` : ""}
     </div>`;
 	}
 	banner() {
 		let e = this._dati?.sospeso;
-		return e ? e.fino_al ? D`<div class="banner"><ha-icon icon="mdi:bell-off-outline"></ha-icon>${G.card.sospesiFino(Y(e.fino_al))}</div>` : e.manuale ? D`<div class="banner"><ha-icon icon="mdi:bell-off-outline"></ha-icon>${G.card.sospesi}</div>` : "" : "";
+		return e ? e.fino_al ? D`<div class="banner"><ha-icon icon="mdi:bell-off-outline"></ha-icon>${K.card.sospesiFino(X(e.fino_al))}</div>` : e.manuale ? D`<div class="banner"><ha-icon icon="mdi:bell-off-outline"></ha-icon>${K.card.sospesi}</div>` : "" : "";
 	}
 	nonDisponibile() {
-		return D`<ha-card><div class="vuota">${G.card.nonDisponibile}</div></ha-card>`;
+		return D`<ha-card><div class="vuota">${K.card.nonDisponibile}</div></ha-card>`;
 	}
 	static {
 		this.stiliComuni = [je, o`
@@ -1187,11 +1194,11 @@ var Be = ye`<svg viewBox="0 0 64 64" aria-hidden="true" style="width:100%;height
       }
     `];
 	}
-}, Y = (e) => {
+}, X = (e) => {
 	let [, t, n] = e.split("-").map(Number);
 	return `${n}/${String(t).padStart(2, "0")}`;
-}, Ve = Ne;
-function X(e, t, n) {
+}, Be = Ne;
+function Ve(e, t, n) {
 	let r = window;
 	r.customCards = r.customCards ?? [], r.customCards.some((t) => t.type === e) || r.customCards.push({
 		type: e,
@@ -1227,14 +1234,14 @@ var He = class extends I {
 		let e = this._config.type.includes("settimana");
 		return D`<div class="modulo">
       <div class="campo">
-        <label for="titolo">${G.card.campoTitolo}</label>
+        <label for="titolo">${K.card.campoTitolo}</label>
         <input id="titolo" .value=${this._config.titolo ?? ""} @input=${(e) => this._cambia({ titolo: e.target.value })} />
       </div>
       ${e ? D`<div class="campo">
-            <span class="etichetta">${G.card.campoInizio}</span>
+            <span class="etichetta">${K.card.campoInizio}</span>
             <div class="segmenti">
               ${["oggi", "lunedi"].map((e) => D`<button class=${(this._config.inizio ?? "oggi") === e ? "attivo" : ""} @click=${() => this._cambia({ inizio: e })}>
-                  ${e === "oggi" ? G.card.inizioOggi : G.card.inizioLunedi}
+                  ${e === "oggi" ? K.card.inizioOggi : K.card.inizioLunedi}
                 </button>`)}
             </div>
           </div>` : k}
@@ -1251,7 +1258,7 @@ var He = class extends I {
 customElements.get("foyer-raccolta-editor") || customElements.define("foyer-raccolta-editor", He);
 //#endregion
 //#region src/card/oggi.ts
-var Z = "foyer-raccolta-oggi-card", Ue = class extends J {
+var Z = "foyer-raccolta-oggi-card", Ue = class extends Y {
 	static getConfigElement() {
 		return document.createElement("foyer-raccolta-editor");
 	}
@@ -1262,7 +1269,7 @@ var Z = "foyer-raccolta-oggi-card", Ue = class extends J {
 		return 4;
 	}
 	intervallo(e) {
-		return [e, z(e, 8)];
+		return [e, B(e, 8)];
 	}
 	_fuoco() {
 		let e = this._dati?.ritiri ?? [], t = /* @__PURE__ */ new Date(), n = e.filter((e) => new Date(e.inizio_esposizione) <= t && t < new Date(e.fine_esposizione));
@@ -1282,24 +1289,24 @@ var Z = "foyer-raccolta-oggi-card", Ue = class extends J {
 		};
 	}
 	_quando(e, t) {
-		let n = Fe(this._dati.oggi, e);
-		return t === "da_esporre" ? n <= 0 ? G.card.daEsporreOra : G.card.staseraFuori : n === 0 ? G.card.oggi : n === 1 ? G.card.domani : `${U[B(e)]} ${R(e).getDate()}`;
+		let n = Pe(this._dati.oggi, e);
+		return t === "da_esporre" ? n <= 0 ? K.card.daEsporreOra : K.card.staseraFuori : n === 0 ? K.card.oggi : n === 1 ? K.card.domani : `${W[V(e)]} ${R(e).getDate()}`;
 	}
 	_eroe() {
 		let e = this._fuoco();
-		if (!e) return D`<div class="eroe calmo"><div class="cosa piccola">${G.card.tuttoTranquillo}</div></div>`;
-		let { ritiri: t, stato: n } = e, r = t.map((e) => this.tipologia(e.tipologia)).filter((e) => e !== void 0), i = r.map((e) => e.colore), a = i.length > 1 ? `linear-gradient(135deg, ${i[0]} 0%, ${i[i.length - 1]} 100%)` : i[0] ?? "var(--rd-primario)", o = Ve(i[0] ?? "#03a9f4"), s = t[0].data, c = Fe(this._dati.oggi, s), l = H(t[0].fine_esposizione), u = H(t[0].inizio_esposizione), d = this.confermato(t[0]), f = t.map((e) => e.tipologia);
+		if (!e) return D`<div class="eroe calmo"><div class="cosa piccola">${K.card.tuttoTranquillo}</div></div>`;
+		let { ritiri: t, stato: n } = e, r = t.map((e) => this.tipologia(e.tipologia)).filter((e) => e !== void 0), i = r.map((e) => e.colore), a = i.length > 1 ? `linear-gradient(135deg, ${i[0]} 0%, ${i[i.length - 1]} 100%)` : i[0] ?? "var(--rd-primario)", o = Be(i[0] ?? "#03a9f4"), s = t[0].data, c = Pe(this._dati.oggi, s), l = U(t[0].fine_esposizione), u = U(t[0].inizio_esposizione), d = this.confermato(t[0]), f = t.map((e) => e.tipologia);
 		return D`<div class="eroe ${n} ${o === "#ffffff" ? "chiaro" : ""}" style="background:${a};color:${o}">
       <ha-icon class="sfondo-icona" .icon=${r[0]?.icona ?? "mdi:trash-can-outline"}></ha-icon>
       <div class="quando">${this._quando(s, n)}</div>
       <div class="cosa">${r.map((e) => e.nome).join(" e ")}</div>
-      ${n === "esposto" ? D`<div class="fino"><ha-icon icon="mdi:check-circle"></ha-icon>${G.card.espostoAlle(H(d?.istante ?? ""), d?.utente)}</div>
-            <button class="conferma fatto" @click=${() => this.annulla(s, f)}>${G.card.annullaConferma}</button>` : D`<div class="fino">
+      ${n === "esposto" ? D`<div class="fino"><ha-icon icon="mdi:check-circle"></ha-icon>${K.card.espostoAlle(U(d?.istante ?? ""), d?.utente)}</div>
+            <button class="conferma fatto" @click=${() => this.annulla(s, f)}>${K.card.annullaConferma}</button>` : D`<div class="fino">
               <ha-icon icon="mdi:clock-outline"></ha-icon>
-              ${n === "da_esporre" ? G.card.entroLe(l, c <= 0) : G.card.dalle(u)}
+              ${n === "da_esporre" ? K.card.entroLe(l, c <= 0) : K.card.dalle(u)}
             </div>
-            ${c <= 1 ? D`<button class="conferma" @click=${() => this.conferma(s, f)}>${G.card.esposto}</button>` : k}`}
-      ${t.some((e) => e.da_verificare) ? D`<div class="nota">${G.card.daVerificare}</div>` : k}
+            ${c <= 1 ? D`<button class="conferma" @click=${() => this.conferma(s, f)}>${K.card.esposto}</button>` : k}`}
+      ${t.some((e) => e.da_verificare) ? D`<div class="nota">${K.card.daVerificare}</div>` : k}
     </div>`;
 	}
 	_giorno(e, t) {
@@ -1309,8 +1316,8 @@ var Z = "foyer-raccolta-oggi-card", Ue = class extends J {
       <div class="chips">
         ${n.length ? n.map((e) => {
 			let t = this.tipologia(e.tipologia);
-			return D`<span class="con-segno">${t ? L(t) : e.tipologia}${this.confermato(e) ? D`<ha-icon class="spunta" icon="mdi:check-circle" title=${G.card.confermato}></ha-icon>` : k}</span>`;
-		}) : D`<span class="vuoto">${G.card.nessunRitiro}</span>`}
+			return D`<span class="con-segno">${t ? L(t) : e.tipologia}${this.confermato(e) ? D`<ha-icon class="spunta" icon="mdi:check-circle" title=${K.card.confermato}></ha-icon>` : k}</span>`;
+		}) : D`<span class="vuoto">${K.card.nessunRitiro}</span>`}
       </div>
     </div>`;
 	}
@@ -1320,14 +1327,14 @@ var Z = "foyer-raccolta-oggi-card", Ue = class extends J {
 		if (!this._dati) return D`<ha-card><div class="vuota">…</div></ha-card>`;
 		let e = this._dati.oggi, t = R(e);
 		return D`<ha-card>
-      ${this.intestazione(G.card.titolo, `${U[B(e)]} ${t.getDate()} ${W[t.getMonth()]}`)}
+      ${this.intestazione(K.card.titolo, `${W[V(e)]} ${t.getDate()} ${G[t.getMonth()]}`)}
       ${this._eroe()}
-      <div class="fila">${this._giorno(G.card.oggi, e)} ${this._giorno(G.card.domani, z(e, 1))}</div>
+      <div class="fila">${this._giorno(K.card.oggi, e)} ${this._giorno(K.card.domani, B(e, 1))}</div>
       ${this.banner()}
     </ha-card>`;
 	}
 	static {
-		this.styles = [...J.stiliComuni, o`
+		this.styles = [...Y.stiliComuni, o`
       .eroe {
         margin: 8px 12px 12px;
         border-radius: 16px;
@@ -1453,13 +1460,13 @@ var Z = "foyer-raccolta-oggi-card", Ue = class extends J {
     `];
 	}
 };
-customElements.get(Z) || customElements.define(Z, Ue), X(Z, G.card.nomeOggi, G.card.descrizioneOggi);
+customElements.get(Z) || customElements.define(Z, Ue), Ve(Z, K.card.nomeOggi, K.card.descrizioneOggi);
 //#endregion
 //#region src/card/settimana.ts
-var Q = "foyer-raccolta-settimana-card", We = class extends J {
+var Q = "foyer-raccolta-settimana-card", We = class extends Y {
 	static {
 		this.properties = {
-			...J.properties,
+			...Y.properties,
 			_scelto: { state: !0 }
 		};
 	}
@@ -1476,30 +1483,30 @@ var Q = "foyer-raccolta-settimana-card", We = class extends J {
 		return 3;
 	}
 	intervallo(e) {
-		let t = this._config?.inizio === "lunedi" ? Ie(e) : e;
-		return [t, z(t, 6)];
+		let t = this._config?.inizio === "lunedi" ? Fe(e) : e;
+		return [t, B(t, 6)];
 	}
 	render() {
 		if (!this._config) return k;
 		if (this._errore) return this.nonDisponibile();
 		if (!this._dati) return D`<ha-card><div class="vuota">…</div></ha-card>`;
-		let e = this._dati.oggi, [t, n] = this.intervallo(e), r = Array.from({ length: 7 }, (e, n) => z(t, n)), i = this._dati.ritiri, a = [...new Set(i.map((e) => e.tipologia))].map((e) => this.tipologia(e)).filter((e) => e !== void 0), o = this._scelto && r.includes(this._scelto) ? this._scelto : void 0, s = o ? i.filter((e) => e.data === o) : [];
+		let e = this._dati.oggi, [t, n] = this.intervallo(e), r = Array.from({ length: 7 }, (e, n) => B(t, n)), i = this._dati.ritiri, a = [...new Set(i.map((e) => e.tipologia))].map((e) => this.tipologia(e)).filter((e) => e !== void 0), o = this._scelto && r.includes(this._scelto) ? this._scelto : void 0, s = o ? i.filter((e) => e.data === o) : [];
 		return D`<ha-card>
-      ${this.intestazione(G.card.settimana, `${Y(t)} – ${Y(n)}`)}
+      ${this.intestazione(K.card.settimana, `${X(t)} – ${X(n)}`)}
       <div class="settimana" role="list">
         ${r.map((t) => {
 			let n = i.filter((e) => e.data === t);
 			return D`<button
             role="listitem"
             class="g ${t === e ? "oggi" : ""} ${t < e ? "passato" : ""} ${t === o ? "scelto" : ""}"
-            aria-label=${`${U[B(t)]} ${R(t).getDate()}: ${n.map((e) => this.tipologia(e.tipologia)?.nome).join(", ") || G.card.nessunRitiro}`}
+            aria-label=${`${W[V(t)]} ${R(t).getDate()}: ${n.map((e) => this.tipologia(e.tipologia)?.nome).join(", ") || K.card.nessunRitiro}`}
             @click=${() => this._scelto = t === o ? void 0 : t}
           >
-            <span class="nome-g">${t === e ? G.card.oggi : Re[B(t)]}</span>
+            <span class="nome-g">${t === e ? K.card.oggi : Le[V(t)]}</span>
             <span class="num">${R(t).getDate()}</span>
             ${n.map((e) => {
 				let t = this.tipologia(e.tipologia), n = t?.colore ?? "#888888";
-				return D`<span class="ico-t ${this.confermato(e) ? "fatto" : ""}" style="background:${n};color:${Ve(n)}">
+				return D`<span class="ico-t ${this.confermato(e) ? "fatto" : ""}" style="background:${n};color:${Be(n)}">
                 <ha-icon .icon=${t?.icona ?? "mdi:trash-can-outline"}></ha-icon>
                 ${e.spostato_dal ? D`<span class="segno">↪</span>` : k}
               </span>`;
@@ -1508,22 +1515,22 @@ var Q = "foyer-raccolta-settimana-card", We = class extends J {
 		})}
       </div>
       ${o ? D`<div class="dettaglio">
-            <small>${U[B(o)]} ${R(o).getDate()}</small>
+            <small>${W[V(o)]} ${R(o).getDate()}</small>
             ${s.length ? s.map((e) => {
 			let t = this.tipologia(e.tipologia);
 			return D`<div class="riga">
                     ${t ? L(t) : e.tipologia}
                     <span class="note">
-                      ${[t?.note, e.spostato_dal ? G.card.spostatoDal(Y(e.spostato_dal)) : ""].filter(Boolean).join(" · ")}
+                      ${[t?.note, e.spostato_dal ? K.card.spostatoDal(X(e.spostato_dal)) : ""].filter(Boolean).join(" · ")}
                     </span>
                   </div>`;
-		}) : D`<span class="vuoto">${G.card.nessunRitiro}</span>`}
-          </div>` : a.length ? D`<div class="legenda">${a.map((e) => D`<span><i class="pallino" style="background:${e.colore}"></i>${e.nome}</span>`)}</div>` : D`<div class="vuota">${G.card.nessunRitiroSettimana}</div>`}
+		}) : D`<span class="vuoto">${K.card.nessunRitiro}</span>`}
+          </div>` : a.length ? D`<div class="legenda">${a.map((e) => D`<span><i class="pallino" style="background:${e.colore}"></i>${e.nome}</span>`)}</div>` : D`<div class="vuota">${K.card.nessunRitiroSettimana}</div>`}
       ${this.banner()}
     </ha-card>`;
 	}
 	static {
-		this.styles = [...J.stiliComuni, o`
+		this.styles = [...Y.stiliComuni, o`
       .settimana {
         display: grid;
         grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -1646,13 +1653,13 @@ var Q = "foyer-raccolta-settimana-card", We = class extends J {
     `];
 	}
 };
-customElements.get(Q) || customElements.define(Q, We), X(Q, G.card.nomeSettimana, G.card.descrizioneSettimana);
+customElements.get(Q) || customElements.define(Q, We), Ve(Q, K.card.nomeSettimana, K.card.descrizioneSettimana);
 //#endregion
 //#region src/card/mese.ts
-var $ = "foyer-raccolta-mese-card", Ge = class extends J {
+var $ = "foyer-raccolta-mese-card", Ge = class extends Y {
 	static {
 		this.properties = {
-			...J.properties,
+			...Y.properties,
 			_mese: { state: !0 },
 			_scelto: { state: !0 }
 		};
@@ -1667,32 +1674,32 @@ var $ = "foyer-raccolta-mese-card", Ge = class extends J {
 		return 7;
 	}
 	intervallo(e) {
-		let t = this._mese ?? V(e), n = z(t, -B(t));
-		return [n, z(n, 41)];
+		let t = this._mese ?? H(e), n = B(t, -V(t));
+		return [n, B(n, 41)];
 	}
 	_sposta(e) {
-		let t = R(this._mese ?? V(this._dati.oggi));
-		t.setMonth(t.getMonth() + e), this._mese = Pe(t), this._scelto = void 0, this.carica(this._dati.oggi);
+		let t = R(this._mese ?? H(this._dati.oggi));
+		t.setMonth(t.getMonth() + e), this._mese = z(t), this._scelto = void 0, this.carica(this._dati.oggi);
 	}
 	render() {
 		if (!this._config) return k;
 		if (this._errore) return this.nonDisponibile();
 		if (!this._dati) return D`<ha-card><div class="vuota">…</div></ha-card>`;
-		let e = this._dati.oggi, t = this._mese ?? V(e), [n] = this.intervallo(e), r = R(t).getFullYear(), i = R(t).getMonth(), a = Math.ceil((B(t) + Le(r, i + 1)) / 7) * 7, o = this._scelto ?? (t === V(e) ? e : t), s = this._dati.ritiri.filter((e) => e.data === o);
+		let e = this._dati.oggi, t = this._mese ?? H(e), [n] = this.intervallo(e), r = R(t).getFullYear(), i = R(t).getMonth(), a = Math.ceil((V(t) + Ie(r, i + 1)) / 7) * 7, o = this._scelto ?? (t === H(e) ? e : t), s = this._dati.ritiri.filter((e) => e.data === o);
 		return D`<ha-card>
-      ${this.intestazione(G.card.calendario)}
+      ${this.intestazione(K.card.calendario)}
       <div class="testa-mese">
-        <button aria-label=${G.card.mesePrecedente} @click=${() => this._sposta(-1)}><ha-icon icon="mdi:chevron-left"></ha-icon></button>
-        <b>${W[i]} ${r}</b>
-        <button aria-label=${G.card.meseSuccessivo} @click=${() => this._sposta(1)}><ha-icon icon="mdi:chevron-right"></ha-icon></button>
+        <button aria-label=${K.card.mesePrecedente} @click=${() => this._sposta(-1)}><ha-icon icon="mdi:chevron-left"></ha-icon></button>
+        <b>${G[i]} ${r}</b>
+        <button aria-label=${K.card.meseSuccessivo} @click=${() => this._sposta(1)}><ha-icon icon="mdi:chevron-right"></ha-icon></button>
       </div>
       <div class="mese">
-        ${ze.map((e) => D`<div class="intest">${e}</div>`)}
+        ${Re.map((e) => D`<div class="intest">${e}</div>`)}
         ${Array.from({ length: a }, (t, r) => {
-			let a = z(n, r), s = this._dati.ritiri.filter((e) => e.data === a);
+			let a = B(n, r), s = this._dati.ritiri.filter((e) => e.data === a);
 			return D`<button
             class="c ${R(a).getMonth() === i ? "" : "fuori"} ${a === e ? "oggi" : ""} ${a === o && a !== e ? "scelto" : ""}"
-            aria-label=${`${R(a).getDate()} ${W[R(a).getMonth()]}`}
+            aria-label=${`${R(a).getDate()} ${G[R(a).getMonth()]}${s.length ? `: ${s.map((e) => this.tipologia(e.tipologia)?.nome ?? e.tipologia).join(", ")}` : ""}`}
             @click=${() => this._scelto = a}
           >
             <span>${R(a).getDate()}</span>
@@ -1703,22 +1710,22 @@ var $ = "foyer-raccolta-mese-card", Ge = class extends J {
 		})}
       </div>
       <div class="dettaglio">
-        <small>${U[B(o)]} ${R(o).getDate()} ${W[R(o).getMonth()]}</small>
+        <small>${W[V(o)]} ${R(o).getDate()} ${G[R(o).getMonth()]}</small>
         ${s.length ? s.map((e) => {
 			let t = this.tipologia(e.tipologia), n = [
 				t?.note,
-				e.spostato_dal ? G.card.spostatoDal(Y(e.spostato_dal)) : "",
-				e.festivo ? G.card.festivo(e.festivo) : "",
-				this.confermato(e) ? G.card.confermato : ""
+				e.spostato_dal ? K.card.spostatoDal(X(e.spostato_dal)) : "",
+				e.festivo ? K.card.festivo(e.festivo) : "",
+				this.confermato(e) ? K.card.confermato : ""
 			].filter(Boolean);
 			return D`<div class="riga">${t ? L(t) : e.tipologia}<span class="note">${n.join(" · ")}</span></div>`;
-		}) : D`<span class="note">${G.card.nessunRitiro}</span>`}
+		}) : D`<span class="note">${K.card.nessunRitiro}</span>`}
       </div>
       ${this.banner()}
     </ha-card>`;
 	}
 	static {
-		this.styles = [...J.stiliComuni, o`
+		this.styles = [...Y.stiliComuni, o`
       .testa-mese {
         display: flex;
         align-items: center;
@@ -1822,5 +1829,5 @@ var $ = "foyer-raccolta-mese-card", Ge = class extends J {
     `];
 	}
 };
-customElements.get($) || customElements.define($, Ge), X($, G.card.nomeMese, G.card.descrizioneMese);
+customElements.get($) || customElements.define($, Ge), Ve($, K.card.nomeMese, K.card.descrizioneMese);
 //#endregion

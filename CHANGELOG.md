@@ -7,6 +7,42 @@ non solo "correzioni", e quello che richiede qualcosa da te viene prima di tutto
 
 ## [Non rilasciato]
 
+## [0.2.0] — 2026-09-26 — pannolini e revisione completa
+
+### Aggiunto
+- **I pannolini tra le tipologie pronte**, con il loro colore e la loro icona. Non sono
+  selezionati all'installazione: li scegli se ti servono. Chi ha già installato
+  l'integrazione li aggiunge dal pannello, in *Tipologie → Nuova tipologia*.
+
+### Corretto
+- **Un promemoria con più rifiuti non si perde più per colpa di uno.** Se nello stesso
+  messaggio c'erano rifiuti con orari di esposizione diversi e la finestra di uno si era
+  già chiusa, il messaggio non partiva per nessuno. Ora parte per quelli ancora da esporre.
+- **Il pannello non sovrascrive più le modifiche di un altro amministratore.** Con due
+  schede aperte, un salvataggio poteva cancellare quello fatto nell'altra senza avviso.
+- **La pagina *Impostazioni* non perde più le modifiche non salvate** quando qualcuno
+  conferma un ritiro o scatta la mezzanotte mentre la stai compilando.
+- **Card e pannello restano aggiornati dopo un ricaricamento dell'integrazione.** Prima
+  smettevano di aggiornarsi finché non si ricaricava la pagina.
+- **La conferma dalle card vale solo per oggi e domani**, come il pulsante *Esposto*: una
+  data sbagliata non spegne più i promemoria della settimana dopo.
+- **Solleciti di un promemoria spento non partono più**, e ridurre il numero di richiami
+  vale anche per quelli già programmati.
+- **Eliminare una tipologia toglie anche le sue conferme e i suoi avvisi ignorati.**
+- **Ora legale.** Un orario che il cambio dell'ora salta (le 02:30 dell'ultima domenica
+  di marzo) ora vale alle 03:00, come dice la specifica, e non alle 03:30.
+- **Riparazioni.** Disattivando l'integrazione i suoi avvisi spariscono, e il modulo di
+  rinnovo del calendario non va più in errore.
+- **Il pulsante *Esposto* dice quando non c'è niente da confermare**, invece di non fare
+  nulla in silenzio.
+- **Più robusto con una configurazione rovinata**: interruttore e card non vanno più in
+  errore, e un sensore di una tipologia eliminata mentre il calendario non era
+  disponibile viene tolto al riavvio.
+- **Più veloce** con regole valide per molti anni, e il calendario non calcola più di due
+  anni per richiesta.
+- **Il pannello e le card mostrano gli errori di connessione** invece di restare fermi, e
+  il mese mostrato non viene più coperto da una risposta arrivata in ritardo.
+
 ## [0.1.0] — 2026-09-26 — la prima versione
 
 Il calendario della raccolta, i promemoria e le tre card. La guida è in

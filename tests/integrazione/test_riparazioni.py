@@ -141,3 +141,22 @@ async def test_rimuovere_l_integrazione_toglie_i_problemi(hass, hass_storage, fr
     await hass.async_block_till_done()
 
     assert _problema(hass, "ritiri_festivi") is None
+
+
+async def test_disattivare_l_integrazione_toglie_i_problemi_e_il_flusso_non_si_rompe(
+    hass, hass_storage, freezer
+):
+    _a(freezer, "2026-12-10T12:00:00")
+    voce = await installa(
+        hass, hass_storage, configurazione(valido_fino_al="2026-12-31")
+    )
+    assert _problema(hass, "calendario_in_scadenza") is not None
+
+    await hass.config_entries.async_unload(voce.entry_id)
+    await hass.async_block_till_done()
+
+    assert _problema(hass, "calendario_in_scadenza") is None
+    flusso = await _flusso(hass, "calendario_in_scadenza")
+    esito = await flusso.async_step_init()
+    assert esito["type"] == "abort"
+    assert esito["reason"] == "non_caricata"

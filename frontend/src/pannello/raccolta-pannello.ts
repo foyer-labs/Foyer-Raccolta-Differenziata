@@ -44,6 +44,7 @@ export class RaccoltaPannello extends LitElement {
     _problemi: { state: true },
     _avviso: { state: true },
     _precompila: { state: true },
+    _occupato: { state: true },
   };
 
   hass!: HomeAssistant;
@@ -58,6 +59,7 @@ export class RaccoltaPannello extends LitElement {
   private _precompila?: Precompila;
   private _disiscrivi?: Promise<() => void>;
   private _timerAvviso?: number;
+  private _occupato = false;
 
   override connectedCallback() {
     super.connectedCallback();
@@ -72,7 +74,9 @@ export class RaccoltaPannello extends LitElement {
   }
 
   override updated(cambiati: Map<string, unknown>) {
-    if (cambiati.has("hass") && this.hass && !this._lettura && !this._errore) {
+    // Una sola iscrizione per volta: `_disiscrivi` c'è dal momento in cui la si chiede,
+    // non da quando arriva la prima lettura. Riconnesso, il pannello si riscrive.
+    if (cambiati.has("hass") && this.hass && !this._disiscrivi) {
       void this._carica();
       this._disiscrivi = this.hass.connection
         .subscribeMessage(() => void this._carica(), { type: `${DOMINIO}/iscriviti` })
@@ -98,21 +102,36 @@ export class RaccoltaPannello extends LitElement {
   private async _proponi(e: CustomEvent<Configurazione>) {
     e.stopPropagation();
     const candidata = e.detail;
-    const anteprima = await this.hass.callWS<Anteprima>({
-      type: `${DOMINIO}/anteprima`,
-      configurazione: candidata,
-    });
-    this._problemi = anteprima.problemi;
-    this._inAttesa = { candidata, anteprima };
+    try {
+      const anteprima = await this.hass.callWS<Anteprima>({
+        type: `${DOMINIO}/anteprima`,
+        configurazione: candidata,
+      });
+      this._problemi = anteprima.problemi;
+      this._inAttesa = { candidata, anteprima };
+    } catch {
+      this._mostraAvviso(T.erroreConnessione);
+    }
   }
 
   private async _salva() {
-    if (!this._inAttesa || !this._lettura) return;
-    const esito = await this.hass.callWS<EsitoSalvataggio>({
-      type: `${DOMINIO}/config/salva`,
-      configurazione: this._inAttesa.candidata,
-      revisione: this._lettura.revisione,
-    });
+    if (!this._inAttesa || this._occupato) return;
+    this._occupato = true;
+    let esito: EsitoSalvataggio;
+    try {
+      esito = await this.hass.callWS<EsitoSalvataggio>({
+        type: `${DOMINIO}/config/salva`,
+        configurazione: this._inAttesa.candidata,
+        // La revisione su cui la modifica è stata costruita, non quella di adesso:
+        // se nel frattempo un altro ha salvato, il backend deve rifiutare.
+        revisione: this._inAttesa.candidata.revisione,
+      });
+    } catch {
+      this._mostraAvviso(T.erroreConnessione);
+      return;
+    } finally {
+      this._occupato = false;
+    }
     if (esito.salvato) {
       this._inAttesa = undefined;
       this._problemi = [];
@@ -172,7 +191,7 @@ export class RaccoltaPannello extends LitElement {
         <button class="bottone" @click=${() => (this._inAttesa = undefined)}>${T.annulla}</button>
         ${this._problemi.length
           ? nothing
-          : html`<button class="bottone primario" @click=${this._salva}>${T.salva}</button>`}
+          : html`<button class="bottone primario" ?disabled=${this._occupato} @click=${this._salva}>${T.salva}</button>`}
       </div>
     </rd-finestra>`;
   }

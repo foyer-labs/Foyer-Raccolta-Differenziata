@@ -30,5 +30,8 @@ URL_STATICO: Final = "/foyer_raccolta_differenziata_statici"
 MODULO_PANNELLO: Final = "raccolta-pannello.js"
 MODULO_CARD: Final = "raccolta-card.js"
 
+# Segnale di ogni ricalcolo, per le iscrizioni WebSocket di pannello e card.
+SEGNALE_AGGIORNATO: Final = f"{DOMINIO}_aggiornato"
+
 # Opzioni della voce di configurazione (SPEC §10.1.1).
 OPZIONE_BARRA_LATERALE: Final = "mostra_barra_laterale"

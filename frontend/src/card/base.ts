@@ -5,6 +5,7 @@ import { LitElement, css, html, type PropertyValues } from "lit";
 
 import { base, testoSu } from "../comune/stili";
 import { simbolo } from "../comune/simbolo";
+import { aIso } from "../comune/date";
 import { T } from "../comune/testi";
 import type { HomeAssistant, LetturaRitiri, Ritiro } from "../comune/tipi";
 
@@ -35,7 +36,11 @@ export abstract class CardRaccolta extends LitElement {
   private _minuto?: number;
 
   setConfig(config: ConfigCard) {
+    const prima = this._config;
     this._config = { ...config };
+    // Nell'editor visuale la configurazione cambia a card già caricata: l'intervallo
+    // da leggere può essere un altro (la settimana dal lunedì).
+    if (prima && this._dati && this.hass) void this.carica(this._dati.oggi);
   }
 
   /** L'intervallo di date da leggere, in base a "oggi" del backend. */
@@ -46,7 +51,10 @@ export abstract class CardRaccolta extends LitElement {
     this._connessa = true;
     // Le finestre si aprono e si chiudono: una volta al minuto si ridisegna, senza
     // rileggere nulla.
-    this._minuto = window.setInterval(() => this.requestUpdate(), 60_000);
+    this._minuto = window.setInterval(() => {
+      if (this._dati && aIso(new Date()) !== this._dati.oggi) void this.carica();
+      else this.requestUpdate();
+    }, 60_000);
     if (this.hass) this._avvia();
   }
 
@@ -72,17 +80,24 @@ export abstract class CardRaccolta extends LitElement {
     void this.carica();
   }
 
+  private _richiesta = 0;
+
   protected async carica(oggi?: string): Promise<void> {
+    // Solo l'ultima richiesta conta: una risposta lenta per un mese vecchio non deve
+    // coprire quella del mese che si sta guardando.
+    const numero = ++this._richiesta;
     try {
-      const giorno = oggi ?? this._dati?.oggi ?? new Date().toISOString().slice(0, 10);
+      // Senza un "oggi" noto si parte dalla data locale; se il backend ne ha un'altra
+      // (fusi diversi, mezzanotte appena passata) si rilegge con la sua.
+      const giorno = oggi ?? aIso(new Date());
       const [dal, al] = this.intervallo(giorno);
       const dati = await this.hass.callWS<LetturaRitiri>({ type: `${DOMINIO}/ritiri`, dal, al });
-      // Il primo giorno lo decide il backend: se "oggi" non era quello giusto, si rilegge.
-      if (!oggi && dati.oggi !== giorno) return this.carica(dati.oggi);
+      if (numero !== this._richiesta) return;
+      if (dati.oggi !== giorno) return this.carica(dati.oggi);
       this._dati = dati;
       this._errore = !dati.disponibile;
     } catch {
-      this._errore = true;
+      if (numero === this._richiesta) this._errore = true;
     }
   }
 
@@ -95,13 +110,17 @@ export abstract class CardRaccolta extends LitElement {
   }
 
   protected async conferma(data: string, tipologie: string[]) {
-    await this.hass.callWS({ type: `${DOMINIO}/conferma`, data, tipologie });
+    // La risposta vera arriva con l'iscrizione; se il comando fallisce si rilegge,
+    // così la card non mostra uno stato che il backend non ha.
+    await this.hass.callWS({ type: `${DOMINIO}/conferma`, data, tipologie }).catch(() => this.carica());
   }
 
   protected async annulla(data: string, tipologie: string[]) {
     for (const tipologia of tipologie) {
       await this.hass.callWS({ type: `${DOMINIO}/annulla_conferma`, data, tipologia }).catch(() => undefined);
     }
+    // Finestra già chiusa: il backend rifiuta, e la rilettura lo mostra.
+    await this.carica();
   }
 
   protected intestazione(titolo: string, sotto?: string) {

@@ -439,3 +439,66 @@ def test_pulsante_esposto_salta_i_confermati():
     )
 
     assert ritiri == ()
+
+
+def test_una_finestra_chiusa_non_cancella_le_altre_tipologie_dell_invio():
+    """Umido chiude alle 6, il vetro alle 12: alle 7 il vetro va ancora ricordato."""
+    vetro = tipologia(
+        "vetro",
+        esposizione={
+            "inizio_giorno": "giorno_stesso",
+            "inizio_ora": "06:00",
+            "fine_ora": "12:00",
+        },
+    )
+    ris = risultato(
+        tipologie=[tipologia("umido"), vetro],
+        regole=[
+            regola("r1", "umido", settimanale([GIO])),
+            regola("r2", "vetro", settimanale([GIO])),
+        ],
+    )
+    config = dati([profilo(quando={"tipo": "giorno_stesso", "ora": "07:00"})])
+
+    decisione = decidi(
+        carica_promemoria(config),
+        ris,
+        stato("2026-09-24T06:59"),
+        None,
+        a("2026-09-24T07:00"),
+        fuso=ROMA,
+    )
+
+    assert [i.tipologie for i in decisione.invii] == [("vetro",)]
+
+
+def test_all_apertura_l_ora_non_serve():
+    config = carica_promemoria(
+        dati([profilo(quando={"tipo": "apertura", "ora": "qualsiasi"})])
+    )
+
+    assert config.profili[0].quando.ora is None
+
+
+def test_i_solleciti_di_un_profilo_spento_non_partono():
+    config = dati(solleciti=SOLLECITI)
+    primo = esegui(config, stato("2026-09-23T20:29"), "2026-09-23T20:30")
+
+    spento = dati([profilo(attivo=False)], solleciti=SOLLECITI)
+    dopo = esegui(spento, primo.stato, "2026-09-23T21:00")
+
+    assert dopo.invii == ()
+    assert [x.motivo for x in dopo.scartati] == ["profilo_non_attivo"]
+
+
+def test_abbassare_il_numero_di_richiami_vale_subito():
+    config = dati(solleciti=SOLLECITI)
+    primo = esegui(config, stato("2026-09-23T20:29"), "2026-09-23T20:30")
+    secondo = esegui(config, primo.stato, "2026-09-23T21:00")
+    assert secondo.stato["pendenti"][0]["numero"] == 2
+
+    uno = dati(solleciti={**SOLLECITI, "richiami": 1})
+    terzo = esegui(uno, secondo.stato, "2026-09-23T21:30")
+
+    assert terzo.invii == ()
+    assert terzo.stato["pendenti"] == []

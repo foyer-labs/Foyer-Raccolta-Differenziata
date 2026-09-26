@@ -36,6 +36,7 @@ export const T = {
   cosaCambia: "Ecco cosa cambia nei prossimi 60 giorni.",
   nienteCambia: "Nessun ritiro cambia nei prossimi 60 giorni.",
   salvato: "Salvato",
+  erroreConnessione: "Non è stato possibile raggiungere Home Assistant. Riprova.",
   altroHaSalvato: "Qualcun altro ha salvato nel frattempo: la pagina è stata aggiornata, riprova.",
   nonSalvato: "Non salvato: correggi questi punti.",
   // Panoramica

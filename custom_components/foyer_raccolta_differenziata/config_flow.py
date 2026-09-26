@@ -37,7 +37,7 @@ from .core.configurazione import (
     INIZI_POSSIBILI,
     errore_finestra,
 )
-from .core.preset import CHIAVI_PRESET
+from .core.preset import CHIAVI_PREDEFINITE, CHIAVI_PRESET
 
 
 def _hh_mm(valore: str) -> str:
@@ -90,7 +90,7 @@ class RaccoltaConfigFlow(ConfigFlow, domain=DOMINIO):
     ) -> ConfigFlowResult:
         errori: dict[str, str] = {}
         predefiniti: dict[str, Any] = {
-            CONF_TIPOLOGIE: list(CHIAVI_PRESET),
+            CONF_TIPOLOGIE: list(CHIAVI_PREDEFINITE),
             CONF_INIZIO_GIORNO: FINESTRA_PREDEFINITA["inizio_giorno"],
             CONF_INIZIO_ORA: FINESTRA_PREDEFINITA["inizio_ora"],
             CONF_FINE_ORA: FINESTRA_PREDEFINITA["fine_ora"],
