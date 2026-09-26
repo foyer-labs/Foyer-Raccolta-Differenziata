@@ -1,7 +1,6 @@
 // La card "Oggi e domani" (SPEC §10.2): cosa esporre adesso, con il pulsante.
 import { css, html, nothing } from "lit";
 
-import { chip } from "../comune/chip";
 import { giorniTra, oraDi, piuGiorni } from "../comune/date";
 import { GIORNI, MESI, T } from "../comune/testi";
 import { daIso, giornoSettimana } from "../comune/date";
@@ -102,7 +101,7 @@ export class RaccoltaOggiCard extends CardRaccolta {
         ${ritiri.length
           ? ritiri.map((r) => {
               const t = this.tipologia(r.tipologia);
-              return html`<span class="con-segno">${t ? chip(t) : r.tipologia}${this.confermato(r) ? html`<ha-icon class="spunta" icon="mdi:check-circle" title=${T.card.confermato}></ha-icon>` : nothing}</span>`;
+              return html`<span class="con-segno">${t ? this.chipNota(t) : r.tipologia}${this.confermato(r) ? html`<ha-icon class="spunta" icon="mdi:check-circle" title=${T.card.confermato}></ha-icon>` : nothing}</span>`;
             })
           : html`<span class="vuoto">${T.card.nessunRitiro}</span>`}
       </div>
@@ -120,6 +119,7 @@ export class RaccoltaOggiCard extends CardRaccolta {
       ${this._eroe()}
       <div class="fila">${this._giorno(T.card.oggi, oggi)} ${this._giorno(T.card.domani, piuGiorni(oggi, 1))}</div>
       ${this.banner()}
+    ${this.finestre()}
     </ha-card>`;
   }
 

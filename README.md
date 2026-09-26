@@ -39,6 +39,9 @@ dice ogni sera cosa mettere fuori.
   il resto dell'anno: una regola per stagione, e ciascuna vale solo nel suo periodo.
 - **Le eccezioni che arrivano col calendario nuovo.** Il ritiro del 25 dicembre spostato
   al 27, un passaggio in più, uno annullato: si aggiungono con un tocco.
+- **Cosa va dove, e la piattaforma ecologica.** Un tocco sul "?" di una card e vedi
+  cosa va in ogni bidone; se inserisci gli orari della piattaforma ecologica, le card ti
+  dicono se è aperta adesso e quando riapre.
 - **Anche in Excel.** Scarica il modello, scrivi il calendario in un foglio di calcolo e
   importalo; oppure esporta quello che hai, cambialo in Excel e reimportalo.
 - **Le festività le vede lui.** Se un ritiro cade in un giorno festivo te lo segnala
@@ -82,7 +85,7 @@ tuo comune, le eccezioni, i promemoria, le card e le automazioni, in dieci minut
 
 | | |
 |---|---|
-| [Guida](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/docs/GUIDA.md) | Installazione, tipologie, regole, eccezioni, festività, promemoria, *Esposto ✓*, card, entità e automazioni, il calendario in Excel, domande frequenti |
+| [Guida](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/docs/GUIDA.md) | Installazione, tipologie, regole, eccezioni, festività, promemoria, *Esposto ✓*, card, piattaforma ecologica, entità e automazioni, il calendario in Excel, domande frequenti |
 | [Novità](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/CHANGELOG.md) | Cosa cambia in ogni versione |
 | [Aiuto](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/SUPPORT.md) | Come chiedere aiuto e segnalare un problema |
 

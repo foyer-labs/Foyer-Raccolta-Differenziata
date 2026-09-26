@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
+from itertools import pairwise
 import re
 from typing import Any
 
@@ -366,6 +367,107 @@ def _sospensioni(v: _Validatore, elenco: Any) -> None:
             v.segnala(percorso, "fine_prima_di_inizio")
 
 
+MASSIMO_PERIODI_PIATTAFORMA = 4
+MASSIMO_FASCE = 3
+
+
+def _fasce(v: _Validatore, fasce: Any, percorso: str, minimo: int = 0) -> None:
+    """Da `minimo` a 3 fasce "HH:MM"–"HH:MM", ciascuna con la fine dopo l'inizio, che
+    non si sovrappongono."""
+    if not isinstance(fasce, list) or not minimo <= len(fasce) <= MASSIMO_FASCE:
+        v.segnala(percorso, "fasce_non_valide")
+        return
+    lette = []
+    for fascia in fasce:
+        if (
+            not isinstance(fascia, list)
+            or len(fascia) != 2
+            or not all(isinstance(o, str) and _ORA.match(o) for o in fascia)
+        ):
+            v.segnala(percorso, "orario_non_valido")
+            return
+        if fascia[1] <= fascia[0]:
+            v.segnala(percorso, "fascia_non_valida")
+            return
+        lette.append((fascia[0], fascia[1]))
+    lette.sort()
+    if any(dopo[0] < prima[1] for prima, dopo in pairwise(lette)):
+        v.segnala(percorso, "fasce_sovrapposte")
+
+
+def _piattaforma(v: _Validatore, dati: Any) -> None:
+    """La piattaforma ecologica (SPEC §4.10): facoltativa."""
+    if dati is None:
+        return
+    if not isinstance(dati, dict):
+        v.segnala("piattaforma", "piattaforma_non_valida")
+        return
+    if not _testo(dati.get("nome"), 1, 40):
+        v.segnala("piattaforma.nome", "nome_non_valido")
+    nota = dati.get("nota") or ""
+    if not isinstance(nota, str) or len(nota) > 200:
+        v.segnala("piattaforma.nota", "nota_troppo_lunga")
+    periodi = dati.get("periodi")
+    if (
+        not isinstance(periodi, list)
+        or not 1 <= len(periodi) <= MASSIMO_PERIODI_PIATTAFORMA
+    ):
+        v.segnala("piattaforma.periodi", "periodi_non_validi")
+        periodi = periodi if isinstance(periodi, list) else []
+    intervalli: list[tuple[date, date, int]] = []
+    for i, periodo in enumerate(periodi):
+        percorso = f"piattaforma.periodi[{i}]"
+        if not isinstance(periodo, dict):
+            v.segnala(percorso, "periodi_non_validi")
+            continue
+        v.id(periodo, percorso)
+        dal, al = _data(periodo.get("dal")), _data(periodo.get("al"))
+        if dal is None:
+            v.segnala(f"{percorso}.dal", "data_non_valida")
+        if al is None:
+            v.segnala(f"{percorso}.al", "data_non_valida")
+        if dal and al:
+            if al < dal:
+                v.segnala(percorso, "fine_prima_di_inizio")
+            else:
+                intervalli.append((dal, al, i))
+        settimana = periodo.get("settimana")
+        if not isinstance(settimana, list) or len(settimana) != 7:
+            v.segnala(f"{percorso}.settimana", "orari_non_validi")
+            continue
+        for g, fasce in enumerate(settimana):
+            _fasce(v, fasce, f"{percorso}.settimana[{g}]")
+    intervalli.sort()
+    for prima, dopo in pairwise(intervalli):
+        if dopo[0] <= prima[1]:
+            v.segnala(f"piattaforma.periodi[{dopo[2]}]", "periodi_sovrapposti")
+    eccezioni = dati.get("eccezioni", [])
+    if not isinstance(eccezioni, list):
+        v.segnala("piattaforma.eccezioni", "elenco_non_valido")
+        return
+    date_viste: set[str] = set()
+    for i, e in enumerate(eccezioni):
+        percorso = f"piattaforma.eccezioni[{i}]"
+        if not isinstance(e, dict):
+            v.segnala(percorso, "eccezione_non_valida")
+            continue
+        v.id(e, percorso)
+        if _data(e.get("data")) is None:
+            v.segnala(f"{percorso}.data", "data_non_valida")
+        elif e["data"] in date_viste:
+            v.segnala(percorso, "eccezione_duplicata")
+        else:
+            date_viste.add(e["data"])
+        tipo = e.get("tipo")
+        if tipo == "aperta":
+            _fasce(v, e.get("fasce"), f"{percorso}.fasce", minimo=1)
+        elif tipo != "chiusa":
+            v.segnala(f"{percorso}.tipo", "eccezione_non_valida")
+        nota_e = e.get("nota") or ""
+        if not isinstance(nota_e, str) or len(nota_e) > 200:
+            v.segnala(f"{percorso}.nota", "nota_troppo_lunga")
+
+
 def problemi(dati: dict[str, Any]) -> list[Problema]:
     """Tutti i problemi di una configurazione grezza."""
     validatore = _Validatore()
@@ -392,4 +494,5 @@ def problemi(dati: dict[str, Any]) -> list[Problema]:
         dati.get("solleciti", {"attivi": False, "richiami": 1, "richiamo_dopo": 30}),
     )
     _sospensioni(validatore, dati.get("sospensioni", []))
+    _piattaforma(validatore, dati.get("piattaforma"))
     return validatore.trovati

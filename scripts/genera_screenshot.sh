@@ -36,4 +36,6 @@ foto pannello-tipologie 1200 620 "$BASE/pannello.html?oggi=2026-09-23&pagina=tip
 foto pannello-promemoria 1200 880 "$BASE/pannello.html?oggi=2026-09-23&pagina=promemoria&passi=La%20sera"
 foto pannello-eccezioni 1200 520 "$BASE/pannello.html?oggi=2026-09-23&pagina=eccezioni"
 foto pannello-excel 1200 760 "$BASE/pannello.html?oggi=2026-09-23&pagina=impostazioni&passi=Importa|file:calendario-2027.xlsx|Sostituisci"
+foto pannello-piattaforma 1200 820 "$BASE/pannello.html?oggi=2026-09-28&pagina=piattaforma"
+foto card-piattaforma 1180 720 "$BASE/card.html?oggi=2026-09-28&ora=2026-09-28T10:00:00%2B02:00&passi=Piattaforma"
 foto pannello-scuro 1200 820 "$BASE/pannello.html?oggi=2026-11-20&tema=scuro"

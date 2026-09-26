@@ -73,6 +73,9 @@ export class RdPanoramica extends LitElement {
       case "eccezione_senza_ritiro":
       case "eccezione_ridondante":
         return html`<button class="bottone piccolo" @click=${() => naviga(this, "eccezioni")}>${T.pagine.eccezioni}</button>`;
+      case "piattaforma_senza_orario":
+      case "piattaforma_in_scadenza":
+        return html`<button class="bottone piccolo" @click=${() => naviga(this, "piattaforma")}>${T.pagine.piattaforma}</button>`;
       case "calendario_in_scadenza":
       case "calendario_scaduto":
         return html`<button class="bottone piccolo" @click=${() => naviga(this, "impostazioni")}>${T.pagine.impostazioni}</button>`;

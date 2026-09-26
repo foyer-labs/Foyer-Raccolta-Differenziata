@@ -71,6 +71,40 @@ export type Eccezione =
   | { id: string; tipo: "aggiungi" | "togli"; tipologia: string; data: string; nota?: string }
   | { id: string; tipo: "sposta"; tipologia: string; da: string; a: string; nota?: string };
 
+export type FasciaOraria = [string, string];
+
+export interface PeriodoPiattaforma {
+  id: string;
+  dal: string;
+  al: string;
+  /** Sette elenchi di fasce, dal lunedì alla domenica; vuoto = chiusa. */
+  settimana: FasciaOraria[][];
+}
+
+export interface EccezionePiattaforma {
+  id: string;
+  data: string;
+  tipo: "chiusa" | "aperta";
+  fasce: FasciaOraria[];
+  nota: string;
+}
+
+export interface Piattaforma {
+  nome: string;
+  nota: string;
+  periodi: PeriodoPiattaforma[];
+  eccezioni: EccezionePiattaforma[];
+}
+
+export interface GiornoPiattaforma {
+  data: string;
+  /** Istanti ISO; null: nessun periodo copre il giorno. */
+  fasce: [string, string][] | null;
+  motivo: "periodo" | "eccezione" | "festivo" | null;
+  festivo: string | null;
+  nota: string;
+}
+
 export interface Configurazione {
   revisione: number;
   tipologie: Tipologia[];
@@ -82,6 +116,7 @@ export interface Configurazione {
   promemoria: Profilo[];
   solleciti: { attivi: boolean; richiami: number; richiamo_dopo: number };
   sospensioni: { dal: string; al: string }[];
+  piattaforma?: Piattaforma | null;
   [altro: string]: unknown;
 }
 
@@ -169,4 +204,5 @@ export interface LetturaRitiri {
   conferme: { data: string; tipologia: string; istante?: string | null; utente?: string | null }[];
   sospeso: { manuale: boolean; fino_al: string | null };
   valido_fino_al: string | null;
+  piattaforma: { nome: string; nota: string; giorni: GiornoPiattaforma[] } | null;
 }

@@ -1,7 +1,7 @@
 {
   "name": "foyer-raccolta-differenziata-frontend",
   "private": true,
-  "version": "0.4.3",
+  "version": "0.5.0",
   "description": "Pannello e card di Foyer Raccolta Differenziata",
   "license": "Apache-2.0",
   "type": "module",

@@ -1,7 +1,6 @@
 // La card "Mese" (SPEC §10.2): griglia con i pallini, navigazione, dettaglio del giorno.
 import { css, html, nothing } from "lit";
 
-import { chip } from "../comune/chip";
 import { aIso, daIso, giorniNelMese, giornoSettimana, piuGiorni, primoDelMese } from "../comune/date";
 import { GIORNI, GIORNI_INIZIALI, MESI, T } from "../comune/testi";
 import { CardRaccolta, dataBrevissima, registra } from "./base";
@@ -92,7 +91,7 @@ export class RaccoltaMeseCard extends CardRaccolta {
                 r.festivo ? T.card.festivo(r.festivo) : "",
                 this.confermato(r) ? T.card.confermato : "",
               ].filter(Boolean);
-              return html`<div class="riga">${t ? chip(t) : r.tipologia}<span class="note">${note.join(" · ")}</span></div>`;
+              return html`<div class="riga">${t ? this.chipNota(t) : r.tipologia}<span class="note">${note.join(" · ")}</span></div>`;
             })
           : html`<span class="note">${T.card.nessunRitiro}</span>`}
       </div>
@@ -100,6 +99,7 @@ export class RaccoltaMeseCard extends CardRaccolta {
         ? html`<div class="legenda">${usate.map((t) => html`<span><i class="pallino" style="background:${t.colore}"></i>${t.nome}</span>`)}</div>`
         : nothing}
       ${this.banner()}
+    ${this.finestre()}
     </ha-card>`;
   }
 

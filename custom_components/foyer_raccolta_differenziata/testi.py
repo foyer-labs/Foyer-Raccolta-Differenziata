@@ -92,6 +92,17 @@ EXCEL_FOGLI: dict[str, tuple[str, str]] = {
         "Vacanze",
         "I periodi in cui i promemoria tacciono. Il calendario e le card non cambiano.",
     ),
+    "Piattaforma": (
+        "Orari della piattaforma ecologica",
+        "Una riga per periodo, con le date e l'anno; i periodi non si sovrappongono. "
+        "In ogni giorno le fasce orarie separate da virgola (08:00-12:00, "
+        "14:00-18:00); una cella vuota è un giorno di chiusura. Nei giorni festivi "
+        "risulta chiusa, salvo eccezione.",
+    ),
+    "Piattaforma eccezioni": (
+        "Eccezioni della piattaforma ecologica",
+        "Un giorno con un orario diverso: Chiusa, oppure Aperta con i suoi orari.",
+    ),
     "Impostazioni": (
         "Impostazioni",
         "Le impostazioni generali: scrivi solo nella colonna Valore.",
@@ -139,6 +150,13 @@ EXCEL_AIUTO_COLONNE: dict[tuple[str, str], str] = {
     ("Promemoria", "tipologie"): "Tutte, oppure i nomi separati da virgola.",
     ("Promemoria", "destinatari"): "Separati da virgola: mobile_app_telefono per "
     "un servizio, notify.telegram per un'entità. L'elenco è nel foglio Leggimi.",
+    ("Piattaforma", "dal"): "Il primo giorno del periodo, con l'anno.",
+    ("Piattaforma", "al"): "L'ultimo giorno del periodo, con l'anno.",
+    ("Piattaforma eccezioni", "data"): "Il giorno con l'orario diverso.",
+    ("Piattaforma eccezioni", "tipo"): "Chiusa, oppure Aperta con gli orari.",
+    ("Piattaforma eccezioni", "fasce"): "Solo per Aperta: 09:00-12:00, anche più "
+    "fasce separate da virgola.",
+    ("Piattaforma eccezioni", "nota"): "Facoltativa, per esempio «Inventario».",
     ("Vacanze", "dal"): "Il primo giorno di silenzio.",
     ("Vacanze", "al"): "L'ultimo giorno di silenzio.",
 }
@@ -174,6 +192,19 @@ EXCEL_ESEMPI: dict[str, dict[str, object]] = {
         "destinatari": "mobile_app_telefono",
     },
     "Vacanze": {"dal": date(2026, 8, 1), "al": date(2026, 8, 20)},
+    "Piattaforma": {
+        "dal": date(2026, 10, 1),
+        "al": date(2027, 3, 31),
+        "giorno_0": "08:00-12:00, 14:00-18:00",
+        "giorno_2": "14:00-18:00",
+        "giorno_5": "08:00-12:00",
+    },
+    "Piattaforma eccezioni": {
+        "data": date(2026, 12, 24),
+        "tipo": "Aperta",
+        "fasce": "08:00-12:00",
+        "nota": "Vigilia",
+    },
 }
 
 EXCEL_SCELTA_NON_VALIDA = "Scegli una voce dal menu."
@@ -253,6 +284,15 @@ EXCEL_LEGGIMI: tuple[tuple[str, str], ...] = (
         "punto",
         "Periodo: Sempre; Ogni anno dal 01/06 al 30/09; Solo tra due date dal "
         "01/10/2026 al 31/03/2027. Lasciato vuoto, lo si capisce da Dal e Al.",
+    ),
+    ("sezione", "La piattaforma ecologica"),
+    (
+        "punto",
+        "Foglio Piattaforma: un periodo per riga (dal 01/10/2026 al 31/03/2027) e, "
+        "per ogni giorno, le fasce orarie (08:00-12:00, 14:00-18:00). Fino a quattro "
+        "periodi, fino a tre fasce al giorno. Nei festivi risulta chiusa; il foglio "
+        "Piattaforma eccezioni cambia l'orario di un giorno. Nome e nota si scrivono "
+        "nel foglio Impostazioni. Senza periodi la piattaforma non c'è.",
     ),
     ("sezione", "La colonna nascosta ID"),
     (

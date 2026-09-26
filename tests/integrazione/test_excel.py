@@ -55,6 +55,8 @@ async def test_il_modello_ha_leggimi_i_fogli_e_le_tipologie_di_base(
         "Eccezioni",
         "Promemoria",
         "Vacanze",
+        "Piattaforma",
+        "Piattaforma eccezioni",
         "Impostazioni",
     ]
     tipologie = cartella["Tipologie"]

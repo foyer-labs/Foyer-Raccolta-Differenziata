@@ -292,7 +292,7 @@ var Se = (e, t) => {
 						index: a,
 						name: r[2],
 						strings: n,
-						ctor: r[1] === "." ? we : r[1] === "?" ? Te : r[1] === "@" ? Ee : P
+						ctor: r[1] === "." ? Te : r[1] === "?" ? Ee : r[1] === "@" ? De : N
 					}), i.removeAttribute(e);
 				} else e.startsWith(y) && (c.push({
 					type: 6,
@@ -352,7 +352,7 @@ var Ce = class {
 		for (; s !== void 0;) {
 			if (a === s.index) {
 				let t;
-				s.type === 2 ? t = new N(i, i.nextSibling, this, e) : s.type === 1 ? t = new s.ctor(i, s.name, s.strings, this, e) : s.type === 6 && (t = new De(i, this, e)), this._$AV.push(t), s = n[++o];
+				s.type === 2 ? t = new we(i, i.nextSibling, this, e) : s.type === 1 ? t = new s.ctor(i, s.name, s.strings, this, e) : s.type === 6 && (t = new Oe(i, this, e)), this._$AV.push(t), s = n[++o];
 			}
 			a !== s?.index && (i = A.nextNode(), a++);
 		}
@@ -362,7 +362,7 @@ var Ce = class {
 		let t = 0;
 		for (let n of this._$AV) n !== void 0 && (n.strings === void 0 ? n._$AI(e[t]) : (n._$AI(e, n, t), t += n.strings.length - 2)), t++;
 	}
-}, N = class e {
+}, we = class e {
 	get _$AU() {
 		return this._$AM?._$AU ?? this._$Cv;
 	}
@@ -418,7 +418,7 @@ var Ce = class {
 	setConnected(e) {
 		this._$AM === void 0 && (this._$Cv = e, this._$AP?.(e));
 	}
-}, P = class {
+}, N = class {
 	get tagName() {
 		return this.element.tagName;
 	}
@@ -440,21 +440,21 @@ var Ce = class {
 	j(e) {
 		e === k ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
 	}
-}, we = class extends P {
+}, Te = class extends N {
 	constructor() {
 		super(...arguments), this.type = 3;
 	}
 	j(e) {
 		this.element[this.name] = e === k ? void 0 : e;
 	}
-}, Te = class extends P {
+}, Ee = class extends N {
 	constructor() {
 		super(...arguments), this.type = 4;
 	}
 	j(e) {
 		this.element.toggleAttribute(this.name, !!e && e !== k);
 	}
-}, Ee = class extends P {
+}, De = class extends N {
 	constructor(e, t, n, r, i) {
 		super(e, t, n, r, i), this.type = 5;
 	}
@@ -466,7 +466,7 @@ var Ce = class {
 	handleEvent(e) {
 		typeof this._$AH == "function" ? this._$AH.call(this.options?.host ?? this.element, e) : this._$AH.handleEvent(e);
 	}
-}, De = class {
+}, Oe = class {
 	constructor(e, t, n) {
 		this.element = e, this.type = 6, this._$AN = void 0, this._$AM = t, this.options = n;
 	}
@@ -476,16 +476,16 @@ var Ce = class {
 	_$AI(e) {
 		M(this, e);
 	}
-}, Oe = _.litHtmlPolyfillSupport;
-Oe?.(j, N), (_.litHtmlVersions ??= []).push("3.3.3");
-var ke = (e, t, n) => {
+}, ke = _.litHtmlPolyfillSupport;
+ke?.(j, we), (_.litHtmlVersions ??= []).push("3.3.3");
+var Ae = (e, t, n) => {
 	let r = n?.renderBefore ?? t, i = r._$litPart$;
 	if (i === void 0) {
 		let e = n?.renderBefore ?? null;
-		r._$litPart$ = i = new N(t.insertBefore(x(), e), e, void 0, n ?? {});
+		r._$litPart$ = i = new we(t.insertBefore(x(), e), e, void 0, n ?? {});
 	}
 	return i._$AI(e), i;
-}, F = globalThis, I = class extends g {
+}, P = globalThis, F = class extends g {
 	constructor() {
 		super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
 	}
@@ -495,7 +495,7 @@ var ke = (e, t, n) => {
 	}
 	update(e) {
 		let t = this.render();
-		this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = ke(t, this.renderRoot, this.renderOptions);
+		this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Ae(t, this.renderRoot, this.renderOptions);
 	}
 	connectedCallback() {
 		super.connectedCallback(), this._$Do?.setConnected(!0);
@@ -507,12 +507,325 @@ var ke = (e, t, n) => {
 		return O;
 	}
 };
-I._$litElement$ = !0, I.finalized = !0, F.litElementHydrateSupport?.({ LitElement: I });
-var Ae = F.litElementPolyfillSupport;
-Ae?.({ LitElement: I }), (F.litElementVersions ??= []).push("4.2.2");
+F._$litElement$ = !0, F.finalized = !0, P.litElementHydrateSupport?.({ LitElement: F });
+var je = P.litElementPolyfillSupport;
+je?.({ LitElement: F }), (P.litElementVersions ??= []).push("4.2.2");
+//#endregion
+//#region src/comune/date.ts
+var I = (e) => {
+	let [t, n, r] = e.split("-").map(Number);
+	return new Date(t, n - 1, r);
+}, L = (e) => `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, "0")}-${String(e.getDate()).padStart(2, "0")}`, R = (e, t) => {
+	let n = I(e);
+	return n.setDate(n.getDate() + t), L(n);
+}, z = (e) => (I(e).getDay() + 6) % 7, B = (e, t) => Math.round((I(t).getTime() - I(e).getTime()) / 864e5), Me = (e) => R(e, -z(e)), V = (e) => `${e.slice(0, 7)}-01`, Ne = (e, t) => new Date(e, t, 0).getDate(), H = (e) => e.slice(11, 16), U = [
+	"lunedì",
+	"martedì",
+	"mercoledì",
+	"giovedì",
+	"venerdì",
+	"sabato",
+	"domenica"
+], Pe = [
+	"Lun",
+	"Mar",
+	"Mer",
+	"Gio",
+	"Ven",
+	"Sab",
+	"Dom"
+], Fe = [
+	"L",
+	"M",
+	"M",
+	"G",
+	"V",
+	"S",
+	"D"
+], W = [
+	"gennaio",
+	"febbraio",
+	"marzo",
+	"aprile",
+	"maggio",
+	"giugno",
+	"luglio",
+	"agosto",
+	"settembre",
+	"ottobre",
+	"novembre",
+	"dicembre"
+], G = {
+	titolo: "Raccolta differenziata",
+	carica: "Caricamento…",
+	nonCaricata: "L'integrazione Raccolta differenziata non è caricata. Controlla Impostazioni → Dispositivi e servizi.",
+	pagine: {
+		panoramica: "Panoramica",
+		tipologie: "Tipologie",
+		regole: "Regole",
+		eccezioni: "Eccezioni",
+		promemoria: "Promemoria",
+		piattaforma: "Piattaforma",
+		impostazioni: "Impostazioni"
+	},
+	oggi: "Oggi",
+	domani: "Domani",
+	nessunRitiro: "Nessun ritiro",
+	salva: "Salva",
+	annulla: "Annulla",
+	indietro: "Indietro",
+	modifica: "Modifica",
+	elimina: "Elimina",
+	chiudi: "Chiudi",
+	primaDiSalvare: "Prima di salvare",
+	cosaCambia: "Ecco cosa cambia nei prossimi 60 giorni.",
+	nienteCambia: "Nessun ritiro cambia nei prossimi 60 giorni.",
+	salvato: "Salvato",
+	erroreConnessione: "Non è stato possibile raggiungere Home Assistant. Riprova.",
+	altroHaSalvato: "Qualcun altro ha salvato nel frattempo: la pagina è stata aggiornata, riprova.",
+	nonSalvato: "Non salvato: correggi questi punti.",
+	prossimiRitiri: "Prossimi ritiri",
+	giorni30: "30 giorni",
+	daControllare: "Da controllare",
+	tuttoInOrdine: "Tutto in ordine: nessuna segnalazione.",
+	calendarioComune: "Calendario del comune",
+	giorniValidita: "giorni di validità",
+	validoFino: (e) => `fino al ${K(e)}`,
+	scaduto: (e) => `scaduto il ${K(e)}: i ritiri successivi sono da verificare`,
+	senzaValidita: "Non hai indicato fino a quando vale. Indicalo in Impostazioni: un mese prima ti ricorderemo di controllare quello nuovo.",
+	creaEccezione: "Crea eccezione",
+	ignora: "Ignora",
+	aggiungiData: "Aggiungi una data",
+	apriRegole: "Vedi le regole",
+	festiviIgnorati: "Festivi ignorati",
+	ripristina: "Ripristina avviso",
+	configurazioneNonValida: "La configurazione salvata non è valida: i sensori non sono disponibili finché non la correggi.",
+	aiutoTipologie: "Una tipologia senza regole prende i ritiri solo dalle date aggiunte: va bene per gli ingombranti.",
+	nuovaTipologia: "Nuova tipologia",
+	nessunaNota: "Nessuna nota",
+	prossimo: "Prossimo",
+	nome: "Nome",
+	colore: "Colore",
+	icona: "Icona",
+	iconaAiuto: "Cerca per nome (umido, carta, pannolini…) o scrivi un'icona di Material Design, per esempio mdi:recycle.",
+	altroColore: "Un altro colore",
+	note: "Note: cosa ci va",
+	finestraPropria: "Orario di esposizione diverso da quello generale",
+	eliminaTipologia: (e, t, n) => `Eliminare ${e}? Spariscono anche ${t} ${t === 1 ? "regola" : "regole"} e ${n} ${n === 1 ? "eccezione" : "eccezioni"}, e il suo sensore.`,
+	aiutoRegole: "Una regola dice ogni quanto passa un rifiuto. Più regole della stessa tipologia si sommano; una regola con l'anno sostituisce le altre nel suo periodo.",
+	nuovaRegola: "Nuova regola",
+	nessunaRegola: "Nessuna regola: i ritiri vengono solo dalle eccezioni.",
+	nomeRegola: "Nome (facoltativo)",
+	nomeRegolaAiuto: "Per riconoscerla: Estate, Inverno, Calendario 2027…",
+	ricorrenza: "Ricorrenza",
+	ogniSettimane: "Ogni N settimane",
+	posizioneMese: "N-esimo giorno del mese",
+	dataMese: "Giorno del mese",
+	ogni: "Ogni",
+	ogniQuanteSettimane: "Ogni quante settimane",
+	completaLaRegola: "Scegli almeno un giorno per completare la regola",
+	settimane: (e) => e === 1 ? "settimana" : `${e} settimane`,
+	neiGiorni: "Nei giorni",
+	ancora: "Un giorno in cui questo ritiro c'è stato o ci sarà",
+	ancoraAiuto: "Serve a capire quali settimane contano: un giorno sbagliato di una settimana sposta tutto il calendario.",
+	quali: "Quali",
+	giornoSettimana: "Giorno della settimana",
+	giorniDelMese: "Giorni del mese",
+	periodo: "Periodo",
+	sempre: "Tutto l'anno",
+	annuale: "Ogni anno dal… al…",
+	conAnno: "Solo dal… al…",
+	dal: "Dal",
+	al: "Al",
+	mese: "Mese",
+	giorno: "Giorno",
+	prossimeDate: "Le prossime date",
+	nessunaData: "Nessuna data nei prossimi 12 mesi",
+	aiutoEccezioni: "Le date che il calendario del comune cambia: un ritiro in più, uno annullato, uno spostato.",
+	nessunaEccezione: "Nessuna eccezione.",
+	aggiungiRitiro: "Aggiungi un ritiro",
+	togliRitiro: "Togli un ritiro",
+	spostaRitiro: "Sposta un ritiro",
+	tipoEccezione: {
+		aggiungi: "Aggiunto",
+		togli: "Tolto",
+		sposta: "Spostato"
+	},
+	tipologia: "Tipologia",
+	data: "Data",
+	da: "Da",
+	a: "A",
+	nota: "Nota (facoltativa)",
+	passate: "Passate",
+	mostraBarra: "Mostra nella barra laterale",
+	mostraBarraAiuto: "Se la nascondi, trovi il pannello nella pagina del dispositivo «Raccolta differenziata», o in Impostazioni → Dispositivi e servizi.",
+	validita: "Calendario valido fino al",
+	validitaAiuto: "Un mese prima ti ricordiamo di controllare il calendario nuovo del comune.",
+	excel: "Configurazione in Excel",
+	excelAiuto: "Compila o cambia il calendario in un foglio di calcolo e importalo qui. Il file ha una guida e un foglio per ogni sezione; lo stesso file serve per esportare e per importare.",
+	scaricaModello: "Scarica il modello",
+	esporta: "Esporta in Excel",
+	importa: "Importa da Excel…",
+	importaTitolo: "Importa da Excel",
+	scegliFile: "Scegli il file",
+	cambiaFile: "Cambia file",
+	nessunFile: "Un file .xlsx, dal modello o da un'esportazione.",
+	comeImportare: "Come importarlo",
+	sostituisci: "Sostituisci tutto",
+	sostituisciAiuto: "Il file diventa la configurazione: quello che nel file non c'è viene tolto. Dopo aver esportato e modificato.",
+	aggiungiSoltanto: "Aggiungi soltanto",
+	aggiungiSoltantoAiuto: "Le righe del file si aggiungono; quelle che corrispondono a qualcosa che c'è lo aggiornano. Non si toglie niente.",
+	continua: "Continua",
+	leggoIlFile: "Leggo il file…",
+	fileConProblemi: "Il file ha dei problemi: correggili nel foglio di calcolo e riprova.",
+	altriProblemi: (e) => e === 1 ? "e un altro problema" : `e altri ${e} problemi`,
+	esportaNonValida: "La configurazione salvata non è valida: correggila prima di esportarla.",
+	scaricamentoFallito: "Il file non si è potuto preparare. Riprova.",
+	dalFile: "Dal file",
+	nienteDalFile: "Il file è uguale alla configurazione attuale.",
+	riga: (e) => `riga ${e}`,
+	configurazioneAttuale: "configurazione attuale",
+	patrono: "Santo patrono",
+	patronoAiuto: "Segnalato come festivo, come le feste nazionali.",
+	nomePatrono: "Nome",
+	esposizione: "Quando si espongono i sacchi",
+	esposizioneAiuto: "Vale per tutte le tipologie che non hanno un orario proprio.",
+	inizioGiorno: {
+		giorno_prima: "il giorno prima",
+		giorno_stesso: "il giorno stesso"
+	},
+	dalle: "Dalle",
+	del: "del",
+	entroLe: "Entro le (giorno del ritiro)",
+	togli: "Togli",
+	tutti: "Tutti",
+	nonTrovato: "Non trovato in Home Assistant: toglilo o controlla il nome",
+	nessunRisultato: "Nessun risultato",
+	usaValore: (e) => `Invio per usare «${e}»`,
+	cercaIcona: "Cerca un'icona o scrivi mdi:…",
+	cercaDestinatario: "Cerca un telefono o un servizio di notifica…",
+	nessunDestinatarioScelto: "Nessun destinatario: aggiungine almeno uno.",
+	gruppoCompanion: "App Companion",
+	gruppoServizi: "Altri servizi",
+	gruppoEntita: "Entità notify",
+	aiutoPromemoria: "Un promemoria dice quando avvisarti e chi. Più rifiuti nello stesso giorno arrivano in un solo messaggio.",
+	nessunPromemoria: "Nessun promemoria: aggiungine uno per ricevere una notifica.",
+	nuovoPromemoria: "Nuovo promemoria",
+	nomePromemoria: "Nome",
+	nomePromemoriaAiuto: "La sera prima, Il vetro, …",
+	quando: "Quando",
+	giorniPrima: "Giorni prima",
+	giornoStesso: "Il giorno stesso",
+	apertura: "All'apertura",
+	aperturaAiuto: "Quando si possono mettere fuori i sacchi, secondo l'orario di esposizione di ogni tipologia.",
+	quantiGiorni: "Quanti giorni prima",
+	alle: "Alle",
+	perQuali: "Per quali rifiuti",
+	tutte: "Tutte",
+	tutteAiuto: "«Tutte» comprende anche le tipologie che aggiungerai.",
+	destinatari: "A chi",
+	destinatariAiuto: "I telefoni con l'app Companion ricevono anche il pulsante «Esposto ✓».",
+	nessunDestinatario: "Nessun servizio di notifica trovato in Home Assistant.",
+	conPulsanti: "con pulsanti",
+	soloTesto: "solo testo",
+	attivo: "Attivo",
+	solleciti: "Solleciti",
+	sollecitaSeNonConfermo: "Sollecita se non confermo",
+	sollecitiAiuto: "Ripete il promemoria finché qualcuno non tocca «Esposto ✓», e aggiunge il pulsante «Ricordamelo tra 30 minuti». Alla maggior parte delle persone basta la notifica.",
+	richiami: "Quante volte",
+	ogniMinuti: "Ogni",
+	minuti: (e) => `${e} min`,
+	vacanze: "Vacanze",
+	vacanzeAiuto: "Nelle date indicate i promemoria tacciono; il calendario, i sensori e le card restano.",
+	nessunaVacanza: "Nessuna vacanza in programma.",
+	aggiungiVacanza: "Aggiungi vacanza",
+	dalAl: (e, t) => `dal ${K(e)} al ${K(t)}`,
+	piattaformaTitolo: "Piattaforma ecologica",
+	piattaformaAiuto: "Gli orari della piattaforma (o isola) ecologica: le card mostrano se è aperta adesso, e un tocco apre gli orari. Nei giorni festivi risulta chiusa, salvo eccezione.",
+	piattaformaVuota: "Non hai ancora inserito gli orari della piattaforma ecologica.",
+	inserisciOrari: "Inserisci gli orari",
+	nomePiattaforma: "Nome",
+	nomePiattaformaAiuto: "Come la chiamate: Piattaforma ecologica, Isola ecologica, Ecocentro…",
+	notaPiattaforma: "Nota (facoltativa)",
+	notaPiattaformaAiuto: "Indirizzo, cosa serve per entrare, cosa si porta…",
+	periodi: "Periodi",
+	periodiAiuto: "Fino a quattro periodi con le date e l'anno, per esempio l'orario invernale e quello estivo. Fuori da ogni periodo l'orario non è indicato.",
+	aggiungiPeriodo: "Aggiungi un periodo",
+	togliPeriodo: "Togli il periodo",
+	chiusa: "Chiusa",
+	aggiungiFascia: "Aggiungi una fascia oraria",
+	togliFascia: "Togli la fascia",
+	eccezioniPiattaforma: "Giorni con un orario diverso",
+	eccezioniPiattaformaAiuto: "Una chiusura straordinaria, o un'apertura in un giorno festivo.",
+	aggiungiEccezionePiattaforma: "Aggiungi un giorno",
+	aperta: "Aperta",
+	togliPiattaforma: "Togli la piattaforma",
+	togliPiattaformaConferma: "Togliere gli orari della piattaforma ecologica? Spariscono anche dalle card, e il suo sensore.",
+	orariDa: "dalle",
+	orariA: "alle",
+	card: {
+		titolo: "Raccolta",
+		nonDisponibile: "Il calendario della raccolta non è disponibile. Controlla Riparazioni in Impostazioni.",
+		staseraFuori: "Stasera fuori",
+		daEsporreOra: "Da esporre ora",
+		oggi: "Oggi",
+		domani: "Domani",
+		prossimo: "Prossimo ritiro",
+		entroLe: (e, t) => `entro le ${e}${t ? "" : " di domani"}`,
+		dalle: (e, t) => `da mettere fuori ${t} dalle ${e}`,
+		stasera: "stasera",
+		oggiMinuscolo: "oggi",
+		esposto: "Esposto ✓",
+		espostoAlle: (e, t) => `Esposto alle ${e}${t ? ` da ${t}` : ""}`,
+		annullaConferma: "Annulla",
+		nessunRitiro: "Nessun ritiro",
+		nessunRitiroSettimana: "Nessun ritiro questa settimana",
+		tuttoTranquillo: "Niente da esporre nei prossimi giorni",
+		sospesi: "Promemoria sospesi",
+		sospesiFino: (e) => `Promemoria sospesi fino al ${e}`,
+		daVerificare: "Da verificare: il calendario è scaduto",
+		spostatoDal: (e) => `spostato dal ${e}`,
+		festivo: (e) => `festivo: ${e}`,
+		settimana: "Questa settimana",
+		calendario: "Calendario",
+		mesePrecedente: "Mese precedente",
+		meseSuccessivo: "Mese successivo",
+		confermato: "confermato",
+		nomeOggi: "Raccolta: oggi e domani",
+		nomeSettimana: "Raccolta: settimana",
+		nomeMese: "Raccolta: mese",
+		descrizioneOggi: "Cosa esporre stasera, con il pulsante Esposto.",
+		descrizioneSettimana: "I ritiri dei prossimi sette giorni.",
+		descrizioneMese: "Il calendario del mese, con il dettaglio del giorno.",
+		campoTitolo: "Titolo",
+		campoInizio: "La settimana inizia",
+		inizioOggi: "Da oggi",
+		inizioLunedi: "Dal lunedì",
+		cosaVaDove: "Cosa va dove",
+		nessunaNotaCard: "Nessuna nota: si aggiunge nel pannello, in Tipologie.",
+		apriNote: "Cosa va in ogni bidone",
+		campoPiattaforma: "Mostra la piattaforma ecologica",
+		piattaformaAperta: (e) => `Aperta fino alle ${e}`,
+		piattaformaChiusa: "Chiusa",
+		piattaformaApre: (e) => `Chiusa · apre ${e}`,
+		piattaformaNonIndicato: "Orario non indicato",
+		alle: (e) => `alle ${e}`,
+		domaniAlle: (e) => `domani alle ${e}`,
+		giornoAlle: (e, t) => `${e} alle ${t}`,
+		oggiMaiuscolo: "Oggi",
+		chiusaFestivo: (e) => `Chiusa · ${e}`,
+		orarioNonIndicato: "Orario non indicato",
+		piuAvanti: "Più avanti"
+	},
+	profiloRimosso: (e) => e === 1 ? "Un promemoria riguardava solo questa tipologia e verrà eliminato." : `${e} promemoria riguardavano solo questa tipologia e verranno eliminati.`
+};
+function K(e) {
+	let t = I(e);
+	return `${t.getDate()} ${W[t.getMonth()]} ${t.getFullYear()}`;
+}
 //#endregion
 //#region src/comune/stili.ts
-var je = o`
+var q = o`
   :host {
     --rd-primario: var(--primary-color, #03a9f4);
     --rd-testo: var(--primary-text-color, #1b1f24);
@@ -606,7 +919,7 @@ var je = o`
     opacity: 0.5;
     cursor: default;
   }
-`, Me = o`
+`, Ie = o`
   .modulo {
     display: grid;
     gap: 14px;
@@ -783,7 +1096,7 @@ var je = o`
     transform: translateX(18px);
   }
 `;
-function Ne(e) {
+function Le(e) {
 	let [t, n, r] = [
 		1,
 		3,
@@ -877,297 +1190,159 @@ o`
 `;
 //#endregion
 //#region src/comune/chip.ts
-var L = (e) => D`<span class="chip" style="background:${e.colore};color:${Ne(e.colore)}"
+var J = (e) => D`<span class="chip" style="background:${e.colore};color:${Le(e.colore)}"
     ><ha-icon .icon=${e.icona}></ha-icon>${e.nome}</span
-  >`, R = (e) => {
-	let [t, n, r] = e.split("-").map(Number);
-	return new Date(t, n - 1, r);
-}, z = (e) => `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, "0")}-${String(e.getDate()).padStart(2, "0")}`, B = (e, t) => {
-	let n = R(e);
-	return n.setDate(n.getDate() + t), z(n);
-}, V = (e) => (R(e).getDay() + 6) % 7, H = (e, t) => Math.round((R(t).getTime() - R(e).getTime()) / 864e5), Pe = (e) => B(e, -V(e)), U = (e) => `${e.slice(0, 7)}-01`, Fe = (e, t) => new Date(e, t, 0).getDate(), W = (e) => e.slice(11, 16), G = [
-	"lunedì",
-	"martedì",
-	"mercoledì",
-	"giovedì",
-	"venerdì",
-	"sabato",
-	"domenica"
-], Ie = [
-	"Lun",
-	"Mar",
-	"Mer",
-	"Gio",
-	"Ven",
-	"Sab",
-	"Dom"
-], Le = [
-	"L",
-	"M",
-	"M",
-	"G",
-	"V",
-	"S",
-	"D"
-], K = [
-	"gennaio",
-	"febbraio",
-	"marzo",
-	"aprile",
-	"maggio",
-	"giugno",
-	"luglio",
-	"agosto",
-	"settembre",
-	"ottobre",
-	"novembre",
-	"dicembre"
-], q = {
-	titolo: "Raccolta differenziata",
-	carica: "Caricamento…",
-	nonCaricata: "L'integrazione Raccolta differenziata non è caricata. Controlla Impostazioni → Dispositivi e servizi.",
-	pagine: {
-		panoramica: "Panoramica",
-		tipologie: "Tipologie",
-		regole: "Regole",
-		eccezioni: "Eccezioni",
-		promemoria: "Promemoria",
-		impostazioni: "Impostazioni"
-	},
-	oggi: "Oggi",
-	domani: "Domani",
-	nessunRitiro: "Nessun ritiro",
-	salva: "Salva",
-	annulla: "Annulla",
-	indietro: "Indietro",
-	modifica: "Modifica",
-	elimina: "Elimina",
-	chiudi: "Chiudi",
-	primaDiSalvare: "Prima di salvare",
-	cosaCambia: "Ecco cosa cambia nei prossimi 60 giorni.",
-	nienteCambia: "Nessun ritiro cambia nei prossimi 60 giorni.",
-	salvato: "Salvato",
-	erroreConnessione: "Non è stato possibile raggiungere Home Assistant. Riprova.",
-	altroHaSalvato: "Qualcun altro ha salvato nel frattempo: la pagina è stata aggiornata, riprova.",
-	nonSalvato: "Non salvato: correggi questi punti.",
-	prossimiRitiri: "Prossimi ritiri",
-	giorni30: "30 giorni",
-	daControllare: "Da controllare",
-	tuttoInOrdine: "Tutto in ordine: nessuna segnalazione.",
-	calendarioComune: "Calendario del comune",
-	giorniValidita: "giorni di validità",
-	validoFino: (e) => `fino al ${J(e)}`,
-	scaduto: (e) => `scaduto il ${J(e)}: i ritiri successivi sono da verificare`,
-	senzaValidita: "Non hai indicato fino a quando vale. Indicalo in Impostazioni: un mese prima ti ricorderemo di controllare quello nuovo.",
-	creaEccezione: "Crea eccezione",
-	ignora: "Ignora",
-	aggiungiData: "Aggiungi una data",
-	apriRegole: "Vedi le regole",
-	festiviIgnorati: "Festivi ignorati",
-	ripristina: "Ripristina avviso",
-	configurazioneNonValida: "La configurazione salvata non è valida: i sensori non sono disponibili finché non la correggi.",
-	aiutoTipologie: "Una tipologia senza regole prende i ritiri solo dalle date aggiunte: va bene per gli ingombranti.",
-	nuovaTipologia: "Nuova tipologia",
-	nessunaNota: "Nessuna nota",
-	prossimo: "Prossimo",
-	nome: "Nome",
-	colore: "Colore",
-	icona: "Icona",
-	iconaAiuto: "Cerca per nome (umido, carta, pannolini…) o scrivi un'icona di Material Design, per esempio mdi:recycle.",
-	altroColore: "Un altro colore",
-	note: "Note: cosa ci va",
-	finestraPropria: "Orario di esposizione diverso da quello generale",
-	eliminaTipologia: (e, t, n) => `Eliminare ${e}? Spariscono anche ${t} ${t === 1 ? "regola" : "regole"} e ${n} ${n === 1 ? "eccezione" : "eccezioni"}, e il suo sensore.`,
-	aiutoRegole: "Una regola dice ogni quanto passa un rifiuto. Più regole della stessa tipologia si sommano; una regola con l'anno sostituisce le altre nel suo periodo.",
-	nuovaRegola: "Nuova regola",
-	nessunaRegola: "Nessuna regola: i ritiri vengono solo dalle eccezioni.",
-	nomeRegola: "Nome (facoltativo)",
-	nomeRegolaAiuto: "Per riconoscerla: Estate, Inverno, Calendario 2027…",
-	ricorrenza: "Ricorrenza",
-	ogniSettimane: "Ogni N settimane",
-	posizioneMese: "N-esimo giorno del mese",
-	dataMese: "Giorno del mese",
-	ogni: "Ogni",
-	ogniQuanteSettimane: "Ogni quante settimane",
-	completaLaRegola: "Scegli almeno un giorno per completare la regola",
-	settimane: (e) => e === 1 ? "settimana" : `${e} settimane`,
-	neiGiorni: "Nei giorni",
-	ancora: "Un giorno in cui questo ritiro c'è stato o ci sarà",
-	ancoraAiuto: "Serve a capire quali settimane contano: un giorno sbagliato di una settimana sposta tutto il calendario.",
-	quali: "Quali",
-	giornoSettimana: "Giorno della settimana",
-	giorniDelMese: "Giorni del mese",
-	periodo: "Periodo",
-	sempre: "Tutto l'anno",
-	annuale: "Ogni anno dal… al…",
-	conAnno: "Solo dal… al…",
-	dal: "Dal",
-	al: "Al",
-	mese: "Mese",
-	giorno: "Giorno",
-	prossimeDate: "Le prossime date",
-	nessunaData: "Nessuna data nei prossimi 12 mesi",
-	aiutoEccezioni: "Le date che il calendario del comune cambia: un ritiro in più, uno annullato, uno spostato.",
-	nessunaEccezione: "Nessuna eccezione.",
-	aggiungiRitiro: "Aggiungi un ritiro",
-	togliRitiro: "Togli un ritiro",
-	spostaRitiro: "Sposta un ritiro",
-	tipoEccezione: {
-		aggiungi: "Aggiunto",
-		togli: "Tolto",
-		sposta: "Spostato"
-	},
-	tipologia: "Tipologia",
-	data: "Data",
-	da: "Da",
-	a: "A",
-	nota: "Nota (facoltativa)",
-	passate: "Passate",
-	mostraBarra: "Mostra nella barra laterale",
-	mostraBarraAiuto: "Se la nascondi, trovi il pannello nella pagina del dispositivo «Raccolta differenziata», o in Impostazioni → Dispositivi e servizi.",
-	validita: "Calendario valido fino al",
-	validitaAiuto: "Un mese prima ti ricordiamo di controllare il calendario nuovo del comune.",
-	excel: "Configurazione in Excel",
-	excelAiuto: "Compila o cambia il calendario in un foglio di calcolo e importalo qui. Il file ha una guida e un foglio per ogni sezione; lo stesso file serve per esportare e per importare.",
-	scaricaModello: "Scarica il modello",
-	esporta: "Esporta in Excel",
-	importa: "Importa da Excel…",
-	importaTitolo: "Importa da Excel",
-	scegliFile: "Scegli il file",
-	cambiaFile: "Cambia file",
-	nessunFile: "Un file .xlsx, dal modello o da un'esportazione.",
-	comeImportare: "Come importarlo",
-	sostituisci: "Sostituisci tutto",
-	sostituisciAiuto: "Il file diventa la configurazione: quello che nel file non c'è viene tolto. Dopo aver esportato e modificato.",
-	aggiungiSoltanto: "Aggiungi soltanto",
-	aggiungiSoltantoAiuto: "Le righe del file si aggiungono; quelle che corrispondono a qualcosa che c'è lo aggiornano. Non si toglie niente.",
-	continua: "Continua",
-	leggoIlFile: "Leggo il file…",
-	fileConProblemi: "Il file ha dei problemi: correggili nel foglio di calcolo e riprova.",
-	altriProblemi: (e) => e === 1 ? "e un altro problema" : `e altri ${e} problemi`,
-	esportaNonValida: "La configurazione salvata non è valida: correggila prima di esportarla.",
-	scaricamentoFallito: "Il file non si è potuto preparare. Riprova.",
-	dalFile: "Dal file",
-	nienteDalFile: "Il file è uguale alla configurazione attuale.",
-	riga: (e) => `riga ${e}`,
-	configurazioneAttuale: "configurazione attuale",
-	patrono: "Santo patrono",
-	patronoAiuto: "Segnalato come festivo, come le feste nazionali.",
-	nomePatrono: "Nome",
-	esposizione: "Quando si espongono i sacchi",
-	esposizioneAiuto: "Vale per tutte le tipologie che non hanno un orario proprio.",
-	inizioGiorno: {
-		giorno_prima: "il giorno prima",
-		giorno_stesso: "il giorno stesso"
-	},
-	dalle: "Dalle",
-	del: "del",
-	entroLe: "Entro le (giorno del ritiro)",
-	togli: "Togli",
-	tutti: "Tutti",
-	nonTrovato: "Non trovato in Home Assistant: toglilo o controlla il nome",
-	nessunRisultato: "Nessun risultato",
-	usaValore: (e) => `Invio per usare «${e}»`,
-	cercaIcona: "Cerca un'icona o scrivi mdi:…",
-	cercaDestinatario: "Cerca un telefono o un servizio di notifica…",
-	nessunDestinatarioScelto: "Nessun destinatario: aggiungine almeno uno.",
-	gruppoCompanion: "App Companion",
-	gruppoServizi: "Altri servizi",
-	gruppoEntita: "Entità notify",
-	aiutoPromemoria: "Un promemoria dice quando avvisarti e chi. Più rifiuti nello stesso giorno arrivano in un solo messaggio.",
-	nessunPromemoria: "Nessun promemoria: aggiungine uno per ricevere una notifica.",
-	nuovoPromemoria: "Nuovo promemoria",
-	nomePromemoria: "Nome",
-	nomePromemoriaAiuto: "La sera prima, Il vetro, …",
-	quando: "Quando",
-	giorniPrima: "Giorni prima",
-	giornoStesso: "Il giorno stesso",
-	apertura: "All'apertura",
-	aperturaAiuto: "Quando si possono mettere fuori i sacchi, secondo l'orario di esposizione di ogni tipologia.",
-	quantiGiorni: "Quanti giorni prima",
-	alle: "Alle",
-	perQuali: "Per quali rifiuti",
-	tutte: "Tutte",
-	tutteAiuto: "«Tutte» comprende anche le tipologie che aggiungerai.",
-	destinatari: "A chi",
-	destinatariAiuto: "I telefoni con l'app Companion ricevono anche il pulsante «Esposto ✓».",
-	nessunDestinatario: "Nessun servizio di notifica trovato in Home Assistant.",
-	conPulsanti: "con pulsanti",
-	soloTesto: "solo testo",
-	attivo: "Attivo",
-	solleciti: "Solleciti",
-	sollecitaSeNonConfermo: "Sollecita se non confermo",
-	sollecitiAiuto: "Ripete il promemoria finché qualcuno non tocca «Esposto ✓», e aggiunge il pulsante «Ricordamelo tra 30 minuti». Alla maggior parte delle persone basta la notifica.",
-	richiami: "Quante volte",
-	ogniMinuti: "Ogni",
-	minuti: (e) => `${e} min`,
-	vacanze: "Vacanze",
-	vacanzeAiuto: "Nelle date indicate i promemoria tacciono; il calendario, i sensori e le card restano.",
-	nessunaVacanza: "Nessuna vacanza in programma.",
-	aggiungiVacanza: "Aggiungi vacanza",
-	dalAl: (e, t) => `dal ${J(e)} al ${J(t)}`,
-	card: {
-		titolo: "Raccolta",
-		nonDisponibile: "Il calendario della raccolta non è disponibile. Controlla Riparazioni in Impostazioni.",
-		staseraFuori: "Stasera fuori",
-		daEsporreOra: "Da esporre ora",
-		oggi: "Oggi",
-		domani: "Domani",
-		prossimo: "Prossimo ritiro",
-		entroLe: (e, t) => `entro le ${e}${t ? "" : " di domani"}`,
-		dalle: (e, t) => `da mettere fuori ${t} dalle ${e}`,
-		stasera: "stasera",
-		oggiMinuscolo: "oggi",
-		esposto: "Esposto ✓",
-		espostoAlle: (e, t) => `Esposto alle ${e}${t ? ` da ${t}` : ""}`,
-		annullaConferma: "Annulla",
-		nessunRitiro: "Nessun ritiro",
-		nessunRitiroSettimana: "Nessun ritiro questa settimana",
-		tuttoTranquillo: "Niente da esporre nei prossimi giorni",
-		sospesi: "Promemoria sospesi",
-		sospesiFino: (e) => `Promemoria sospesi fino al ${e}`,
-		daVerificare: "Da verificare: il calendario è scaduto",
-		spostatoDal: (e) => `spostato dal ${e}`,
-		festivo: (e) => `festivo: ${e}`,
-		settimana: "Questa settimana",
-		calendario: "Calendario",
-		mesePrecedente: "Mese precedente",
-		meseSuccessivo: "Mese successivo",
-		confermato: "confermato",
-		nomeOggi: "Raccolta: oggi e domani",
-		nomeSettimana: "Raccolta: settimana",
-		nomeMese: "Raccolta: mese",
-		descrizioneOggi: "Cosa esporre stasera, con il pulsante Esposto.",
-		descrizioneSettimana: "I ritiri dei prossimi sette giorni.",
-		descrizioneMese: "Il calendario del mese, con il dettaglio del giorno.",
-		campoTitolo: "Titolo",
-		campoInizio: "La settimana inizia",
-		inizioOggi: "Da oggi",
-		inizioLunedi: "Dal lunedì"
-	},
-	profiloRimosso: (e) => e === 1 ? "Un promemoria riguardava solo questa tipologia e verrà eliminato." : `${e} promemoria riguardavano solo questa tipologia e verranno eliminati.`
-};
-function J(e) {
-	let t = R(e);
-	return `${t.getDate()} ${K[t.getMonth()]} ${t.getFullYear()}`;
+  >`, Re = document.querySelector("home-assistant") && !customElements.get("home-assistant") ? customElements.whenDefined("home-assistant") : Promise.resolve(), ze = (e) => void Re.then(e);
+function Y(e, t) {
+	ze(() => {
+		customElements.get(e) || customElements.define(e, t);
+	});
 }
+Y("rd-finestra", class extends F {
+	constructor(...e) {
+		super(...e), this.titolo = "", this.aperta = !1;
+	}
+	static {
+		this.properties = {
+			titolo: {},
+			aperta: {
+				type: Boolean,
+				reflect: !0
+			}
+		};
+	}
+	static {
+		this.styles = [q, o`
+      :host {
+        display: none;
+      }
+      :host([aperta]) {
+        display: block;
+        /* Il pannello nasconde le finestre delle pagine mentre "Prima di salvare" è
+           aperta sopra di loro: una sola finestra, un solo paio di pulsanti. */
+        visibility: var(--rd-visibilita-finestre, visible);
+      }
+      .velo {
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 14, 20, 0.5);
+        display: grid;
+        place-items: center;
+        z-index: 20;
+        padding: 16px;
+        overflow-y: auto;
+      }
+      .dialogo {
+        outline: none;
+        background: var(--rd-superficie);
+        border-radius: 20px;
+        max-width: 560px;
+        width: 100%;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        max-height: calc(100vh - 32px);
+        display: flex;
+        flex-direction: column;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        padding: 16px 20px 8px;
+        gap: 8px;
+      }
+      h3 {
+        margin: 0;
+        font-size: 18px;
+        flex: 1;
+      }
+      header button {
+        border: 0;
+        background: none;
+        cursor: pointer;
+        color: var(--rd-testo-2);
+        --mdc-icon-size: 22px;
+      }
+      .contenuto {
+        padding: 8px 20px 16px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+      }
+      footer {
+        padding: 12px 20px 16px;
+        border-top: 1px solid var(--rd-bordo);
+      }
+      footer:not(:has(*)) {
+        display: none;
+      }
+      @media (max-width: 600px) {
+        .velo {
+          padding: 0;
+          align-items: end;
+        }
+        .dialogo {
+          max-width: none;
+          border-radius: 20px 20px 0 0;
+          max-height: 92vh;
+        }
+      }
+    `];
+	}
+	updated(e) {
+		e.has("aperta") && this.aperta && (this._prima = document.activeElement, this.renderRoot.querySelector(".dialogo")?.focus());
+	}
+	disconnectedCallback() {
+		super.disconnectedCallback(), this._prima?.focus?.();
+	}
+	_chiudi() {
+		this.dispatchEvent(new CustomEvent("chiudi"));
+	}
+	render() {
+		return D`<div
+      class="velo"
+      @click=${(e) => e.target === e.currentTarget && this._chiudi()}
+      @keydown=${(e) => e.key === "Escape" && this._chiudi()}
+    >
+      <div class="dialogo" role="dialog" aria-modal="true" aria-label=${this.titolo} tabindex="-1">
+        <header>
+          <h3>${this.titolo}</h3>
+          <button aria-label=${G.chiudi} @click=${this._chiudi}><ha-icon icon="mdi:close"></ha-icon></button>
+        </header>
+        <div class="contenuto"><slot></slot></div>
+        <footer><slot name="azioni"></slot></footer>
+      </div>
+    </div>`;
+	}
+});
 //#endregion
 //#region src/comune/simbolo.ts
-var Re = ye`<svg viewBox="0 0 64 64" aria-hidden="true" style="width:100%;height:100%">
+var Be = ye`<svg viewBox="0 0 64 64" aria-hidden="true" style="width:100%;height:100%">
   <g fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M26 13.5 V9 H38 V13.5"/><path d="M10 14.5 H54"/><path d="M13.5 20 L17 57 H47 L50.5 20 Z"/>
     <polyline points="21,34 32,25 43,34" opacity="0.5"/><polyline points="25.5,40.5 32,35 38.5,40.5"/>
   </g>
   <rect x="28.5" y="46.5" width="7" height="7" fill="#F0A835"/><circle cx="32" cy="46.5" r="3.5" fill="#F0A835"/>
-</svg>`, ze = document.querySelector("home-assistant") && !customElements.get("home-assistant") ? customElements.whenDefined("home-assistant") : Promise.resolve(), Be = (e) => void ze.then(e);
-function Y(e, t) {
-	Be(() => {
-		customElements.get(e) || customElements.define(e, t);
-	});
-}
+</svg>`;
 //#endregion
-//#region src/card/base.ts
-var X = "foyer_raccolta_differenziata", Z = class extends I {
+//#region src/comune/piattaforma.ts
+function Ve(e, t) {
+	let n = e.giorni[0];
+	if (!n || n.fasce === null) return { aperta: null };
+	for (let [e, r] of n.fasce) if (new Date(e) <= t && t < new Date(r)) return {
+		aperta: !0,
+		chiude: new Date(r)
+	};
+	for (let n of e.giorni) {
+		if (n.fasce === null) break;
+		for (let [e] of n.fasce) {
+			let n = new Date(e);
+			if (n > t) return {
+				aperta: !1,
+				apre: n
+			};
+		}
+	}
+	return { aperta: !1 };
+}
+var X = (e) => `${String(e.getHours()).padStart(2, "0")}:${String(e.getMinutes()).padStart(2, "0")}`, He = (e) => (e.fasce ?? []).map(([e, t]) => `${X(new Date(e))}–${X(new Date(t))}`).join(" · "), Z = "foyer_raccolta_differenziata", Q = class extends F {
 	constructor(...e) {
 		super(...e), this._errore = !1, this._connessa = !1, this._richiesta = 0;
 	}
@@ -1176,7 +1351,8 @@ var X = "foyer_raccolta_differenziata", Z = class extends I {
 			hass: { attribute: !1 },
 			_config: { state: !0 },
 			_dati: { state: !0 },
-			_errore: { state: !0 }
+			_errore: { state: !0 },
+			_finestra: { state: !0 }
 		};
 	}
 	setConfig(e) {
@@ -1185,7 +1361,7 @@ var X = "foyer_raccolta_differenziata", Z = class extends I {
 	}
 	connectedCallback() {
 		super.connectedCallback(), this._connessa = !0, this._minuto = window.setInterval(() => {
-			this._dati && z(/* @__PURE__ */ new Date()) !== this._dati.oggi ? this.carica() : this.requestUpdate();
+			this._dati && L(/* @__PURE__ */ new Date()) !== this._dati.oggi ? this.carica() : this.requestUpdate();
 		}, 6e4), this.hass && this._avvia();
 	}
 	disconnectedCallback() {
@@ -1195,13 +1371,13 @@ var X = "foyer_raccolta_differenziata", Z = class extends I {
 		e.has("hass") && this.hass && this._connessa && !this._disiscrivi && this._avvia();
 	}
 	_avvia() {
-		this._disiscrivi = this.hass.connection.subscribeMessage(() => void this.carica(), { type: `${X}/iscriviti` }).catch(() => (this._errore = !0, () => void 0)), this.carica();
+		this._disiscrivi = this.hass.connection.subscribeMessage(() => void this.carica(), { type: `${Z}/iscriviti` }).catch(() => (this._errore = !0, () => void 0)), this.carica();
 	}
 	async carica(e) {
 		let t = ++this._richiesta;
 		try {
-			let n = e ?? z(/* @__PURE__ */ new Date()), [r, i] = this.intervallo(n), a = await this.hass.callWS({
-				type: `${X}/ritiri`,
+			let n = e ?? L(/* @__PURE__ */ new Date()), [r, i] = this.intervallo(n), a = await this.hass.callWS({
+				type: `${Z}/ritiri`,
 				dal: r,
 				al: i
 			});
@@ -1220,14 +1396,14 @@ var X = "foyer_raccolta_differenziata", Z = class extends I {
 	}
 	async conferma(e, t) {
 		await this.hass.callWS({
-			type: `${X}/conferma`,
+			type: `${Z}/conferma`,
 			data: e,
 			tipologie: t
 		}).catch(() => this.carica());
 	}
 	async annulla(e, t) {
 		for (let n of t) await this.hass.callWS({
-			type: `${X}/annulla_conferma`,
+			type: `${Z}/annulla_conferma`,
 			data: e,
 			tipologia: n
 		}).catch(() => void 0);
@@ -1235,19 +1411,86 @@ var X = "foyer_raccolta_differenziata", Z = class extends I {
 	}
 	intestazione(e, t) {
 		return D`<div class="intestazione">
-      <span class="simbolo">${Re}</span><b>${this._config?.titolo || e}</b>
+      <span class="simbolo">${Be}</span><b>${this._config?.titolo || e}</b>
       ${t ? D`<span class="sotto">${t}</span>` : ""}
+      <span class="azioni ${t ? "" : "spinta"}">${this._pillola()}${this._punto()}</span>
     </div>`;
+	}
+	_punto() {
+		return this._dati?.tipologie.some((e) => e.note?.trim()) ? D`<button class="punto" aria-label=${G.card.apriNote} title=${G.card.apriNote}
+      @click=${() => this._finestra = { tipo: "note" }}><ha-icon icon="mdi:help-circle-outline"></ha-icon></button>` : k;
+	}
+	chipNota(e) {
+		return e.note?.trim() ? D`<button class="chip-nota" aria-label=${`${e.nome}: ${G.card.cosaVaDove}`}
+      @click=${(t) => {
+			t.stopPropagation(), this._finestra = {
+				tipo: "note",
+				tipologia: e.id
+			};
+		}}>${J(e)}</button>` : J(e);
+	}
+	_finestraNote(e) {
+		return D`<div class="elenco-note">
+      ${(this._dati?.tipologie ?? []).filter((t) => !e || t.id === e).map((e) => D`<div class="nota-riga">${J(e)}<span>${e.note?.trim() || G.card.nessunaNotaCard}</span></div>`)}
+    </div>`;
+	}
+	get _piattaforma() {
+		return this._config?.piattaforma === !1 ? null : this._dati?.piattaforma ?? null;
+	}
+	_quandoApre(e) {
+		let t = this._dati.oggi, n = L(e);
+		return n === t ? G.card.alle(X(e)) : n === R(t, 1) ? G.card.domaniAlle(X(e)) : G.card.giornoAlle(U[z(n)], X(e));
+	}
+	_pillola() {
+		let e = this._piattaforma;
+		if (!e) return k;
+		let t = Ve(e, /* @__PURE__ */ new Date()), [n, r] = t.aperta === null ? ["ignota", G.card.piattaformaNonIndicato] : t.aperta ? ["aperta", G.card.piattaformaAperta(X(t.chiude))] : ["chiusa", t.apre ? G.card.piattaformaApre(this._quandoApre(t.apre)) : G.card.piattaformaChiusa];
+		return D`<button class="pillola ${n}" title=${e.nome} aria-label=${`${e.nome}: ${r}`}
+      @click=${() => this._finestra = { tipo: "piattaforma" }}>
+      <ha-icon icon="mdi:recycle"></ha-icon><span>${r}</span>
+    </button>`;
+	}
+	_finestraPiattaforma(e) {
+		let t = e.giorni.slice(0, 7), n = e.giorni.slice(7).filter((e) => e.motivo === "eccezione" || e.motivo === "festivo"), r = (e) => e.fasce === null ? G.card.orarioNonIndicato : e.fasce.length ? He(e) : e.festivo ? G.card.chiusaFestivo(e.festivo) : G.card.piattaformaChiusa, i = (e) => e === this._dati.oggi ? G.card.oggiMaiuscolo : `${Pe[z(e)]} ${I(e).getDate()}`;
+		return D`<div class="piattaforma">
+      ${this._pillola()}
+      ${e.nota ? D`<p class="nota-p">${e.nota}</p>` : k}
+      <div class="orari">
+        ${t.map((e) => D`<div class="orario ${e.data === this._dati.oggi ? "oggi" : ""}">
+            <b>${i(e.data)}</b><span>${r(e)}${e.nota ? D`<small>${e.nota}</small>` : k}</span>
+          </div>`)}
+      </div>
+      ${n.length ? D`<div class="avanti"><b>${G.card.piuAvanti}</b>
+            ${n.map((e) => D`<div class="orario"><b>${i(e.data)}</b><span>${r(e)}${e.nota ? D`<small>${e.nota}</small>` : k}</span></div>`)}
+          </div>` : k}
+    </div>`;
+	}
+	_chiudi(e) {
+		return D`<div class="piede" slot="azioni"><button class="bottone" @click=${e}>${G.chiudi}</button></div>`;
+	}
+	finestre() {
+		let e = this._finestra;
+		if (!e) return k;
+		let t = () => this._finestra = void 0;
+		if (e.tipo === "piattaforma") {
+			let e = this._piattaforma;
+			return e ? D`<rd-finestra aperta titolo=${e.nome} @chiudi=${t}>
+        ${this._finestraPiattaforma(e)}${this._chiudi(t)}
+      </rd-finestra>` : k;
+		}
+		return D`<rd-finestra aperta titolo=${e.tipologia ? this.tipologia(e.tipologia)?.nome ?? G.card.cosaVaDove : G.card.cosaVaDove} @chiudi=${t}>
+      ${this._finestraNote(e.tipologia)}${this._chiudi(t)}
+    </rd-finestra>`;
 	}
 	banner() {
 		let e = this._dati?.sospeso;
-		return e ? e.fino_al ? D`<div class="banner"><ha-icon icon="mdi:bell-off-outline"></ha-icon>${q.card.sospesiFino(Q(e.fino_al))}</div>` : e.manuale ? D`<div class="banner"><ha-icon icon="mdi:bell-off-outline"></ha-icon>${q.card.sospesi}</div>` : "" : "";
+		return e ? e.fino_al ? D`<div class="banner"><ha-icon icon="mdi:bell-off-outline"></ha-icon>${G.card.sospesiFino($(e.fino_al))}</div>` : e.manuale ? D`<div class="banner"><ha-icon icon="mdi:bell-off-outline"></ha-icon>${G.card.sospesi}</div>` : "" : "";
 	}
 	nonDisponibile() {
-		return D`<ha-card><div class="vuota">${q.card.nonDisponibile}</div></ha-card>`;
+		return D`<ha-card><div class="vuota">${G.card.nonDisponibile}</div></ha-card>`;
 	}
 	static {
-		this.stiliComuni = [je, o`
+		this.stiliComuni = [q, o`
       ha-card {
         overflow: hidden;
         height: 100%;
@@ -1267,11 +1510,130 @@ var X = "foyer_raccolta_differenziata", Z = class extends I {
         font-size: 16px;
         font-weight: 600;
       }
+      .intestazione {
+        flex-wrap: wrap;
+      }
       .intestazione .sotto {
         margin-left: auto;
         color: var(--rd-testo-2);
         font-size: 13px;
         text-align: right;
+      }
+      .azioni {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .azioni.spinta {
+        margin-left: auto;
+      }
+      .azioni:empty {
+        display: none;
+      }
+      .punto {
+        border: 0;
+        background: none;
+        color: var(--rd-testo-2);
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        --mdc-icon-size: 20px;
+      }
+      .punto:hover {
+        background: var(--rd-superficie-2);
+        color: var(--rd-testo);
+      }
+      .pillola {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border: 0;
+        cursor: pointer;
+        border-radius: 999px;
+        padding: 4px 10px 4px 7px;
+        font: inherit;
+        font-size: 12.5px;
+        font-weight: 500;
+        --mdc-icon-size: 16px;
+        white-space: nowrap;
+        background: var(--rd-superficie-2);
+        color: var(--rd-testo-2);
+      }
+      .pillola.aperta {
+        background: color-mix(in srgb, var(--rd-ok) 16%, transparent);
+        color: var(--rd-ok);
+      }
+      .chip-nota {
+        border: 0;
+        padding: 0;
+        background: none;
+        cursor: pointer;
+        font: inherit;
+        border-radius: 999px;
+      }
+      .chip-nota .chip::after {
+        content: "?";
+        font-size: 10px;
+        font-weight: 700;
+        margin-left: 4px;
+        opacity: 0.75;
+      }
+      .elenco-note {
+        display: grid;
+        gap: 10px;
+      }
+      .nota-riga {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 10px;
+        align-items: start;
+        font-size: 14px;
+      }
+      .nota-riga > span:last-child {
+        padding-top: 3px;
+      }
+      .piattaforma .pillola {
+        font-size: 14px;
+        padding: 6px 12px 6px 9px;
+        cursor: default;
+        margin-bottom: 8px;
+      }
+      .nota-p {
+        margin: 0 0 8px;
+        color: var(--rd-testo-2);
+        font-size: 13.5px;
+      }
+      .orario {
+        display: grid;
+        grid-template-columns: 64px 1fr;
+        gap: 8px;
+        padding: 7px 0;
+        border-top: 1px solid var(--rd-bordo);
+        font-size: 14px;
+      }
+      .orario.oggi b {
+        color: var(--rd-primario);
+      }
+      .orario small {
+        display: block;
+        color: var(--rd-testo-2);
+        font-size: 12.5px;
+      }
+      .avanti {
+        margin-top: 12px;
+      }
+      .piede {
+        display: flex;
+        justify-content: flex-end;
+      }
+      .avanti > b {
+        display: block;
+        font-size: 13px;
+        color: var(--rd-testo-2);
+        margin-bottom: 2px;
       }
       .banner {
         margin: 0 12px 12px;
@@ -1296,14 +1658,14 @@ var X = "foyer_raccolta_differenziata", Z = class extends I {
       }
     `];
 	}
-}, Q = (e) => {
+}, $ = (e) => {
 	let [, t, n] = e.split("-").map(Number);
 	return `${n}/${String(t).padStart(2, "0")}`;
-}, Ve = Ne;
-function He(e, t, n) {
-	Be(() => Ue(e, t, n));
+}, Ue = Le;
+function We(e, t, n) {
+	ze(() => Ge(e, t, n));
 }
-function Ue(e, t, n) {
+function Ge(e, t, n) {
 	let r = window;
 	r.customCards = r.customCards ?? [], r.customCards.some((t) => t.type === e) || r.customCards.push({
 		type: e,
@@ -1313,7 +1675,7 @@ function Ue(e, t, n) {
 		documentationURL: "https://github.com/foyer-labs/Foyer-Raccolta-Differenziata"
 	});
 }
-Y("foyer-raccolta-editor", class extends I {
+Y("foyer-raccolta-editor", class extends F {
 	static {
 		this.properties = { _config: { state: !0 } };
 	}
@@ -1337,14 +1699,19 @@ Y("foyer-raccolta-editor", class extends I {
 		let e = this._config.type.includes("settimana");
 		return D`<div class="modulo">
       <div class="campo">
-        <label for="titolo">${q.card.campoTitolo}</label>
+        <label for="titolo">${G.card.campoTitolo}</label>
         <input id="titolo" .value=${this._config.titolo ?? ""} @input=${(e) => this._cambia({ titolo: e.target.value })} />
       </div>
+      <label class="spunta">
+        <input type="checkbox" .checked=${this._config.piattaforma !== !1}
+          @change=${(e) => this._cambia({ piattaforma: e.target.checked ? void 0 : !1 })} />
+        ${G.card.campoPiattaforma}
+      </label>
       ${e ? D`<div class="campo">
-            <span class="etichetta">${q.card.campoInizio}</span>
+            <span class="etichetta">${G.card.campoInizio}</span>
             <div class="segmenti">
               ${["oggi", "lunedi"].map((e) => D`<button class=${(this._config.inizio ?? "oggi") === e ? "attivo" : ""} @click=${() => this._cambia({ inizio: e })}>
-                  ${e === "oggi" ? q.card.inizioOggi : q.card.inizioLunedi}
+                  ${e === "oggi" ? G.card.inizioOggi : G.card.inizioLunedi}
                 </button>`)}
             </div>
           </div>` : k}
@@ -1352,27 +1719,38 @@ Y("foyer-raccolta-editor", class extends I {
 	}
 	static {
 		this.styles = [
-			je,
-			Me,
-			o`:host { display: block; }`
+			q,
+			Ie,
+			o`
+      :host {
+        display: block;
+      }
+      .spunta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 4px 0 12px;
+        font-size: 14px;
+      }
+    `
 		];
 	}
 });
 //#endregion
 //#region src/card/oggi.ts
-var We = "foyer-raccolta-oggi-card";
-Y(We, class extends Z {
+var Ke = "foyer-raccolta-oggi-card";
+Y(Ke, class extends Q {
 	static getConfigElement() {
 		return document.createElement("foyer-raccolta-editor");
 	}
 	static getStubConfig() {
-		return { type: `custom:${We}` };
+		return { type: `custom:${Ke}` };
 	}
 	getCardSize() {
 		return 4;
 	}
 	intervallo(e) {
-		return [e, B(e, 8)];
+		return [e, R(e, 8)];
 	}
 	_fuoco() {
 		let e = this._dati?.ritiri ?? [], t = /* @__PURE__ */ new Date(), n = e.filter((e) => new Date(e.inizio_esposizione) <= t && t < new Date(e.fine_esposizione));
@@ -1392,28 +1770,28 @@ Y(We, class extends Z {
 		};
 	}
 	_giornoInizio(e) {
-		let t = e.slice(0, 10), n = H(this._dati.oggi, t);
-		return n <= 0 ? Number(e.slice(11, 13)) >= 17 ? q.card.stasera : q.card.oggiMinuscolo : n === 1 ? q.card.domani.toLowerCase() : G[V(t)];
+		let t = e.slice(0, 10), n = B(this._dati.oggi, t);
+		return n <= 0 ? Number(e.slice(11, 13)) >= 17 ? G.card.stasera : G.card.oggiMinuscolo : n === 1 ? G.card.domani.toLowerCase() : U[z(t)];
 	}
 	_quando(e, t) {
-		let n = H(this._dati.oggi, e);
-		return t === "da_esporre" ? n <= 0 ? q.card.daEsporreOra : q.card.staseraFuori : n === 0 ? q.card.oggi : n === 1 ? q.card.domani : `${G[V(e)]} ${R(e).getDate()}`;
+		let n = B(this._dati.oggi, e);
+		return t === "da_esporre" ? n <= 0 ? G.card.daEsporreOra : G.card.staseraFuori : n === 0 ? G.card.oggi : n === 1 ? G.card.domani : `${U[z(e)]} ${I(e).getDate()}`;
 	}
 	_eroe() {
 		let e = this._fuoco();
-		if (!e) return D`<div class="eroe calmo"><div class="cosa piccola">${q.card.tuttoTranquillo}</div></div>`;
-		let { ritiri: t, stato: n } = e, r = t.map((e) => this.tipologia(e.tipologia)).filter((e) => e !== void 0), i = r.map((e) => e.colore), a = i.length > 1 ? `linear-gradient(135deg, ${i[0]} 0%, ${i[i.length - 1]} 100%)` : i[0] ?? "var(--rd-primario)", o = Ve(i[0] ?? "#03a9f4"), s = t[0].data, c = H(this._dati.oggi, s), l = W(t[0].fine_esposizione), u = W(t[0].inizio_esposizione), d = this.confermato(t[0]), f = t.map((e) => e.tipologia);
+		if (!e) return D`<div class="eroe calmo"><div class="cosa piccola">${G.card.tuttoTranquillo}</div></div>`;
+		let { ritiri: t, stato: n } = e, r = t.map((e) => this.tipologia(e.tipologia)).filter((e) => e !== void 0), i = r.map((e) => e.colore), a = i.length > 1 ? `linear-gradient(135deg, ${i[0]} 0%, ${i[i.length - 1]} 100%)` : i[0] ?? "var(--rd-primario)", o = Ue(i[0] ?? "#03a9f4"), s = t[0].data, c = B(this._dati.oggi, s), l = H(t[0].fine_esposizione), u = H(t[0].inizio_esposizione), d = this.confermato(t[0]), f = t.map((e) => e.tipologia);
 		return D`<div class="eroe ${n} ${o === "#ffffff" ? "chiaro" : ""}" style="background:${a};color:${o}">
       <ha-icon class="sfondo-icona" .icon=${r[0]?.icona ?? "mdi:trash-can-outline"}></ha-icon>
       <div class="quando">${this._quando(s, n)}</div>
       <div class="cosa">${r.map((e) => e.nome).join(" e ")}</div>
-      ${n === "esposto" ? D`<div class="fino"><ha-icon icon="mdi:check-circle"></ha-icon>${q.card.espostoAlle(W(d?.istante ?? ""), d?.utente)}</div>
-            <button class="conferma fatto" @click=${() => this.annulla(s, f)}>${q.card.annullaConferma}</button>` : D`<div class="fino">
+      ${n === "esposto" ? D`<div class="fino"><ha-icon icon="mdi:check-circle"></ha-icon>${G.card.espostoAlle(H(d?.istante ?? ""), d?.utente)}</div>
+            <button class="conferma fatto" @click=${() => this.annulla(s, f)}>${G.card.annullaConferma}</button>` : D`<div class="fino">
               <ha-icon icon="mdi:clock-outline"></ha-icon>
-              ${n === "da_esporre" ? q.card.entroLe(l, c <= 0) : q.card.dalle(u, this._giornoInizio(t[0].inizio_esposizione))}
+              ${n === "da_esporre" ? G.card.entroLe(l, c <= 0) : G.card.dalle(u, this._giornoInizio(t[0].inizio_esposizione))}
             </div>
-            ${c <= 1 ? D`<button class="conferma" @click=${() => this.conferma(s, f)}>${q.card.esposto}</button>` : k}`}
-      ${t.some((e) => e.da_verificare) ? D`<div class="nota">${q.card.daVerificare}</div>` : k}
+            ${c <= 1 ? D`<button class="conferma" @click=${() => this.conferma(s, f)}>${G.card.esposto}</button>` : k}`}
+      ${t.some((e) => e.da_verificare) ? D`<div class="nota">${G.card.daVerificare}</div>` : k}
     </div>`;
 	}
 	_giorno(e, t) {
@@ -1423,8 +1801,8 @@ Y(We, class extends Z {
       <div class="chips">
         ${n.length ? n.map((e) => {
 			let t = this.tipologia(e.tipologia);
-			return D`<span class="con-segno">${t ? L(t) : e.tipologia}${this.confermato(e) ? D`<ha-icon class="spunta" icon="mdi:check-circle" title=${q.card.confermato}></ha-icon>` : k}</span>`;
-		}) : D`<span class="vuoto">${q.card.nessunRitiro}</span>`}
+			return D`<span class="con-segno">${t ? this.chipNota(t) : e.tipologia}${this.confermato(e) ? D`<ha-icon class="spunta" icon="mdi:check-circle" title=${G.card.confermato}></ha-icon>` : k}</span>`;
+		}) : D`<span class="vuoto">${G.card.nessunRitiro}</span>`}
       </div>
     </div>`;
 	}
@@ -1432,16 +1810,17 @@ Y(We, class extends Z {
 		if (!this._config) return k;
 		if (this._errore) return this.nonDisponibile();
 		if (!this._dati) return D`<ha-card><div class="vuota">…</div></ha-card>`;
-		let e = this._dati.oggi, t = R(e);
+		let e = this._dati.oggi, t = I(e);
 		return D`<ha-card>
-      ${this.intestazione(q.card.titolo, `${G[V(e)]} ${t.getDate()} ${K[t.getMonth()]}`)}
+      ${this.intestazione(G.card.titolo, `${U[z(e)]} ${t.getDate()} ${W[t.getMonth()]}`)}
       ${this._eroe()}
-      <div class="fila">${this._giorno(q.card.oggi, e)} ${this._giorno(q.card.domani, B(e, 1))}</div>
+      <div class="fila">${this._giorno(G.card.oggi, e)} ${this._giorno(G.card.domani, R(e, 1))}</div>
       ${this.banner()}
+    ${this.finestre()}
     </ha-card>`;
 	}
 	static {
-		this.styles = [...Z.stiliComuni, o`
+		this.styles = [...Q.stiliComuni, o`
       .eroe {
         margin: 8px 12px 12px;
         border-radius: 16px;
@@ -1566,14 +1945,14 @@ Y(We, class extends Z {
       }
     `];
 	}
-}), He(We, q.card.nomeOggi, q.card.descrizioneOggi);
+}), We(Ke, G.card.nomeOggi, G.card.descrizioneOggi);
 //#endregion
 //#region src/card/settimana.ts
-var Ge = "foyer-raccolta-settimana-card";
-Y(Ge, class extends Z {
+var qe = "foyer-raccolta-settimana-card";
+Y(qe, class extends Q {
 	static {
 		this.properties = {
-			...Z.properties,
+			...Q.properties,
 			_scelto: { state: !0 }
 		};
 	}
@@ -1582,7 +1961,7 @@ Y(Ge, class extends Z {
 	}
 	static getStubConfig() {
 		return {
-			type: `custom:${Ge}`,
+			type: `custom:${qe}`,
 			inizio: "oggi"
 		};
 	}
@@ -1590,30 +1969,30 @@ Y(Ge, class extends Z {
 		return 3;
 	}
 	intervallo(e) {
-		let t = this._config?.inizio === "lunedi" ? Pe(e) : e;
-		return [t, B(t, 6)];
+		let t = this._config?.inizio === "lunedi" ? Me(e) : e;
+		return [t, R(t, 6)];
 	}
 	render() {
 		if (!this._config) return k;
 		if (this._errore) return this.nonDisponibile();
 		if (!this._dati) return D`<ha-card><div class="vuota">…</div></ha-card>`;
-		let e = this._dati.oggi, [t, n] = this.intervallo(e), r = Array.from({ length: 7 }, (e, n) => B(t, n)), i = this._dati.ritiri, a = [...new Set(i.map((e) => e.tipologia))].map((e) => this.tipologia(e)).filter((e) => e !== void 0), o = this._scelto && r.includes(this._scelto) ? this._scelto : void 0, s = o ? i.filter((e) => e.data === o) : [];
+		let e = this._dati.oggi, [t, n] = this.intervallo(e), r = Array.from({ length: 7 }, (e, n) => R(t, n)), i = this._dati.ritiri, a = [...new Set(i.map((e) => e.tipologia))].map((e) => this.tipologia(e)).filter((e) => e !== void 0), o = this._scelto && r.includes(this._scelto) ? this._scelto : void 0, s = o ? i.filter((e) => e.data === o) : [];
 		return D`<ha-card>
-      ${this.intestazione(q.card.settimana, `${Q(t)} – ${Q(n)}`)}
+      ${this.intestazione(G.card.settimana, `${$(t)} – ${$(n)}`)}
       <div class="settimana" role="list">
         ${r.map((t) => {
 			let n = i.filter((e) => e.data === t);
 			return D`<button
             role="listitem"
             class="g ${t === e ? "oggi" : ""} ${t < e ? "passato" : ""} ${t === o ? "scelto" : ""}"
-            aria-label=${`${G[V(t)]} ${R(t).getDate()}: ${n.map((e) => this.tipologia(e.tipologia)?.nome).join(", ") || q.card.nessunRitiro}`}
+            aria-label=${`${U[z(t)]} ${I(t).getDate()}: ${n.map((e) => this.tipologia(e.tipologia)?.nome).join(", ") || G.card.nessunRitiro}`}
             @click=${() => this._scelto = t === o ? void 0 : t}
           >
-            <span class="nome-g">${t === e ? q.card.oggi : Ie[V(t)]}</span>
-            <span class="num">${R(t).getDate()}</span>
+            <span class="nome-g">${t === e ? G.card.oggi : Pe[z(t)]}</span>
+            <span class="num">${I(t).getDate()}</span>
             ${n.map((e) => {
 				let t = this.tipologia(e.tipologia), n = t?.colore ?? "#888888";
-				return D`<span class="ico-t ${this.confermato(e) ? "fatto" : ""}" style="background:${n};color:${Ve(n)}">
+				return D`<span class="ico-t ${this.confermato(e) ? "fatto" : ""}" style="background:${n};color:${Ue(n)}">
                 <ha-icon .icon=${t?.icona ?? "mdi:trash-can-outline"}></ha-icon>
                 ${e.spostato_dal ? D`<span class="segno">↪</span>` : k}
               </span>`;
@@ -1622,22 +2001,23 @@ Y(Ge, class extends Z {
 		})}
       </div>
       ${o ? D`<div class="dettaglio">
-            <small>${G[V(o)]} ${R(o).getDate()}</small>
+            <small>${U[z(o)]} ${I(o).getDate()}</small>
             ${s.length ? s.map((e) => {
 			let t = this.tipologia(e.tipologia);
 			return D`<div class="riga">
-                    ${t ? L(t) : e.tipologia}
+                    ${t ? this.chipNota(t) : e.tipologia}
                     <span class="note">
-                      ${[t?.note, e.spostato_dal ? q.card.spostatoDal(Q(e.spostato_dal)) : ""].filter(Boolean).join(" · ")}
+                      ${[t?.note, e.spostato_dal ? G.card.spostatoDal($(e.spostato_dal)) : ""].filter(Boolean).join(" · ")}
                     </span>
                   </div>`;
-		}) : D`<span class="vuoto">${q.card.nessunRitiro}</span>`}
-          </div>` : a.length ? D`<div class="legenda">${a.map((e) => D`<span><i class="pallino" style="background:${e.colore}"></i>${e.nome}</span>`)}</div>` : D`<div class="vuota">${q.card.nessunRitiroSettimana}</div>`}
+		}) : D`<span class="vuoto">${G.card.nessunRitiro}</span>`}
+          </div>` : a.length ? D`<div class="legenda">${a.map((e) => D`<span><i class="pallino" style="background:${e.colore}"></i>${e.nome}</span>`)}</div>` : D`<div class="vuota">${G.card.nessunRitiroSettimana}</div>`}
       ${this.banner()}
+    ${this.finestre()}
     </ha-card>`;
 	}
 	static {
-		this.styles = [...Z.stiliComuni, o`
+		this.styles = [...Q.stiliComuni, o`
       .settimana {
         display: grid;
         grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -1759,14 +2139,14 @@ Y(Ge, class extends Z {
       }
     `];
 	}
-}), He(Ge, q.card.nomeSettimana, q.card.descrizioneSettimana);
+}), We(qe, G.card.nomeSettimana, G.card.descrizioneSettimana);
 //#endregion
 //#region src/card/mese.ts
-var $ = "foyer-raccolta-mese-card";
-Y($, class extends Z {
+var Je = "foyer-raccolta-mese-card";
+Y(Je, class extends Q {
 	static {
 		this.properties = {
-			...Z.properties,
+			...Q.properties,
 			_mese: { state: !0 },
 			_scelto: { state: !0 }
 		};
@@ -1775,41 +2155,41 @@ Y($, class extends Z {
 		return document.createElement("foyer-raccolta-editor");
 	}
 	static getStubConfig() {
-		return { type: `custom:${$}` };
+		return { type: `custom:${Je}` };
 	}
 	getCardSize() {
 		return 7;
 	}
 	intervallo(e) {
-		let t = this._mese ?? U(e), n = B(t, -V(t));
-		return [n, B(n, 41)];
+		let t = this._mese ?? V(e), n = R(t, -z(t));
+		return [n, R(n, 41)];
 	}
 	_sposta(e) {
-		let t = R(this._mese ?? U(this._dati.oggi));
-		t.setMonth(t.getMonth() + e), this._mese = z(t), this._scelto = void 0, this.carica(this._dati.oggi);
+		let t = I(this._mese ?? V(this._dati.oggi));
+		t.setMonth(t.getMonth() + e), this._mese = L(t), this._scelto = void 0, this.carica(this._dati.oggi);
 	}
 	render() {
 		if (!this._config) return k;
 		if (this._errore) return this.nonDisponibile();
 		if (!this._dati) return D`<ha-card><div class="vuota">…</div></ha-card>`;
-		let e = this._dati.oggi, t = this._mese ?? U(e), [n] = this.intervallo(e), r = R(t).getFullYear(), i = R(t).getMonth(), a = Math.ceil((V(t) + Fe(r, i + 1)) / 7) * 7, o = this._scelto ?? (t === U(e) ? e : t), s = this._dati.ritiri.filter((e) => e.data === o), c = [...new Set(this._dati.ritiri.map((e) => e.tipologia))].map((e) => this.tipologia(e)).filter((e) => e !== void 0);
+		let e = this._dati.oggi, t = this._mese ?? V(e), [n] = this.intervallo(e), r = I(t).getFullYear(), i = I(t).getMonth(), a = Math.ceil((z(t) + Ne(r, i + 1)) / 7) * 7, o = this._scelto ?? (t === V(e) ? e : t), s = this._dati.ritiri.filter((e) => e.data === o), c = [...new Set(this._dati.ritiri.map((e) => e.tipologia))].map((e) => this.tipologia(e)).filter((e) => e !== void 0);
 		return D`<ha-card>
-      ${this.intestazione(q.card.calendario)}
+      ${this.intestazione(G.card.calendario)}
       <div class="testa-mese">
-        <button aria-label=${q.card.mesePrecedente} @click=${() => this._sposta(-1)}><ha-icon icon="mdi:chevron-left"></ha-icon></button>
-        <b>${K[i]} ${r}</b>
-        <button aria-label=${q.card.meseSuccessivo} @click=${() => this._sposta(1)}><ha-icon icon="mdi:chevron-right"></ha-icon></button>
+        <button aria-label=${G.card.mesePrecedente} @click=${() => this._sposta(-1)}><ha-icon icon="mdi:chevron-left"></ha-icon></button>
+        <b>${W[i]} ${r}</b>
+        <button aria-label=${G.card.meseSuccessivo} @click=${() => this._sposta(1)}><ha-icon icon="mdi:chevron-right"></ha-icon></button>
       </div>
       <div class="mese">
-        ${Le.map((e) => D`<div class="intest">${e}</div>`)}
+        ${Fe.map((e) => D`<div class="intest">${e}</div>`)}
         ${Array.from({ length: a }, (t, r) => {
-			let a = B(n, r), s = this._dati.ritiri.filter((e) => e.data === a);
+			let a = R(n, r), s = this._dati.ritiri.filter((e) => e.data === a);
 			return D`<button
-            class="c ${R(a).getMonth() === i ? "" : "fuori"} ${a < e ? "passato" : ""} ${a === e ? "oggi" : ""} ${a === o && a !== e ? "scelto" : ""}"
-            aria-label=${`${R(a).getDate()} ${K[R(a).getMonth()]}${s.length ? `: ${s.map((e) => this.tipologia(e.tipologia)?.nome ?? e.tipologia).join(", ")}` : ""}`}
+            class="c ${I(a).getMonth() === i ? "" : "fuori"} ${a < e ? "passato" : ""} ${a === e ? "oggi" : ""} ${a === o && a !== e ? "scelto" : ""}"
+            aria-label=${`${I(a).getDate()} ${W[I(a).getMonth()]}${s.length ? `: ${s.map((e) => this.tipologia(e.tipologia)?.nome ?? e.tipologia).join(", ")}` : ""}`}
             @click=${() => this._scelto = a}
           >
-            <span>${R(a).getDate()}</span>
+            <span>${I(a).getDate()}</span>
             <span class="punti">
               ${s.slice(0, 4).map((e) => D`<i style="background:${this.tipologia(e.tipologia)?.colore ?? "#888"}"></i>`)}
             </span>
@@ -1817,23 +2197,24 @@ Y($, class extends Z {
 		})}
       </div>
       <div class="dettaglio">
-        <small>${G[V(o)]} ${R(o).getDate()} ${K[R(o).getMonth()]}</small>
+        <small>${U[z(o)]} ${I(o).getDate()} ${W[I(o).getMonth()]}</small>
         ${s.length ? s.map((e) => {
 			let t = this.tipologia(e.tipologia), n = [
 				t?.note,
-				e.spostato_dal ? q.card.spostatoDal(Q(e.spostato_dal)) : "",
-				e.festivo ? q.card.festivo(e.festivo) : "",
-				this.confermato(e) ? q.card.confermato : ""
+				e.spostato_dal ? G.card.spostatoDal($(e.spostato_dal)) : "",
+				e.festivo ? G.card.festivo(e.festivo) : "",
+				this.confermato(e) ? G.card.confermato : ""
 			].filter(Boolean);
-			return D`<div class="riga">${t ? L(t) : e.tipologia}<span class="note">${n.join(" · ")}</span></div>`;
-		}) : D`<span class="note">${q.card.nessunRitiro}</span>`}
+			return D`<div class="riga">${t ? this.chipNota(t) : e.tipologia}<span class="note">${n.join(" · ")}</span></div>`;
+		}) : D`<span class="note">${G.card.nessunRitiro}</span>`}
       </div>
       ${c.length ? D`<div class="legenda">${c.map((e) => D`<span><i class="pallino" style="background:${e.colore}"></i>${e.nome}</span>`)}</div>` : k}
       ${this.banner()}
+    ${this.finestre()}
     </ha-card>`;
 	}
 	static {
-		this.styles = [...Z.stiliComuni, o`
+		this.styles = [...Q.stiliComuni, o`
       .testa-mese {
         display: flex;
         align-items: center;
@@ -1952,5 +2333,5 @@ Y($, class extends Z {
       }
     `];
 	}
-}), He($, q.card.nomeMese, q.card.descrizioneMese);
+}), We(Je, G.card.nomeMese, G.card.descrizioneMese);
 //#endregion

@@ -13,6 +13,7 @@ c'è la [specifica](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/b
 - [Promemoria](#promemoria)
 - [Esposto ✓](#esposto-)
 - [Le card](#le-card)
+- [La piattaforma ecologica](#la-piattaforma-ecologica)
 - [Entità e automazioni](#entità-e-automazioni)
 - [Il calendario in Excel](#il-calendario-in-excel)
 - [Quando cambia il calendario del comune](#quando-cambia-il-calendario-del-comune)
@@ -174,6 +175,15 @@ nell'editor visuale.
 
 <p align="center"><img src="screenshots/card-telefono.png" alt="Le card oggi e settimana su un telefono, in tema scuro" width="300"></p>
 
+Nella testata di ogni card:
+
+- il **?** apre *Cosa va dove*: tutte le tipologie con la loro nota (le note si
+  scrivono in *Tipologie*). Anche una chip con un piccolo **?** si tocca per leggere
+  la sua nota;
+- se hai inserito gli orari della [piattaforma ecologica](#la-piattaforma-ecologica),
+  un'indicazione come *Aperta fino alle 12:00* o *Chiusa · apre giovedì alle 14:00*;
+  toccandola vedi gli orari della settimana. Nell'editor della card la puoi nascondere.
+
 Se preferisci il YAML:
 
 ```yaml
@@ -190,6 +200,31 @@ type: custom:foyer-raccolta-mese-card
 titolo: Calendario rifiuti   # facoltativo, per tutte e tre
 ```
 
+## La piattaforma ecologica
+
+Nella scheda **Piattaforma** del pannello inserisci gli orari della piattaforma (o isola)
+ecologica: *Inserisci gli orari*, poi
+
+- **nome** (Piattaforma ecologica, Isola ecologica, Ecocentro…) e una **nota**
+  facoltativa, per esempio l'indirizzo;
+- da uno a quattro **periodi** con le date e l'anno, per esempio l'orario invernale e
+  quello estivo; in ogni giorno da una a tre **fasce orarie**, o nessuna se è chiusa.
+  *Aggiungi un periodo* copia l'orario dell'ultimo e parte il giorno dopo: correggi e
+  salva;
+- **giorni con un orario diverso**: una chiusura straordinaria, o un'apertura in un
+  giorno festivo.
+
+Nei giorni festivi (nazionali e del patrono) risulta chiusa, salvo un giorno con un
+orario diverso. Fuori dai periodi l'orario è *non indicato*: le card non dicono
+"chiusa" se non lo sanno. Un mese prima che gli orari inseriti finiscano, la
+Panoramica te lo ricorda.
+
+<p align="center"><img src="screenshots/pannello-piattaforma.png" alt="La scheda Piattaforma: nome, nota e il periodo estivo con le fasce orarie di ogni giorno" width="820"></p>
+
+Le card mostrano se è aperta adesso, e un tocco apre gli orari:
+
+<p align="center"><img src="screenshots/card-piattaforma.png" alt="La finestra degli orari della piattaforma ecologica aperta da una card: aperta fino alle 12:00 e l'orario della settimana" width="820"></p>
+
 ## Entità e automazioni
 
 | Entità | Cosa dice |
@@ -201,6 +236,7 @@ titolo: Calendario rifiuti   # facoltativo, per tutte e tre
 | `binary_sensor.raccolta_differenziata_da_esporre` | Acceso quando c'è un sacco da mettere fuori e nessuno ha confermato |
 | `button.raccolta_differenziata_esposto` | Conferma |
 | `switch.raccolta_differenziata_sospendi_promemoria` | Sospende i promemoria |
+| `binary_sensor.raccolta_differenziata_piattaforma_ecologica` | Acceso quando la piattaforma ecologica è aperta, con `chiude_alle` e `apre_alle`; c'è solo se hai inserito gli orari |
 
 Una luce accanto alla porta che resta accesa finché i sacchi non sono fuori:
 
@@ -226,8 +262,9 @@ Se preferisci un foglio di calcolo, in *Impostazioni* trovi **Configurazione in 
 
 - **Scarica il modello**: un file con una guida alla compilazione (foglio *Leggimi*) e un
   foglio per ogni cosa: *Tipologie*, *Regole*, *Eccezioni*, *Promemoria*, *Vacanze*,
-  *Impostazioni*. Le sei tipologie di base sono già scritte; in ogni foglio una riga
-  grigia fa da esempio, e passando sulle intestazioni leggi cosa va in ogni colonna.
+  *Piattaforma*, *Piattaforma eccezioni*, *Impostazioni*. Le sei tipologie di base sono
+  già scritte; in ogni foglio una riga grigia fa da esempio, e passando sulle
+  intestazioni leggi cosa va in ogni colonna.
 - **Esporta in Excel**: lo stesso file, con la tua configurazione dentro. È il modo più
   rapido per cambiare tante cose insieme, o per passare il calendario a un vicino.
 - **Importa da Excel…**: scegli il file e come importarlo.
