@@ -31,11 +31,11 @@ var e = globalThis, t = e.ShadowRoot && (e.ShadyCSS === void 0 || e.ShadyCSS.nat
 	let t = "";
 	for (let n of e.cssRules) t += n.cssText;
 	return a(t);
-})(e) : e, { is: l, defineProperty: u, getOwnPropertyDescriptor: d, getOwnPropertyNames: ee, getOwnPropertySymbols: te, getPrototypeOf: ne } = Object, f = globalThis, re = f.trustedTypes, ie = re ? re.emptyScript : "", ae = f.reactiveElementPolyfillSupport, p = (e, t) => e, oe = {
+})(e) : e, { is: l, defineProperty: u, getOwnPropertyDescriptor: ee, getOwnPropertyNames: te, getOwnPropertySymbols: ne, getPrototypeOf: re } = Object, d = globalThis, ie = d.trustedTypes, ae = ie ? ie.emptyScript : "", oe = d.reactiveElementPolyfillSupport, f = (e, t) => e, p = {
 	toAttribute(e, t) {
 		switch (t) {
 			case Boolean:
-				e = e ? ie : null;
+				e = e ? ae : null;
 				break;
 			case Object:
 			case Array: e = e == null ? e : JSON.stringify(e);
@@ -63,12 +63,12 @@ var e = globalThis, t = e.ShadowRoot && (e.ShadyCSS === void 0 || e.ShadyCSS.nat
 }, se = (e, t) => !l(e, t), ce = {
 	attribute: !0,
 	type: String,
-	converter: oe,
+	converter: p,
 	reflect: !1,
 	useDefault: !1,
 	hasChanged: se
 };
-Symbol.metadata ??= Symbol("metadata"), f.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
+Symbol.metadata ??= Symbol("metadata"), d.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
 var m = class extends HTMLElement {
 	static addInitializer(e) {
 		this._$Ei(), (this.l ??= []).push(e);
@@ -83,7 +83,7 @@ var m = class extends HTMLElement {
 		}
 	}
 	static getPropertyDescriptor(e, t, n) {
-		let { get: r, set: i } = d(this.prototype, e) ?? {
+		let { get: r, set: i } = ee(this.prototype, e) ?? {
 			get() {
 				return this[t];
 			},
@@ -105,14 +105,14 @@ var m = class extends HTMLElement {
 		return this.elementProperties.get(e) ?? ce;
 	}
 	static _$Ei() {
-		if (this.hasOwnProperty(p("elementProperties"))) return;
-		let e = ne(this);
+		if (this.hasOwnProperty(f("elementProperties"))) return;
+		let e = re(this);
 		e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
 	}
 	static finalize() {
-		if (this.hasOwnProperty(p("finalized"))) return;
-		if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(p("properties"))) {
-			let e = this.properties, t = [...ee(e), ...te(e)];
+		if (this.hasOwnProperty(f("finalized"))) return;
+		if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(f("properties"))) {
+			let e = this.properties, t = [...te(e), ...ne(e)];
 			for (let n of t) this.createProperty(n, e[n]);
 		}
 		let e = this[Symbol.metadata];
@@ -173,14 +173,14 @@ var m = class extends HTMLElement {
 	_$ET(e, t) {
 		let n = this.constructor.elementProperties.get(e), r = this.constructor._$Eu(e, n);
 		if (r !== void 0 && !0 === n.reflect) {
-			let i = (n.converter?.toAttribute === void 0 ? oe : n.converter).toAttribute(t, n.type);
+			let i = (n.converter?.toAttribute === void 0 ? p : n.converter).toAttribute(t, n.type);
 			this._$Em = e, i == null ? this.removeAttribute(r) : this.setAttribute(r, i), this._$Em = null;
 		}
 	}
 	_$AK(e, t) {
 		let n = this.constructor, r = n._$Eh.get(e);
 		if (r !== void 0 && this._$Em !== r) {
-			let e = n.getPropertyOptions(r), i = typeof e.converter == "function" ? { fromAttribute: e.converter } : e.converter?.fromAttribute === void 0 ? oe : e.converter;
+			let e = n.getPropertyOptions(r), i = typeof e.converter == "function" ? { fromAttribute: e.converter } : e.converter?.fromAttribute === void 0 ? p : e.converter;
 			this._$Em = r;
 			let a = i.fromAttribute(t, e.type);
 			this[r] = a ?? this._$Ej?.get(r) ?? a, this._$Em = null;
@@ -253,7 +253,7 @@ var m = class extends HTMLElement {
 	updated(e) {}
 	firstUpdated(e) {}
 };
-m.elementStyles = [], m.shadowRootOptions = { mode: "open" }, m[p("elementProperties")] = /* @__PURE__ */ new Map(), m[p("finalized")] = /* @__PURE__ */ new Map(), ae?.({ ReactiveElement: m }), (f.reactiveElementVersions ??= []).push("2.1.2");
+m.elementStyles = [], m.shadowRootOptions = { mode: "open" }, m[f("elementProperties")] = /* @__PURE__ */ new Map(), m[f("finalized")] = /* @__PURE__ */ new Map(), oe?.({ ReactiveElement: m }), (d.reactiveElementVersions ??= []).push("2.1.2");
 //#endregion
 //#region node_modules/lit-html/lit-html.js
 var le = globalThis, ue = (e) => e, h = le.trustedTypes, de = h ? h.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, fe = "$lit$", g = `lit$${Math.random().toFixed(9).slice(2)}$`, pe = "?" + g, me = `<${pe}>`, _ = document, v = () => _.createComment(""), y = (e) => e === null || typeof e != "object" && typeof e != "function", b = Array.isArray, he = (e) => b(e) || typeof e?.[Symbol.iterator] == "function", ge = "[ 	\n\f\r]", x = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, _e = /-->/g, ve = />/g, S = RegExp(`>|${ge}(?:([^\\s"'>=/]+)(${ge}*=${ge}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), ye = /'/g, be = /"/g, xe = /^(?:script|style|textarea|title)$/i, Se = (e) => (t, ...n) => ({
@@ -270,8 +270,8 @@ var Ee = (e, t) => {
 	for (let t = 0; t < n; t++) {
 		let n = e[t], s, c, l = -1, u = 0;
 		for (; u < n.length && (o.lastIndex = u, c = o.exec(n), c !== null);) u = o.lastIndex, o === x ? c[1] === "!--" ? o = _e : c[1] === void 0 ? c[2] === void 0 ? c[3] !== void 0 && (o = S) : (xe.test(c[2]) && (i = RegExp("</" + c[2], "g")), o = S) : o = ve : o === S ? c[0] === ">" ? (o = i ?? x, l = -1) : c[1] === void 0 ? l = -2 : (l = o.lastIndex - c[2].length, s = c[1], o = c[3] === void 0 ? S : c[3] === "\"" ? be : ye) : o === be || o === ye ? o = S : o === _e || o === ve ? o = x : (o = S, i = void 0);
-		let d = o === S && e[t + 1].startsWith("/>") ? " " : "";
-		a += o === x ? n + me : l >= 0 ? (r.push(s), n.slice(0, l) + fe + n.slice(l) + g + d) : n + g + (l === -2 ? t : d);
+		let ee = o === S && e[t + 1].startsWith("/>") ? " " : "";
+		a += o === x ? n + me : l >= 0 ? (r.push(s), n.slice(0, l) + fe + n.slice(l) + g + ee) : n + g + (l === -2 ? t : ee);
 	}
 	return [Te(e, a + (e[n] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), r];
 }, D = class e {
@@ -292,7 +292,7 @@ var Ee = (e, t) => {
 						index: a,
 						name: r[2],
 						strings: n,
-						ctor: r[1] === "." ? Oe : r[1] === "?" ? ke : r[1] === "@" ? Ae : A
+						ctor: r[1] === "." ? ke : r[1] === "?" ? Ae : r[1] === "@" ? je : k
 					}), i.removeAttribute(e);
 				} else e.startsWith(g) && (c.push({
 					type: 6,
@@ -352,7 +352,7 @@ var De = class {
 		for (; s !== void 0;) {
 			if (a === s.index) {
 				let t;
-				s.type === 2 ? t = new k(i, i.nextSibling, this, e) : s.type === 1 ? t = new s.ctor(i, s.name, s.strings, this, e) : s.type === 6 && (t = new je(i, this, e)), this._$AV.push(t), s = n[++o];
+				s.type === 2 ? t = new Oe(i, i.nextSibling, this, e) : s.type === 1 ? t = new s.ctor(i, s.name, s.strings, this, e) : s.type === 6 && (t = new Me(i, this, e)), this._$AV.push(t), s = n[++o];
 			}
 			a !== s?.index && (i = E.nextNode(), a++);
 		}
@@ -362,7 +362,7 @@ var De = class {
 		let t = 0;
 		for (let n of this._$AV) n !== void 0 && (n.strings === void 0 ? n._$AI(e[t]) : (n._$AI(e, n, t), t += n.strings.length - 2)), t++;
 	}
-}, k = class e {
+}, Oe = class e {
 	get _$AU() {
 		return this._$AM?._$AU ?? this._$Cv;
 	}
@@ -418,7 +418,7 @@ var De = class {
 	setConnected(e) {
 		this._$AM === void 0 && (this._$Cv = e, this._$AP?.(e));
 	}
-}, A = class {
+}, k = class {
 	get tagName() {
 		return this.element.tagName;
 	}
@@ -440,21 +440,21 @@ var De = class {
 	j(e) {
 		e === T ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
 	}
-}, Oe = class extends A {
+}, ke = class extends k {
 	constructor() {
 		super(...arguments), this.type = 3;
 	}
 	j(e) {
 		this.element[this.name] = e === T ? void 0 : e;
 	}
-}, ke = class extends A {
+}, Ae = class extends k {
 	constructor() {
 		super(...arguments), this.type = 4;
 	}
 	j(e) {
 		this.element.toggleAttribute(this.name, !!e && e !== T);
 	}
-}, Ae = class extends A {
+}, je = class extends k {
 	constructor(e, t, n, r, i) {
 		super(e, t, n, r, i), this.type = 5;
 	}
@@ -466,7 +466,7 @@ var De = class {
 	handleEvent(e) {
 		typeof this._$AH == "function" ? this._$AH.call(this.options?.host ?? this.element, e) : this._$AH.handleEvent(e);
 	}
-}, je = class {
+}, Me = class {
 	constructor(e, t, n) {
 		this.element = e, this.type = 6, this._$AN = void 0, this._$AM = t, this.options = n;
 	}
@@ -476,16 +476,16 @@ var De = class {
 	_$AI(e) {
 		O(this, e);
 	}
-}, Me = le.litHtmlPolyfillSupport;
-Me?.(D, k), (le.litHtmlVersions ??= []).push("3.3.3");
-var Ne = (e, t, n) => {
+}, Ne = le.litHtmlPolyfillSupport;
+Ne?.(D, Oe), (le.litHtmlVersions ??= []).push("3.3.3");
+var Pe = (e, t, n) => {
 	let r = n?.renderBefore ?? t, i = r._$litPart$;
 	if (i === void 0) {
 		let e = n?.renderBefore ?? null;
-		r._$litPart$ = i = new k(t.insertBefore(v(), e), e, void 0, n ?? {});
+		r._$litPart$ = i = new Oe(t.insertBefore(v(), e), e, void 0, n ?? {});
 	}
 	return i._$AI(e), i;
-}, j = globalThis, M = class extends m {
+}, Fe = globalThis, A = class extends m {
 	constructor() {
 		super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
 	}
@@ -495,7 +495,7 @@ var Ne = (e, t, n) => {
 	}
 	update(e) {
 		let t = this.render();
-		this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Ne(t, this.renderRoot, this.renderOptions);
+		this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Pe(t, this.renderRoot, this.renderOptions);
 	}
 	connectedCallback() {
 		super.connectedCallback(), this._$Do?.setConnected(!0);
@@ -507,12 +507,12 @@ var Ne = (e, t, n) => {
 		return w;
 	}
 };
-M._$litElement$ = !0, M.finalized = !0, j.litElementHydrateSupport?.({ LitElement: M });
-var Pe = j.litElementPolyfillSupport;
-Pe?.({ LitElement: M }), (j.litElementVersions ??= []).push("4.2.2");
+A._$litElement$ = !0, A.finalized = !0, Fe.litElementHydrateSupport?.({ LitElement: A });
+var Ie = Fe.litElementPolyfillSupport;
+Ie?.({ LitElement: A }), (Fe.litElementVersions ??= []).push("4.2.2");
 //#endregion
 //#region src/comune/stili.ts
-var N = o`
+var j = o`
   :host {
     --rd-primario: var(--primary-color, #03a9f4);
     --rd-testo: var(--primary-text-color, #1b1f24);
@@ -606,7 +606,7 @@ var N = o`
     opacity: 0.5;
     cursor: default;
   }
-`, P = o`
+`, M = o`
   .modulo {
     display: grid;
     gap: 14px;
@@ -783,7 +783,7 @@ var N = o`
     transform: translateX(18px);
   }
 `;
-function F(e) {
+function N(e) {
 	let [t, n, r] = [
 		1,
 		3,
@@ -794,7 +794,7 @@ function F(e) {
 	});
 	return .2126 * t + .7152 * n + .0722 * r > .4 ? "#1b1f24" : "#ffffff";
 }
-var I = o`
+var P = o`
   .riquadro {
     background: var(--rd-superficie);
     border: 1px solid var(--rd-bordo);
@@ -874,15 +874,15 @@ var I = o`
     flex-wrap: wrap;
     margin-top: 8px;
   }
-`, L = (e) => C`<span class="chip" style="background:${e.colore};color:${F(e.colore)}"
+`, F = (e) => C`<span class="chip" style="background:${e.colore};color:${N(e.colore)}"
     ><ha-icon .icon=${e.icona}></ha-icon>${e.nome}</span
-  >`, R = () => (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}${Math.random()}`).replace(/[^0-9a-f]/gi, "").slice(0, 32), z = (e) => {
+  >`, I = () => (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}${Math.random()}`).replace(/[^0-9a-f]/gi, "").slice(0, 32), L = (e) => {
 	let [t, n, r] = e.split("-").map(Number);
 	return new Date(t, n - 1, r);
-}, Fe = (e) => `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, "0")}-${String(e.getDate()).padStart(2, "0")}`, Ie = (e, t) => {
-	let n = z(e);
-	return n.setDate(n.getDate() + t), Fe(n);
-}, Le = (e) => (z(e).getDay() + 6) % 7, Re = (e, t) => Math.round((z(t).getTime() - z(e).getTime()) / 864e5), ze = (e) => Ie(e, -Le(e)), Be = [
+}, Le = (e) => `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, "0")}-${String(e.getDate()).padStart(2, "0")}`, R = (e, t) => {
+	let n = L(e);
+	return n.setDate(n.getDate() + t), Le(n);
+}, z = (e) => (L(e).getDay() + 6) % 7, Re = (e, t) => Math.round((L(t).getTime() - L(e).getTime()) / 864e5), ze = (e) => R(e, -z(e)), B = [
 	"lunedì",
 	"martedì",
 	"mercoledì",
@@ -890,7 +890,7 @@ var I = o`
 	"venerdì",
 	"sabato",
 	"domenica"
-], B = [
+], V = [
 	"Lun",
 	"Mar",
 	"Mer",
@@ -898,7 +898,7 @@ var I = o`
 	"Ven",
 	"Sab",
 	"Dom"
-], V = [
+], H = [
 	"gennaio",
 	"febbraio",
 	"marzo",
@@ -911,19 +911,19 @@ var I = o`
 	"ottobre",
 	"novembre",
 	"dicembre"
-], Ve = {
+], Be = {
 	1: "primo",
 	2: "secondo",
 	3: "terzo",
 	4: "quarto",
 	[-1]: "ultimo"
-}, He = {
+}, Ve = {
 	1: "1°",
 	2: "2°",
 	3: "3°",
 	4: "4°",
 	[-1]: "Ultimo"
-}, H = {
+}, U = {
 	titolo: "Raccolta differenziata",
 	carica: "Caricamento…",
 	nonCaricata: "L'integrazione Raccolta differenziata non è caricata. Controlla Impostazioni → Dispositivi e servizi.",
@@ -933,6 +933,7 @@ var I = o`
 		regole: "Regole",
 		eccezioni: "Eccezioni",
 		promemoria: "Promemoria",
+		piattaforma: "Piattaforma",
 		impostazioni: "Impostazioni"
 	},
 	oggi: "Oggi",
@@ -957,8 +958,8 @@ var I = o`
 	tuttoInOrdine: "Tutto in ordine: nessuna segnalazione.",
 	calendarioComune: "Calendario del comune",
 	giorniValidita: "giorni di validità",
-	validoFino: (e) => `fino al ${U(e)}`,
-	scaduto: (e) => `scaduto il ${U(e)}: i ritiri successivi sono da verificare`,
+	validoFino: (e) => `fino al ${W(e)}`,
+	scaduto: (e) => `scaduto il ${W(e)}: i ritiri successivi sono da verificare`,
 	senzaValidita: "Non hai indicato fino a quando vale. Indicalo in Impostazioni: un mese prima ti ricorderemo di controllare quello nuovo.",
 	creaEccezione: "Crea eccezione",
 	ignora: "Ignora",
@@ -1106,7 +1107,30 @@ var I = o`
 	vacanzeAiuto: "Nelle date indicate i promemoria tacciono; il calendario, i sensori e le card restano.",
 	nessunaVacanza: "Nessuna vacanza in programma.",
 	aggiungiVacanza: "Aggiungi vacanza",
-	dalAl: (e, t) => `dal ${U(e)} al ${U(t)}`,
+	dalAl: (e, t) => `dal ${W(e)} al ${W(t)}`,
+	piattaformaTitolo: "Piattaforma ecologica",
+	piattaformaAiuto: "Gli orari della piattaforma (o isola) ecologica: le card mostrano se è aperta adesso, e un tocco apre gli orari. Nei giorni festivi risulta chiusa, salvo eccezione.",
+	piattaformaVuota: "Non hai ancora inserito gli orari della piattaforma ecologica.",
+	inserisciOrari: "Inserisci gli orari",
+	nomePiattaforma: "Nome",
+	nomePiattaformaAiuto: "Come la chiamate: Piattaforma ecologica, Isola ecologica, Ecocentro…",
+	notaPiattaforma: "Nota (facoltativa)",
+	notaPiattaformaAiuto: "Indirizzo, cosa serve per entrare, cosa si porta…",
+	periodi: "Periodi",
+	periodiAiuto: "Fino a quattro periodi con le date e l'anno, per esempio l'orario invernale e quello estivo. Fuori da ogni periodo l'orario non è indicato.",
+	aggiungiPeriodo: "Aggiungi un periodo",
+	togliPeriodo: "Togli il periodo",
+	chiusa: "Chiusa",
+	aggiungiFascia: "Aggiungi una fascia oraria",
+	togliFascia: "Togli la fascia",
+	eccezioniPiattaforma: "Giorni con un orario diverso",
+	eccezioniPiattaformaAiuto: "Una chiusura straordinaria, o un'apertura in un giorno festivo.",
+	aggiungiEccezionePiattaforma: "Aggiungi un giorno",
+	aperta: "Aperta",
+	togliPiattaforma: "Togli la piattaforma",
+	togliPiattaformaConferma: "Togliere gli orari della piattaforma ecologica? Spariscono anche dalle card, e il suo sensore.",
+	orariDa: "dalle",
+	orariA: "alle",
 	card: {
 		titolo: "Raccolta",
 		nonDisponibile: "Il calendario della raccolta non è disponibile. Controlla Riparazioni in Impostazioni.",
@@ -1144,38 +1168,60 @@ var I = o`
 		campoTitolo: "Titolo",
 		campoInizio: "La settimana inizia",
 		inizioOggi: "Da oggi",
-		inizioLunedi: "Dal lunedì"
+		inizioLunedi: "Dal lunedì",
+		cosaVaDove: "Cosa va dove",
+		nessunaNotaCard: "Nessuna nota: si aggiunge nel pannello, in Tipologie.",
+		apriNote: "Cosa va in ogni bidone",
+		campoPiattaforma: "Mostra la piattaforma ecologica",
+		piattaformaAperta: (e) => `Aperta fino alle ${e}`,
+		piattaformaChiusa: "Chiusa",
+		piattaformaApre: (e) => `Chiusa · apre ${e}`,
+		piattaformaNonIndicato: "Orario non indicato",
+		alle: (e) => `alle ${e}`,
+		domaniAlle: (e) => `domani alle ${e}`,
+		giornoAlle: (e, t) => `${e} alle ${t}`,
+		oggiMaiuscolo: "Oggi",
+		chiusaFestivo: (e) => `Chiusa · ${e}`,
+		orarioNonIndicato: "Orario non indicato",
+		piuAvanti: "Più avanti"
 	},
 	profiloRimosso: (e) => e === 1 ? "Un promemoria riguardava solo questa tipologia e verrà eliminato." : `${e} promemoria riguardavano solo questa tipologia e verranno eliminati.`
 };
-function U(e) {
-	let t = z(e);
-	return `${t.getDate()} ${V[t.getMonth()]} ${t.getFullYear()}`;
-}
 function W(e) {
-	let t = z(e);
-	return `${B[Le(e)].toLowerCase()} ${t.getDate()} ${V[t.getMonth()].slice(0, 3)}`;
+	let t = L(e);
+	return `${t.getDate()} ${H[t.getMonth()]} ${t.getFullYear()}`;
 }
-function Ue(e) {
-	let t = z(e);
-	return `${t.getDate()} ${V[t.getMonth()].slice(0, 3)}`;
-}
-var We = (e) => e.length <= 1 ? e.join("") : `${e.slice(0, -1).join(", ")} e ${e[e.length - 1]}`;
 function G(e) {
+	let t = L(e);
+	return `${V[z(e)].toLowerCase()} ${t.getDate()} ${H[t.getMonth()].slice(0, 3)}`;
+}
+function He(e) {
+	let t = L(e);
+	return `${t.getDate()} ${H[t.getMonth()].slice(0, 3)}`;
+}
+var Ue = (e) => e.length <= 1 ? e.join("") : `${e.slice(0, -1).join(", ")} e ${e[e.length - 1]}`;
+function K(e) {
 	if (e.tipo === "settimanale") {
-		let t = We([...e.giorni].sort().map((e) => Be[e]));
+		let t = Ue([...e.giorni].sort().map((e) => B[e]));
 		return e.ogni === 1 ? `Ogni settimana, il ${t}` : e.ogni === 2 ? `Una settimana sì e una no, il ${t}` : `Ogni ${e.ogni} settimane, il ${t}`;
 	}
-	return e.tipo === "mensile_posizione" ? `Il ${We([...e.posizioni].sort((e, t) => (e === -1 ? 9 : e) - (t === -1 ? 9 : t)).map((e) => Ve[e]))} ${Be[e.giorno]} del mese` : `Il giorno ${We([...e.giorni].sort((e, t) => e - t).map(String))} di ogni mese`;
+	return e.tipo === "mensile_posizione" ? `Il ${Ue([...e.posizioni].sort((e, t) => (e === -1 ? 9 : e) - (t === -1 ? 9 : t)).map((e) => Be[e]))} ${B[e.giorno]} del mese` : `Il giorno ${Ue([...e.giorni].sort((e, t) => e - t).map(String))} di ogni mese`;
 }
-var Ge = (e) => {
+var We = (e) => {
 	let [t, n] = e.split("-").map(Number);
-	return `${n} ${V[t - 1]}`;
+	return `${n} ${H[t - 1]}`;
 };
-function Ke(e) {
-	return e.tipo === "sempre" ? "Tutto l'anno" : e.tipo === "annuale" ? `Dal ${Ge(e.dal)} al ${Ge(e.al)}, ogni anno` : `Dal ${U(e.dal)} al ${U(e.al)}`;
+function Ge(e) {
+	return e.tipo === "sempre" ? "Tutto l'anno" : e.tipo === "annuale" ? `Dal ${We(e.dal)} al ${We(e.al)}, ogni anno` : `Dal ${W(e.dal)} al ${W(e.al)}`;
 }
-var qe = {
+var Ke = {
+	piattaforma_non_valida: "gli orari della piattaforma non sono validi",
+	periodi_non_validi: "servono da uno a quattro periodi",
+	periodi_sovrapposti: "due periodi della piattaforma si sovrappongono",
+	orari_non_validi: "l'orario settimanale di un periodo non è valido",
+	fasce_non_valide: "da una a tre fasce orarie per giorno",
+	fascia_non_valida: "in una fascia oraria la fine viene prima dell'inizio",
+	fasce_sovrapposte: "due fasce orarie dello stesso giorno si sovrappongono",
 	valore_mancante: "manca un valore",
 	scelta_non_valida: "scegli una delle voci del menu",
 	si_no_non_valido: "scrivi Sì o No",
@@ -1210,7 +1256,7 @@ var qe = {
 	quando_non_valido: "scegli quando avvisare",
 	richiami_non_validi: "i solleciti vanno da 1 a 2",
 	intervallo_non_valido: "l'intervallo va da 5 a 240 minuti"
-}, K = (e) => qe[e.codice] ?? e.codice, Je = {
+}, q = (e) => Ke[e.codice] ?? e.codice, qe = {
 	tipologia_sconosciuta: "tipologia non trovata nel foglio Tipologie",
 	giorni_non_validi: "giorni non riconosciuti (per esempio Lun, Gio oppure 1, 15)",
 	posizioni_non_valide: "posizioni non riconosciute (per esempio 2°, ultimo)",
@@ -1219,24 +1265,25 @@ var qe = {
 	colore_non_valido: "colore non valido (per esempio #795548)",
 	destinatario_non_valido: "destinatario non valido (per esempio mobile_app_telefono o notify.telegram)",
 	destinatari_mancanti: "manca almeno un destinatario"
-}, Ye = (e) => Je[e.codice] ?? qe[e.codice] ?? e.codice;
-function Xe(e) {
+}, Je = (e) => qe[e.codice] ?? Ke[e.codice] ?? e.codice;
+function Ye(e) {
 	return [
 		e.foglio,
-		e.riga ? H.riga(e.riga) : "",
+		e.riga ? U.riga(e.riga) : "",
 		e.colonna ?? ""
 	].filter(Boolean).join(" · ");
 }
-var Ze = {
+var Xe = {
 	tipologie: ["Tipologie", !0],
 	regole: ["Regole", !0],
 	eccezioni: ["Eccezioni", !0],
 	promemoria: ["Promemoria", !1],
 	sospensioni: ["Vacanze", !0],
+	piattaforma: ["Orari della piattaforma", !1],
 	impostazioni: ["Impostazioni", !0]
 };
-function Qe(e, t) {
-	let n = Ze[e];
+function Ze(e, t) {
+	let n = Xe[e];
 	if (!n) return null;
 	let [r, i] = n, a = (e, t) => `${e} ${t}${e === 1 ? i ? "a" : "o" : i ? "e" : "i"}`, o = [
 		t.aggiunte ? a(t.aggiunte, "nuov") : null,
@@ -1245,23 +1292,25 @@ function Qe(e, t) {
 	].filter(Boolean);
 	return o.length ? `${r}: ${o.join(", ")}` : null;
 }
-function $e(e, t) {
-	let n = e.tipologia ? t(e.tipologia) : "", r = e.intervalli.map(([e, t]) => e === t ? U(e) : `dal ${U(e)} al ${U(t)}`).join(", ");
+function Qe(e, t) {
+	let n = e.tipologia ? t(e.tipologia) : "", r = e.intervalli.map(([e, t]) => e === t ? W(e) : `dal ${W(e)} al ${W(t)}`).join(", ");
 	switch (e.codice) {
-		case "ritiro_festivo": return `${n}: ${U(e.data)} è un giorno festivo. Controlla cosa fa il comune.`;
+		case "ritiro_festivo": return `${n}: ${W(e.data)} è un giorno festivo. Controlla cosa fa il comune.`;
 		case "sovrapposizione_mista": return `${n}: la regola «${t(e.regole[0])}» cede a «${t(e.regole[1])}» ${r}.`;
 		case "sovrapposizione_stesso_tipo": return `${n}: le regole «${t(e.regole[0])}» e «${t(e.regole[1])}» generano gli stessi ${e.conteggio} ritiri ${r}. Una delle due è di troppo?`;
-		case "eccezione_senza_ritiro": return `${n}: il ${U(e.data)} non c'è un ritiro da togliere o spostare.`;
-		case "eccezione_ridondante": return `${n}: il ${U(e.data)} il ritiro c'è già; l'eccezione non cambia nulla.`;
+		case "eccezione_senza_ritiro": return `${n}: il ${W(e.data)} non c'è un ritiro da togliere o spostare.`;
+		case "eccezione_ridondante": return `${n}: il ${W(e.data)} il ritiro c'è già; l'eccezione non cambia nulla.`;
 		case "giorno_inesistente": return `${n}: nei mesi senza il giorno ${e.giorni.join(" o ")} la regola «${t(e.regole[0])}» non genera il ritiro.`;
 		case "tipologia_senza_ritiri": return `${n} non ha ritiri nei prossimi 12 mesi.`;
-		case "calendario_in_scadenza": return `Il calendario vale fino al ${U(e.data)}: controlla quello nuovo del comune.`;
-		case "calendario_scaduto": return `Il calendario è scaduto il ${U(e.data)}: i ritiri successivi sono da verificare.`;
+		case "calendario_in_scadenza": return `Il calendario vale fino al ${W(e.data)}: controlla quello nuovo del comune.`;
+		case "calendario_scaduto": return `Il calendario è scaduto il ${W(e.data)}: i ritiri successivi sono da verificare.`;
+		case "piattaforma_senza_orario": return e.data ? `Piattaforma ecologica: oggi l'orario non è indicato; il prossimo periodo inizia il ${W(e.data)}.` : "Piattaforma ecologica: gli orari inseriti sono finiti. Inserisci quelli nuovi.";
+		case "piattaforma_in_scadenza": return `Piattaforma ecologica: gli orari inseriti finiscono il ${W(e.data)}. Inserisci quelli nuovi.`;
 		default: return e.codice;
 	}
 }
-var et = (e) => e.nome || G(e.ricorrenza);
-function tt(e) {
+var $e = (e) => e.nome || K(e.ricorrenza);
+function et(e) {
 	return e.tipo === "apertura" ? "Quando si possono esporre i sacchi" : e.tipo === "giorno_stesso" ? `Il giorno del ritiro alle ${e.ora}` : `${[
 		"",
 		"Il giorno prima",
@@ -1275,19 +1324,19 @@ function tt(e) {
 }
 //#endregion
 //#region src/comune/simbolo.ts
-var nt = Ce`<svg viewBox="0 0 64 64" aria-hidden="true" style="width:100%;height:100%">
+var tt = Ce`<svg viewBox="0 0 64 64" aria-hidden="true" style="width:100%;height:100%">
   <g fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M26 13.5 V9 H38 V13.5"/><path d="M10 14.5 H54"/><path d="M13.5 20 L17 57 H47 L50.5 20 Z"/>
     <polyline points="21,34 32,25 43,34" opacity="0.5"/><polyline points="25.5,40.5 32,35 38.5,40.5"/>
   </g>
   <rect x="28.5" y="46.5" width="7" height="7" fill="#F0A835"/><circle cx="32" cy="46.5" r="3.5" fill="#F0A835"/>
-</svg>`, rt = document.querySelector("home-assistant") && !customElements.get("home-assistant") ? customElements.whenDefined("home-assistant") : Promise.resolve(), it = (e) => void rt.then(e);
-function q(e, t) {
-	it(() => {
+</svg>`, nt = document.querySelector("home-assistant") && !customElements.get("home-assistant") ? customElements.whenDefined("home-assistant") : Promise.resolve(), rt = (e) => void nt.then(e);
+function J(e, t) {
+	rt(() => {
 		customElements.get(e) || customElements.define(e, t);
 	});
 }
-q("rd-finestra", class extends M {
+J("rd-finestra", class extends A {
 	constructor(...e) {
 		super(...e), this.titolo = "", this.aperta = !1;
 	}
@@ -1301,7 +1350,7 @@ q("rd-finestra", class extends M {
 		};
 	}
 	static {
-		this.styles = [N, o`
+		this.styles = [j, o`
       :host {
         display: none;
       }
@@ -1393,7 +1442,7 @@ q("rd-finestra", class extends M {
       <div class="dialogo" role="dialog" aria-modal="true" aria-label=${this.titolo} tabindex="-1">
         <header>
           <h3>${this.titolo}</h3>
-          <button aria-label=${H.chiudi} @click=${this._chiudi}><ha-icon icon="mdi:close"></ha-icon></button>
+          <button aria-label=${U.chiudi} @click=${this._chiudi}><ha-icon icon="mdi:close"></ha-icon></button>
         </header>
         <div class="contenuto"><slot></slot></div>
         <footer><slot name="azioni"></slot></footer>
@@ -1403,35 +1452,35 @@ q("rd-finestra", class extends M {
 });
 //#endregion
 //#region src/pannello/contesto.ts
-var J = (e, t, n) => e.dispatchEvent(new CustomEvent("proponi", {
+var Y = (e, t, n) => e.dispatchEvent(new CustomEvent("proponi", {
 	detail: {
 		configurazione: t,
 		riepilogo: n
 	},
 	bubbles: !0,
 	composed: !0
-})), at = (e, t) => e.dispatchEvent(new CustomEvent("avvisa", {
+})), it = (e, t) => e.dispatchEvent(new CustomEvent("avvisa", {
 	detail: t,
 	bubbles: !0,
 	composed: !0
-})), Y = (e, t, n) => e.dispatchEvent(new CustomEvent("naviga", {
+})), X = (e, t, n) => e.dispatchEvent(new CustomEvent("naviga", {
 	detail: {
 		pagina: t,
 		precompila: n
 	},
 	bubbles: !0,
 	composed: !0
-})), ot = (e) => e.dispatchEvent(new CustomEvent("ricarica", {
+})), at = (e) => e.dispatchEvent(new CustomEvent("ricarica", {
 	bubbles: !0,
 	composed: !0
-})), X = (e) => JSON.parse(JSON.stringify(e)), st = "foyer_raccolta_differenziata";
-q("rd-panoramica", class extends M {
+})), Z = (e) => JSON.parse(JSON.stringify(e)), ot = "foyer_raccolta_differenziata";
+J("rd-panoramica", class extends A {
 	constructor(...e) {
 		super(...e), this._nome = (e) => {
 			let t = this.lettura.configurazione, n = t.tipologie.find((t) => t.id === e);
 			if (n) return n.nome;
 			let r = t.regole.find((t) => t.id === e);
-			return r ? et(r) : e;
+			return r ? $e(r) : e;
 		};
 	}
 	static {
@@ -1447,17 +1496,17 @@ q("rd-panoramica", class extends M {
 	async _carica() {
 		let e = this.lettura.oggi;
 		this._ritiri = await this.hass.callWS({
-			type: `${st}/ritiri`,
+			type: `${ot}/ritiri`,
 			dal: e,
-			al: Ie(e, 29)
+			al: R(e, 29)
 		});
 	}
 	async _ignora(e) {
 		await this.hass.callWS({
-			type: `${st}/anomalie/ignora`,
+			type: `${ot}/anomalie/ignora`,
 			data: e.data,
 			tipologia: e.tipologia
-		}), ot(this);
+		}), at(this);
 	}
 	_festivi() {
 		let e = new Set(this.lettura.festivi_ignorati.map((e) => `${e.data}|${e.tipologia}`));
@@ -1465,35 +1514,37 @@ q("rd-panoramica", class extends M {
 	}
 	_azioni(e) {
 		switch (e.codice) {
-			case "tipologia_senza_ritiri": return C`<button class="bottone piccolo" @click=${() => Y(this, "eccezioni", {
+			case "tipologia_senza_ritiri": return C`<button class="bottone piccolo" @click=${() => X(this, "eccezioni", {
 				tipo: "aggiungi",
 				tipologia: e.tipologia,
 				data: this.lettura.oggi
-			})}>${H.aggiungiData}</button>`;
+			})}>${U.aggiungiData}</button>`;
 			case "sovrapposizione_mista":
 			case "sovrapposizione_stesso_tipo":
-			case "giorno_inesistente": return C`<button class="bottone piccolo" @click=${() => Y(this, "regole")}>${H.apriRegole}</button>`;
+			case "giorno_inesistente": return C`<button class="bottone piccolo" @click=${() => X(this, "regole")}>${U.apriRegole}</button>`;
 			case "eccezione_senza_ritiro":
-			case "eccezione_ridondante": return C`<button class="bottone piccolo" @click=${() => Y(this, "eccezioni")}>${H.pagine.eccezioni}</button>`;
+			case "eccezione_ridondante": return C`<button class="bottone piccolo" @click=${() => X(this, "eccezioni")}>${U.pagine.eccezioni}</button>`;
+			case "piattaforma_senza_orario":
+			case "piattaforma_in_scadenza": return C`<button class="bottone piccolo" @click=${() => X(this, "piattaforma")}>${U.pagine.piattaforma}</button>`;
 			case "calendario_in_scadenza":
-			case "calendario_scaduto": return C`<button class="bottone piccolo" @click=${() => Y(this, "impostazioni")}>${H.pagine.impostazioni}</button>`;
+			case "calendario_scaduto": return C`<button class="bottone piccolo" @click=${() => X(this, "impostazioni")}>${U.pagine.impostazioni}</button>`;
 			default: return T;
 		}
 	}
 	_giorni() {
 		let e = this.lettura.configurazione.tipologie, t = /* @__PURE__ */ new Map();
 		for (let e of this._ritiri?.ritiri ?? []) t.set(e.data, [...t.get(e.data) ?? [], e]);
-		if (!t.size) return C`<div class="vuoto">${H.nessunRitiro}</div>`;
+		if (!t.size) return C`<div class="vuoto">${U.nessunRitiro}</div>`;
 		let n = this.lettura.oggi;
 		return [...t.entries()].map(([t, r]) => {
-			let i = Re(n, t), a = i === 0 ? H.oggi : i === 1 ? H.domani : B[Le(t)];
+			let i = Re(n, t), a = i === 0 ? U.oggi : i === 1 ? U.domani : V[z(t)];
 			return C`<div class="giorno ${i === 0 ? "oggi" : ""}">
-        <div class="quando"><b>${a}</b>${Ue(t)}</div>
+        <div class="quando"><b>${a}</b>${He(t)}</div>
         <div class="chips">
           ${r.map((t) => {
 				let n = e.find((e) => e.id === t.tipologia);
-				return C`${n ? L(n) : t.tipologia}
-            ${t.spostato_dal ? C`<span class="nota">↪ ${Ue(t.spostato_dal)}</span>` : T}
+				return C`${n ? F(n) : t.tipologia}
+            ${t.spostato_dal ? C`<span class="nota">↪ ${He(t.spostato_dal)}</span>` : T}
             ${t.festivo ? C`<span class="nota avviso">${t.festivo}</span>` : T}`;
 			})}
         </div>
@@ -1502,50 +1553,50 @@ q("rd-panoramica", class extends M {
 	}
 	_validita() {
 		let e = this.lettura.configurazione.valido_fino_al;
-		if (!e) return C`<p class="aiuto">${H.senzaValidita}</p>`;
+		if (!e) return C`<p class="aiuto">${U.senzaValidita}</p>`;
 		let t = Re(this.lettura.oggi, e);
-		return t < 0 ? C`<p class="aiuto avviso">${H.scaduto(e)}</p>` : C`<div class="validita ${t <= 30 ? "avviso" : ""}">
+		return t < 0 ? C`<p class="aiuto avviso">${U.scaduto(e)}</p>` : C`<div class="validita ${t <= 30 ? "avviso" : ""}">
       <div class="grande">${t}</div>
-      <div>${H.giorniValidita}<br /><small class="aiuto">${H.validoFino(e)}</small></div>
+      <div>${U.giorniValidita}<br /><small class="aiuto">${U.validoFino(e)}</small></div>
     </div>`;
 	}
 	render() {
 		let e = this._festivi(), t = this.lettura.anomalie, n = e.length + t.length;
 		return C`
       ${this.lettura.problemi.length ? C`<div class="riquadro errore">
-            ${H.configurazioneNonValida}
-            <ul>${this.lettura.problemi.map((e) => C`<li>${K(e)}</li>`)}</ul>
+            ${U.configurazioneNonValida}
+            <ul>${this.lettura.problemi.map((e) => C`<li>${q(e)}</li>`)}</ul>
           </div>` : T}
       <div class="griglia-2">
         <div class="riquadro">
-          <h2>${H.prossimiRitiri} <span class="conta">${H.giorni30}</span></h2>
+          <h2>${U.prossimiRitiri} <span class="conta">${U.giorni30}</span></h2>
           ${this._giorni()}
         </div>
         <div class="laterale">
           <div class="riquadro">
-            <h2>${H.daControllare} ${n ? C`<span class="conta">${n}</span>` : T}</h2>
-            ${n === 0 ? C`<div class="vuoto">${H.tuttoInOrdine}</div>` : T}
+            <h2>${U.daControllare} ${n ? C`<span class="conta">${n}</span>` : T}</h2>
+            ${n === 0 ? C`<div class="vuoto">${U.tuttoInOrdine}</div>` : T}
             ${e.map((e) => C`<div class="anomalia">
                 <ha-icon icon="mdi:alert-outline"></ha-icon>
                 <div class="testo">
-                  <b>${this._nome(e.tipologia)}</b> · ${U(e.data)}: ${e.festivo}.
+                  <b>${this._nome(e.tipologia)}</b> · ${W(e.data)}: ${e.festivo}.
                   <div class="riga-azioni">
-                    <button class="bottone piccolo primario" @click=${() => Y(this, "eccezioni", {
+                    <button class="bottone piccolo primario" @click=${() => X(this, "eccezioni", {
 			tipo: "sposta",
 			tipologia: e.tipologia,
 			data: e.data
-		})}>${H.creaEccezione}</button>
-                    <button class="bottone piccolo" @click=${() => this._ignora(e)}>${H.ignora}</button>
+		})}>${U.creaEccezione}</button>
+                    <button class="bottone piccolo" @click=${() => this._ignora(e)}>${U.ignora}</button>
                   </div>
                 </div>
               </div>`)}
             ${t.map((e) => C`<div class="anomalia ${e.gravita}">
                 <ha-icon icon=${e.gravita === "avviso" ? "mdi:alert-outline" : "mdi:information-outline"}></ha-icon>
-                <div class="testo">${$e(e, this._nome)}<div class="riga-azioni">${this._azioni(e)}</div></div>
+                <div class="testo">${Qe(e, this._nome)}<div class="riga-azioni">${this._azioni(e)}</div></div>
               </div>`)}
           </div>
           <div class="riquadro">
-            <h2>${H.calendarioComune}</h2>
+            <h2>${U.calendarioComune}</h2>
             ${this._validita()}
           </div>
         </div>
@@ -1554,8 +1605,8 @@ q("rd-panoramica", class extends M {
 	}
 	static {
 		this.styles = [
-			N,
-			I,
+			j,
+			P,
 			o`
       .giorno {
         display: grid;
@@ -1643,8 +1694,8 @@ q("rd-panoramica", class extends M {
 });
 //#endregion
 //#region src/comune/selettore.ts
-var ct = 60;
-q("rd-selettore", class e extends M {
+var st = 60;
+J("rd-selettore", class e extends A {
 	constructor(...t) {
 		super(...t), this.opzioni = [], this.scelti = [], this.multiplo = !1, this.libero = !1, this.etichetta = "", this.segnaposto = "", this.vuoto = "", this._testo = "", this._aperto = !1, this._attivo = 0, this._gruppo = "", this._idLista = `rd-suggerimenti-${++e._contatore}`;
 	}
@@ -1675,7 +1726,7 @@ q("rd-selettore", class e extends M {
 	}
 	_suggerimenti() {
 		let e = this._testo.trim().toLowerCase();
-		return this.opzioni.filter((e) => !this.multiplo || !this.scelti.includes(e.id)).filter((e) => !this._gruppo || e.gruppo === this._gruppo).filter((t) => !e || t.nome.toLowerCase().includes(e) || t.id.toLowerCase().includes(e)).slice(0, ct);
+		return this.opzioni.filter((e) => !this.multiplo || !this.scelti.includes(e.id)).filter((e) => !this._gruppo || e.gruppo === this._gruppo).filter((t) => !e || t.nome.toLowerCase().includes(e) || t.id.toLowerCase().includes(e)).slice(0, st);
 	}
 	_scegli(e) {
 		this.multiplo ? (this._cambia([...this.scelti, e.id]), this._testo = "", this._attivo = 0, this.renderRoot.querySelector("input")?.focus()) : (this._cambia([e.id]), this._testo = "", this._aperto = !1);
@@ -1712,10 +1763,10 @@ q("rd-selettore", class e extends M {
           ${t?.icona ? C`<ha-icon .icon=${t.icona}></ha-icon>` : C`<ha-icon icon="mdi:help-circle-outline"></ha-icon>`}
           <span class="testi">
             <span class="nome">${t?.nome ?? e}</span>
-            <small>${t ? t.dettaglio ?? e : H.nonTrovato}</small>
+            <small>${t ? t.dettaglio ?? e : U.nonTrovato}</small>
           </span>
           ${t?.etichetta ? C`<span class="etichetta ${t.etichettaEvidente ? "evidente" : ""}">${t.etichetta}</span>` : T}
-          <button class="togli" aria-label=${`${H.togli} ${t?.nome ?? e}`} title=${H.togli} @click=${() => this._cambia(this.scelti.filter((t) => t !== e))}>
+          <button class="togli" aria-label=${`${U.togli} ${t?.nome ?? e}`} title=${U.togli} @click=${() => this._cambia(this.scelti.filter((t) => t !== e))}>
             <ha-icon icon="mdi:close"></ha-icon>
           </button>
         </li>`;
@@ -1748,19 +1799,19 @@ q("rd-selettore", class e extends M {
       ${this._aperto ? C`<div class="tendina">
             ${e.length > 1 ? C`<div class="filtri" @mousedown=${(e) => e.preventDefault()}>
                   ${["", ...e].map((e) => C`<button class=${this._gruppo === e ? "attivo" : ""} @click=${() => (this._gruppo = e, this._attivo = 0)}>
-                      ${e || H.tutti}
+                      ${e || U.tutti}
                     </button>`)}
                 </div>` : T}
             <ul id=${this._idLista} role="listbox" aria-label=${this.etichetta}>
               ${t.length ? t.map((e, t) => this._riga(e, t, t === n)) : C`<li class="niente" role="presentation">
-                    ${this.libero && this._testo.trim() ? H.usaValore(this._testo.trim()) : H.nessunRisultato}
+                    ${this.libero && this._testo.trim() ? U.usaValore(this._testo.trim()) : U.nessunRisultato}
                   </li>`}
             </ul>
           </div>` : T}
     `;
 	}
 	static {
-		this.styles = [N, o`
+		this.styles = [j, o`
       :host {
         display: block;
       }
@@ -1917,7 +1968,7 @@ q("rd-selettore", class e extends M {
     `];
 	}
 });
-var lt = [
+var ct = [
 	["mdi:food-apple", "Mela · umido"],
 	["mdi:food-apple-outline", "Mela, contorno"],
 	["mdi:food", "Cibo"],
@@ -1969,7 +2020,7 @@ var lt = [
 	nome: t,
 	dettaglio: e,
 	icona: e
-})), ut = "foyer_raccolta_differenziata", Z = [
+})), lt = "foyer_raccolta_differenziata", Q = [
 	"#795548",
 	"#1e88e5",
 	"#fdd835",
@@ -1981,7 +2032,7 @@ var lt = [
 	"#fb8c00",
 	"#00897b"
 ];
-q("rd-tipologie", class extends M {
+J("rd-tipologie", class extends A {
 	constructor(...e) {
 		super(...e), this._prossimi = {};
 	}
@@ -2001,9 +2052,9 @@ q("rd-tipologie", class extends M {
 	}
 	async _caricaProssimi() {
 		let e = this.lettura.oggi, t = await this.hass.callWS({
-			type: `${ut}/ritiri`,
+			type: `${lt}/ritiri`,
 			dal: e,
-			al: Ie(e, 365)
+			al: R(e, 365)
 		}), n = {};
 		for (let e of t.ritiri) n[e.tipologia] ??= e.data;
 		this._prossimi = n;
@@ -2011,30 +2062,30 @@ q("rd-tipologie", class extends M {
 	_nuova() {
 		let e = new Set(this.lettura.configurazione.tipologie.map((e) => e.colore.toLowerCase()));
 		this._bozza = {
-			id: R(),
+			id: I(),
 			nome: "",
-			colore: Z.find((t) => !e.has(t)) ?? Z[0],
+			colore: Q.find((t) => !e.has(t)) ?? Q[0],
 			icona: "mdi:trash-can-outline",
 			note: "",
 			esposizione: null
 		};
 	}
 	_salva() {
-		let e = this._bozza, t = X(this.lettura.configurazione), n = t.tipologie.findIndex((t) => t.id === e.id), r = {
+		let e = this._bozza, t = Z(this.lettura.configurazione), n = t.tipologie.findIndex((t) => t.id === e.id), r = {
 			...e,
 			nome: e.nome.trim(),
 			note: e.note.trim()
 		};
-		n >= 0 ? t.tipologie[n] = r : t.tipologie.push(r), J(this, t);
+		n >= 0 ? t.tipologie[n] = r : t.tipologie.push(r), Y(this, t);
 	}
 	_elimina() {
-		let e = this._bozza, t = this.lettura.configurazione, n = t.regole.filter((t) => t.tipologia === e.id).length, r = t.eccezioni.filter((t) => t.tipologia === e.id).length, i = t.promemoria.filter((t) => t.tipologie?.length === 1 && t.tipologie[0] === e.id).length, a = H.eliminaTipologia(e.nome, n, r) + (i ? ` ${H.profiloRimosso(i)}` : "");
+		let e = this._bozza, t = this.lettura.configurazione, n = t.regole.filter((t) => t.tipologia === e.id).length, r = t.eccezioni.filter((t) => t.tipologia === e.id).length, i = t.promemoria.filter((t) => t.tipologie?.length === 1 && t.tipologie[0] === e.id).length, a = U.eliminaTipologia(e.nome, n, r) + (i ? ` ${U.profiloRimosso(i)}` : "");
 		if (!confirm(a)) return;
-		let o = X(t);
+		let o = Z(t);
 		o.tipologie = o.tipologie.filter((t) => t.id !== e.id), o.regole = o.regole.filter((t) => t.tipologia !== e.id), o.eccezioni = o.eccezioni.filter((t) => t.tipologia !== e.id), o.promemoria = o.promemoria.map((t) => t.tipologie === null ? t : {
 			...t,
 			tipologie: t.tipologie.filter((t) => t !== e.id)
-		}).filter((e) => e.tipologie === null || e.tipologie.length > 0), J(this, o);
+		}).filter((e) => e.tipologie === null || e.tipologie.length > 0), Y(this, o);
 	}
 	_aggiorna(e) {
 		this._bozza = {
@@ -2053,96 +2104,96 @@ q("rd-tipologie", class extends M {
 		let e = this._bozza;
 		if (!e) return T;
 		let t = this.lettura.configurazione.tipologie.some((t) => t.id === e.id);
-		return C`<rd-finestra aperta titolo=${t && e.nome || H.nuovaTipologia} @chiudi=${() => this._bozza = void 0}>
+		return C`<rd-finestra aperta titolo=${t && e.nome || U.nuovaTipologia} @chiudi=${() => this._bozza = void 0}>
       <div class="modulo">
-        <div class="anteprima-testa" style="background:${e.colore};color:${F(e.colore)}">
-          <span class="cerchio"><ha-icon .icon=${e.icona}></ha-icon></span><b>${e.nome || H.nome}</b>
+        <div class="anteprima-testa" style="background:${e.colore};color:${N(e.colore)}">
+          <span class="cerchio"><ha-icon .icon=${e.icona}></ha-icon></span><b>${e.nome || U.nome}</b>
         </div>
         <div class="campo">
-          <label for="nome">${H.nome}</label>
+          <label for="nome">${U.nome}</label>
           <input id="nome" maxlength="40" .value=${e.nome} @input=${(e) => this._aggiorna({ nome: e.target.value })} />
         </div>
         <div class="campo">
-          <span class="etichetta">${H.colore}</span>
+          <span class="etichetta">${U.colore}</span>
           <div class="colori">
-            ${Z.map((t) => C`<button class="colore ${t === e.colore ? "attivo" : ""}" style="background:${t}" aria-label=${t} @click=${() => this._aggiorna({ colore: t })}></button>`)}
-            <label class="colore altro ${Z.includes(e.colore) ? "" : "attivo"}" style=${Z.includes(e.colore) ? "" : `background:${e.colore}`} title=${H.altroColore}>
+            ${Q.map((t) => C`<button class="colore ${t === e.colore ? "attivo" : ""}" style="background:${t}" aria-label=${t} @click=${() => this._aggiorna({ colore: t })}></button>`)}
+            <label class="colore altro ${Q.includes(e.colore) ? "" : "attivo"}" style=${Q.includes(e.colore) ? "" : `background:${e.colore}`} title=${U.altroColore}>
               <ha-icon icon="mdi:palette"></ha-icon>
-              <input type="color" aria-label=${H.altroColore} .value=${e.colore} @input=${(e) => this._aggiorna({ colore: e.target.value })} />
+              <input type="color" aria-label=${U.altroColore} .value=${e.colore} @input=${(e) => this._aggiorna({ colore: e.target.value })} />
             </label>
           </div>
         </div>
         <div class="campo">
-          <span class="etichetta">${H.icona}</span>
+          <span class="etichetta">${U.icona}</span>
           <rd-selettore
             libero
-            .opzioni=${lt}
+            .opzioni=${ct}
             .scelti=${[e.icona]}
-            etichetta=${H.icona}
-            segnaposto=${H.cercaIcona}
+            etichetta=${U.icona}
+            segnaposto=${U.cercaIcona}
             @cambia=${(e) => this._aggiorna({ icona: e.detail[0] })}
           ></rd-selettore>
-          <small>${H.iconaAiuto}</small>
+          <small>${U.iconaAiuto}</small>
         </div>
         <div class="campo">
-          <label for="note">${H.note}</label>
+          <label for="note">${U.note}</label>
           <textarea id="note" maxlength="500" .value=${e.note} @input=${(e) => this._aggiorna({ note: e.target.value })}></textarea>
         </div>
         <label class="spunta">
           <input type="checkbox" .checked=${e.esposizione !== null} @change=${(e) => this._aggiorna({ esposizione: e.target.checked ? { ...this.lettura.configurazione.esposizione } : null })} />
-          ${H.finestraPropria}
+          ${U.finestraPropria}
         </label>
         ${e.esposizione ? C`<div class="riga-campi">
                 <div class="campo">
-                  <label>${H.dalle}</label>
+                  <label>${U.dalle}</label>
                   <input type="time" .value=${e.esposizione.inizio_ora} @change=${(e) => this._aggiornaFinestra({ inizio_ora: e.target.value })} />
                 </div>
                 <div class="campo">
-                  <label>${H.del}</label>
+                  <label>${U.del}</label>
                   <select @change=${(e) => this._aggiornaFinestra({ inizio_giorno: e.target.value })}>
-                    ${["giorno_prima", "giorno_stesso"].map((t) => C`<option value=${t} ?selected=${e.esposizione.inizio_giorno === t}>${H.inizioGiorno[t]}</option>`)}
+                    ${["giorno_prima", "giorno_stesso"].map((t) => C`<option value=${t} ?selected=${e.esposizione.inizio_giorno === t}>${U.inizioGiorno[t]}</option>`)}
                   </select>
                 </div>
               </div>
               <div class="campo">
-                <label>${H.entroLe}</label>
+                <label>${U.entroLe}</label>
                 <input type="time" .value=${e.esposizione.fine_ora} @change=${(e) => this._aggiornaFinestra({ fine_ora: e.target.value })} />
               </div>` : T}
       </div>
       <div class="azioni-modulo" slot="azioni">
-        ${t ? C`<button class="bottone pericolo" @click=${this._elimina}>${H.elimina}</button>` : T}
+        ${t ? C`<button class="bottone pericolo" @click=${this._elimina}>${U.elimina}</button>` : T}
         <span style="flex:1"></span>
-        <button class="bottone" @click=${() => this._bozza = void 0}>${H.annulla}</button>
-        <button class="bottone primario" ?disabled=${!e.nome.trim()} @click=${this._salva}>${H.salva}</button>
+        <button class="bottone" @click=${() => this._bozza = void 0}>${U.annulla}</button>
+        <button class="bottone primario" ?disabled=${!e.nome.trim()} @click=${this._salva}>${U.salva}</button>
       </div>
     </rd-finestra>`;
 	}
 	render() {
 		let e = this.lettura.configurazione.tipologie;
 		return C`<div class="riquadro">
-        <h2>${H.pagine.tipologie} <span class="conta">${e.length}</span></h2>
-        <p class="aiuto">${H.aiutoTipologie}</p>
+        <h2>${U.pagine.tipologie} <span class="conta">${e.length}</span></h2>
+        <p class="aiuto">${U.aiutoTipologie}</p>
         <div class="griglia">
-          ${e.map((e) => C`<button class="tipologia" @click=${() => this._bozza = X(e)}>
-              <div class="testa" style="background:${e.colore};color:${F(e.colore)}">
+          ${e.map((e) => C`<button class="tipologia" @click=${() => this._bozza = Z(e)}>
+              <div class="testa" style="background:${e.colore};color:${N(e.colore)}">
                 <span class="cerchio"><ha-icon .icon=${e.icona}></ha-icon></span><b>${e.nome}</b>
               </div>
-              <div class="corpo">${e.note || C`<i>${H.nessunaNota}</i>`}</div>
+              <div class="corpo">${e.note || C`<i>${U.nessunaNota}</i>`}</div>
               <div class="piede">
-                <span>${H.prossimo}: <b>${this._prossimi[e.id] ? Ue(this._prossimi[e.id]) : "—"}</b></span>
-                <span class="link">${H.modifica}</span>
+                <span>${U.prossimo}: <b>${this._prossimi[e.id] ? He(this._prossimi[e.id]) : "—"}</b></span>
+                <span class="link">${U.modifica}</span>
               </div>
             </button>`)}
-          <button class="nuova" @click=${this._nuova}><ha-icon icon="mdi:plus"></ha-icon>${H.nuovaTipologia}</button>
+          <button class="nuova" @click=${this._nuova}><ha-icon icon="mdi:plus"></ha-icon>${U.nuovaTipologia}</button>
         </div>
       </div>
       ${this._editor()}`;
 	}
 	static {
 		this.styles = [
-			N,
-			I,
+			j,
 			P,
+			M,
 			o`
       .griglia {
         display: grid;
@@ -2262,7 +2313,7 @@ q("rd-tipologie", class extends M {
 });
 //#endregion
 //#region src/pannello/pagine/regole.ts
-var dt = "foyer_raccolta_differenziata", ft = {
+var ut = "foyer_raccolta_differenziata", dt = {
 	settimanale: (e) => ({
 		tipo: "settimanale",
 		ogni: 1,
@@ -2278,7 +2329,7 @@ var dt = "foyer_raccolta_differenziata", ft = {
 		tipo: "mensile_data",
 		giorni: [1]
 	})
-}, pt = {
+}, ft = {
 	sempre: () => ({ tipo: "sempre" }),
 	annuale: () => ({
 		tipo: "annuale",
@@ -2290,8 +2341,8 @@ var dt = "foyer_raccolta_differenziata", ft = {
 		dal: e,
 		al: `${e.slice(0, 4)}-12-31`
 	})
-}, mt = (e, t) => e.includes(t) ? e.filter((e) => e !== t) : [...e, t];
-q("rd-regole", class extends M {
+}, pt = (e, t) => e.includes(t) ? e.filter((e) => e !== t) : [...e, t];
+J("rd-regole", class extends A {
 	constructor(...e) {
 		super(...e), this._date = [], this._problemi = [], this._richiesta = 0, this._inCorso = !1;
 	}
@@ -2311,10 +2362,10 @@ q("rd-regole", class extends M {
 	_nuova(e) {
 		let t = this.lettura.oggi;
 		this._imposta({
-			id: R(),
+			id: I(),
 			tipologia: e,
 			nome: "",
-			ricorrenza: ft.settimanale(t),
+			ricorrenza: dt.settimanale(t),
 			periodo: { tipo: "sempre" }
 		});
 	}
@@ -2322,7 +2373,7 @@ q("rd-regole", class extends M {
 		e.id !== this._bozza?.id && (this._date = [], this._problemi = []), this._bozza = e, this._inCorso = !0, clearTimeout(this._timer), this._timer = window.setTimeout(() => void this._anteprima(), 250);
 	}
 	_candidata() {
-		let e = X(this.lettura.configurazione), t = e.regole.findIndex((e) => e.id === this._bozza.id), n = {
+		let e = Z(this.lettura.configurazione), t = e.regole.findIndex((e) => e.id === this._bozza.id), n = {
 			...this._bozza,
 			nome: this._bozza.nome.trim()
 		};
@@ -2333,7 +2384,7 @@ q("rd-regole", class extends M {
 		let e = this._bozza.id, t = ++this._richiesta, n;
 		try {
 			n = await this.hass.callWS({
-				type: `${dt}/anteprima`,
+				type: `${ut}/anteprima`,
 				configurazione: this._candidata(),
 				giorni: 366
 			});
@@ -2365,24 +2416,24 @@ q("rd-regole", class extends M {
 		return t.tipo === "settimanale" ? t.giorni.length > 0 : t.tipo === "mensile_posizione" ? t.posizioni.length > 0 : t.giorni.length > 0;
 	}
 	_elimina() {
-		let e = X(this.lettura.configurazione);
-		e.regole = e.regole.filter((e) => e.id !== this._bozza.id), J(this, e);
+		let e = Z(this.lettura.configurazione);
+		e.regole = e.regole.filter((e) => e.id !== this._bozza.id), Y(this, e);
 	}
 	_editorRicorrenza(e) {
 		let t = (t, n) => C`<button class=${e.tipo === t ? "attivo" : ""} @click=${() => e.tipo !== t && this._imposta({
 			...this._bozza,
-			ricorrenza: ft[t](this.lettura.oggi)
+			ricorrenza: dt[t](this.lettura.oggi)
 		})}>${n}</button>`;
 		return C`<div class="campo">
-        <span class="etichetta">${H.ricorrenza}</span>
+        <span class="etichetta">${U.ricorrenza}</span>
         <div class="segmenti">
-          ${t("settimanale", H.ogniSettimane)} ${t("mensile_posizione", H.posizioneMese)}
-          ${t("mensile_data", H.dataMese)}
+          ${t("settimanale", U.ogniSettimane)} ${t("mensile_posizione", U.posizioneMese)}
+          ${t("mensile_data", U.dataMese)}
         </div>
       </div>
       ${e.tipo === "settimanale" ? C`<div class="campo">
-              <span class="etichetta">${H.ogniQuanteSettimane}</span>
-              <div class="tonde otto" role="radiogroup" aria-label=${H.ogniQuanteSettimane}>
+              <span class="etichetta">${U.ogniQuanteSettimane}</span>
+              <div class="tonde otto" role="radiogroup" aria-label=${U.ogniQuanteSettimane}>
                 ${[
 			1,
 			2,
@@ -2396,18 +2447,18 @@ q("rd-regole", class extends M {
               </div>
             </div>
             <div class="campo">
-              <span class="etichetta">${H.neiGiorni}</span>
+              <span class="etichetta">${U.neiGiorni}</span>
               <div class="tonde sette">
-                ${B.map((t, n) => C`<button class=${e.giorni.includes(n) ? "attivo" : ""} aria-pressed=${e.giorni.includes(n)} aria-label=${Be[n]} @click=${() => this._ricorrenza({ giorni: mt(e.giorni, n).sort() })}>${t.slice(0, 2)}</button>`)}
+                ${V.map((t, n) => C`<button class=${e.giorni.includes(n) ? "attivo" : ""} aria-pressed=${e.giorni.includes(n)} aria-label=${B[n]} @click=${() => this._ricorrenza({ giorni: pt(e.giorni, n).sort() })}>${t.slice(0, 2)}</button>`)}
               </div>
             </div>
             ${e.ogni > 1 ? C`<div class="campo">
-                  <label for="ancora">${H.ancora}</label>
+                  <label for="ancora">${U.ancora}</label>
                   <input id="ancora" type="date" .value=${e.ancora} @change=${(e) => this._ricorrenza({ ancora: e.target.value })} />
-                  <small>${H.ancoraAiuto}</small>
+                  <small>${U.ancoraAiuto}</small>
                 </div>` : T}` : T}
       ${e.tipo === "mensile_posizione" ? C`<div class="campo">
-              <span class="etichetta">${H.quali}</span>
+              <span class="etichetta">${U.quali}</span>
               <div class="tonde">
                 ${[
 			1,
@@ -2415,99 +2466,99 @@ q("rd-regole", class extends M {
 			3,
 			4,
 			-1
-		].map((t) => C`<button class=${e.posizioni.includes(t) ? "attivo" : ""} @click=${() => this._ricorrenza({ posizioni: mt(e.posizioni, t) })}>${He[t]}</button>`)}
+		].map((t) => C`<button class=${e.posizioni.includes(t) ? "attivo" : ""} @click=${() => this._ricorrenza({ posizioni: pt(e.posizioni, t) })}>${Ve[t]}</button>`)}
               </div>
             </div>
             <div class="campo">
-              <span class="etichetta">${H.giornoSettimana}</span>
+              <span class="etichetta">${U.giornoSettimana}</span>
               <div class="tonde sette">
-                ${B.map((t, n) => C`<button class=${e.giorno === n ? "attivo" : ""} @click=${() => this._ricorrenza({ giorno: n })}>${t.slice(0, 2)}</button>`)}
+                ${V.map((t, n) => C`<button class=${e.giorno === n ? "attivo" : ""} @click=${() => this._ricorrenza({ giorno: n })}>${t.slice(0, 2)}</button>`)}
               </div>
             </div>` : T}
       ${e.tipo === "mensile_data" ? C`<div class="campo">
-            <span class="etichetta">${H.giorniDelMese}</span>
+            <span class="etichetta">${U.giorniDelMese}</span>
             <div class="tonde calendario">
-              ${Array.from({ length: 31 }, (e, t) => t + 1).map((t) => C`<button class=${e.giorni.includes(t) ? "attivo" : ""} @click=${() => this._ricorrenza({ giorni: mt(e.giorni, t).sort((e, t) => e - t) })}>${t}</button>`)}
+              ${Array.from({ length: 31 }, (e, t) => t + 1).map((t) => C`<button class=${e.giorni.includes(t) ? "attivo" : ""} @click=${() => this._ricorrenza({ giorni: pt(e.giorni, t).sort((e, t) => e - t) })}>${t}</button>`)}
             </div>
           </div>` : T}`;
 	}
 	_meseGiorno(e, t) {
 		let [n, r] = e.split("-").map(Number), i = (e, n) => t(`${String(e).padStart(2, "0")}-${String(n).padStart(2, "0")}`);
 		return C`<div class="riga-campi">
-      <select aria-label=${H.giorno} @change=${(e) => i(n, Number(e.target.value))}>
+      <select aria-label=${U.giorno} @change=${(e) => i(n, Number(e.target.value))}>
         ${Array.from({ length: 31 }, (e, t) => t + 1).map((e) => C`<option value=${e} ?selected=${e === r}>${e}</option>`)}
       </select>
-      <select aria-label=${H.mese} @change=${(e) => i(Number(e.target.value), r)}>
-        ${V.map((e, t) => C`<option value=${t + 1} ?selected=${t + 1 === n}>${e}</option>`)}
+      <select aria-label=${U.mese} @change=${(e) => i(Number(e.target.value), r)}>
+        ${H.map((e, t) => C`<option value=${t + 1} ?selected=${t + 1 === n}>${e}</option>`)}
       </select>
     </div>`;
 	}
 	_editorPeriodo(e) {
 		let t = (t, n) => C`<button class=${e.tipo === t ? "attivo" : ""} @click=${() => e.tipo !== t && this._imposta({
 			...this._bozza,
-			periodo: pt[t](this.lettura.oggi)
+			periodo: ft[t](this.lettura.oggi)
 		})}>${n}</button>`;
 		return C`<div class="campo">
-        <span class="etichetta">${H.periodo}</span>
-        <div class="segmenti">${t("sempre", H.sempre)} ${t("annuale", H.annuale)} ${t("con_anno", H.conAnno)}</div>
+        <span class="etichetta">${U.periodo}</span>
+        <div class="segmenti">${t("sempre", U.sempre)} ${t("annuale", U.annuale)} ${t("con_anno", U.conAnno)}</div>
       </div>
       ${e.tipo === "annuale" ? C`<div class="riga-campi">
-            <div class="campo"><span class="etichetta">${H.dal}</span>${this._meseGiorno(e.dal, (e) => this._periodo({ dal: e }))}</div>
-            <div class="campo"><span class="etichetta">${H.al}</span>${this._meseGiorno(e.al, (e) => this._periodo({ al: e }))}</div>
+            <div class="campo"><span class="etichetta">${U.dal}</span>${this._meseGiorno(e.dal, (e) => this._periodo({ dal: e }))}</div>
+            <div class="campo"><span class="etichetta">${U.al}</span>${this._meseGiorno(e.al, (e) => this._periodo({ al: e }))}</div>
           </div>` : T}
       ${e.tipo === "con_anno" ? C`<div class="riga-campi">
-            <div class="campo"><label>${H.dal}</label><input type="date" .value=${e.dal} @change=${(e) => this._periodo({ dal: e.target.value })} /></div>
-            <div class="campo"><label>${H.al}</label><input type="date" .value=${e.al} @change=${(e) => this._periodo({ al: e.target.value })} /></div>
+            <div class="campo"><label>${U.dal}</label><input type="date" .value=${e.dal} @change=${(e) => this._periodo({ dal: e.target.value })} /></div>
+            <div class="campo"><label>${U.al}</label><input type="date" .value=${e.al} @change=${(e) => this._periodo({ al: e.target.value })} /></div>
           </div>` : T}`;
 	}
 	_editor() {
 		let e = this._bozza;
 		if (!e) return T;
 		let t = this.lettura.configurazione.tipologie.find((t) => t.id === e.tipologia), n = this.lettura.configurazione.regole.some((t) => t.id === e.id);
-		return C`<rd-finestra aperta titolo=${`${n ? H.modifica : H.nuovaRegola} · ${t?.nome ?? ""}`} @chiudi=${() => this._bozza = void 0}>
+		return C`<rd-finestra aperta titolo=${`${n ? U.modifica : U.nuovaRegola} · ${t?.nome ?? ""}`} @chiudi=${() => this._bozza = void 0}>
       <div class="modulo">
         <div class="riepilogo" aria-live="polite">
-          ${this._valida(e) ? G(e.ricorrenza) : H.completaLaRegola}
-          <small>${Ke(e.periodo)}</small>
+          ${this._valida(e) ? K(e.ricorrenza) : U.completaLaRegola}
+          <small>${Ge(e.periodo)}</small>
         </div>
         <div class="campo">
-          <label for="nome">${H.nomeRegola}</label>
-          <input id="nome" maxlength="40" .value=${e.nome} placeholder=${H.nomeRegolaAiuto} @input=${(t) => this._bozza = {
+          <label for="nome">${U.nomeRegola}</label>
+          <input id="nome" maxlength="40" .value=${e.nome} placeholder=${U.nomeRegolaAiuto} @input=${(t) => this._bozza = {
 			...e,
 			nome: t.target.value
 		}} />
         </div>
         ${this._editorRicorrenza(e.ricorrenza)} ${this._editorPeriodo(e.periodo)}
         <div class="campo">
-          <span class="etichetta">${H.prossimeDate}</span>
-          ${this._problemi.length ? C`<div class="errori">${this._problemi.map((e) => C`<div>${K(e)}</div>`)}</div>` : this._date.length ? C`<div class="anteprima-date">${this._date.map((e) => C`<span>${W(e)}</span>`)}</div>` : C`<div class="aiuto">${H.nessunaData}</div>`}
+          <span class="etichetta">${U.prossimeDate}</span>
+          ${this._problemi.length ? C`<div class="errori">${this._problemi.map((e) => C`<div>${q(e)}</div>`)}</div>` : this._date.length ? C`<div class="anteprima-date">${this._date.map((e) => C`<span>${G(e)}</span>`)}</div>` : C`<div class="aiuto">${U.nessunaData}</div>`}
         </div>
       </div>
       <div class="azioni-modulo" slot="azioni">
-        ${n ? C`<button class="bottone pericolo" @click=${this._elimina}>${H.elimina}</button>` : T}
+        ${n ? C`<button class="bottone pericolo" @click=${this._elimina}>${U.elimina}</button>` : T}
         <span style="flex:1"></span>
-        <button class="bottone" @click=${() => this._bozza = void 0}>${H.annulla}</button>
-        <button class="bottone primario" ?disabled=${this._problemi.length > 0 || this._inCorso} @click=${() => J(this, this._candidata())}>${H.salva}</button>
+        <button class="bottone" @click=${() => this._bozza = void 0}>${U.annulla}</button>
+        <button class="bottone primario" ?disabled=${this._problemi.length > 0 || this._inCorso} @click=${() => Y(this, this._candidata())}>${U.salva}</button>
       </div>
     </rd-finestra>`;
 	}
 	render() {
 		let e = this.lettura.configurazione;
 		return C`<div class="riquadro">
-        <h2>${H.pagine.regole}</h2>
-        <p class="aiuto">${H.aiutoRegole}</p>
+        <h2>${U.pagine.regole}</h2>
+        <p class="aiuto">${U.aiutoRegole}</p>
         ${e.tipologie.map((t) => {
 			let n = e.regole.filter((e) => e.tipologia === t.id);
 			return C`<section class="gruppo">
-            <div class="titolo">${L(t)}</div>
-            ${n.length ? n.map((e) => C`<button class="voce cliccabile" aria-label=${`${H.modifica}: ${e.nome || G(e.ricorrenza)}`} @click=${() => this._imposta(X(e))}>
+            <div class="titolo">${F(t)}</div>
+            ${n.length ? n.map((e) => C`<button class="voce cliccabile" aria-label=${`${U.modifica}: ${e.nome || K(e.ricorrenza)}`} @click=${() => this._imposta(Z(e))}>
                     <div class="frase">
-                      ${e.nome ? C`<b>${e.nome}</b> · ` : T}${G(e.ricorrenza)}
-                      <small>${Ke(e.periodo)}</small>
+                      ${e.nome ? C`<b>${e.nome}</b> · ` : T}${K(e.ricorrenza)}
+                      <small>${Ge(e.periodo)}</small>
                     </div>
                     <ha-icon class="freccia" icon="mdi:chevron-right" aria-hidden="true"></ha-icon>
-                  </button>`) : C`<div class="vuoto">${H.nessunaRegola}</div>`}
-            <button class="bottone piccolo" @click=${() => this._nuova(t.id)}><ha-icon icon="mdi:plus"></ha-icon>${H.nuovaRegola}</button>
+                  </button>`) : C`<div class="vuoto">${U.nessunaRegola}</div>`}
+            <button class="bottone piccolo" @click=${() => this._nuova(t.id)}><ha-icon icon="mdi:plus"></ha-icon>${U.nuovaRegola}</button>
           </section>`;
 		})}
       </div>
@@ -2515,9 +2566,9 @@ q("rd-regole", class extends M {
 	}
 	static {
 		this.styles = [
-			N,
-			I,
+			j,
 			P,
+			M,
 			o`
       .gruppo {
         padding: 12px 0 16px;
@@ -2542,8 +2593,8 @@ q("rd-regole", class extends M {
 });
 //#endregion
 //#region src/pannello/pagine/eccezioni.ts
-var ht = "foyer_raccolta_differenziata", gt = (e) => e.tipo === "sposta" ? e.da : e.data;
-q("rd-eccezioni", class extends M {
+var mt = "foyer_raccolta_differenziata", ht = (e) => e.tipo === "sposta" ? e.da : e.data;
+J("rd-eccezioni", class extends A {
 	constructor(...e) {
 		super(...e), this._problemi = [], this._passate = !1;
 	}
@@ -2570,14 +2621,14 @@ q("rd-eccezioni", class extends M {
 	_nuova(e, t, n) {
 		let r = t ?? this.lettura.configurazione.tipologie[0]?.id ?? "", i = n ?? this.lettura.oggi;
 		this._bozza = e === "sposta" ? {
-			id: R(),
+			id: I(),
 			tipo: e,
 			tipologia: r,
 			da: i,
 			a: i,
 			nota: ""
 		} : {
-			id: R(),
+			id: I(),
 			tipo: e,
 			tipologia: r,
 			data: i,
@@ -2585,22 +2636,22 @@ q("rd-eccezioni", class extends M {
 		}, this._problemi = [];
 	}
 	_candidata() {
-		let e = X(this.lettura.configurazione), t = e.eccezioni.findIndex((e) => e.id === this._bozza.id), n = {
+		let e = Z(this.lettura.configurazione), t = e.eccezioni.findIndex((e) => e.id === this._bozza.id), n = {
 			...this._bozza,
 			nota: (this._bozza.nota ?? "").trim()
 		};
-		return t >= 0 ? e.eccezioni[t] = n : e.eccezioni.push(n), e.eccezioni.sort((e, t) => gt(e).localeCompare(gt(t))), e;
+		return t >= 0 ? e.eccezioni[t] = n : e.eccezioni.push(n), e.eccezioni.sort((e, t) => ht(e).localeCompare(ht(t))), e;
 	}
 	async _salva() {
 		let e = this._candidata(), t = await this.hass.callWS({
-			type: `${ht}/anteprima`,
+			type: `${mt}/anteprima`,
 			configurazione: e
 		});
-		this._problemi = t.problemi, t.problemi.length || J(this, e);
+		this._problemi = t.problemi, t.problemi.length || Y(this, e);
 	}
 	_elimina() {
-		let e = X(this.lettura.configurazione);
-		e.eccezioni = e.eccezioni.filter((e) => e.id !== this._bozza.id), J(this, e);
+		let e = Z(this.lettura.configurazione);
+		e.eccezioni = e.eccezioni.filter((e) => e.id !== this._bozza.id), Y(this, e);
 	}
 	_aggiorna(e) {
 		this._bozza = {
@@ -2619,37 +2670,37 @@ q("rd-eccezioni", class extends M {
 		if (!e) return T;
 		let t = this.lettura.configurazione.eccezioni.some((t) => t.id === e.id);
 		return C`<rd-finestra aperta titolo=${{
-			aggiungi: H.aggiungiRitiro,
-			togli: H.togliRitiro,
-			sposta: H.spostaRitiro
+			aggiungi: U.aggiungiRitiro,
+			togli: U.togliRitiro,
+			sposta: U.spostaRitiro
 		}[e.tipo]} @chiudi=${() => this._bozza = void 0}>
       <div class="modulo">
         <div class="campo">
-          <span class="etichetta">${H.tipologia}</span>
+          <span class="etichetta">${U.tipologia}</span>
           <div class="scelta-tipologie">
-            ${this.lettura.configurazione.tipologie.map((t) => C`<button class=${t.id === e.tipologia ? "attivo" : ""} @click=${() => this._aggiorna({ tipologia: t.id })}>${L(t)}</button>`)}
+            ${this.lettura.configurazione.tipologie.map((t) => C`<button class=${t.id === e.tipologia ? "attivo" : ""} @click=${() => this._aggiorna({ tipologia: t.id })}>${F(t)}</button>`)}
           </div>
         </div>
-        ${e.tipo === "sposta" ? C`<div class="riga-campi">${this._data(H.da, "da", e.da)} ${this._data(H.a, "a", e.a)}</div>` : this._data(H.data, "data", e.data)}
+        ${e.tipo === "sposta" ? C`<div class="riga-campi">${this._data(U.da, "da", e.da)} ${this._data(U.a, "a", e.a)}</div>` : this._data(U.data, "data", e.data)}
         <div class="campo">
-          <label for="nota">${H.nota}</label>
+          <label for="nota">${U.nota}</label>
           <input id="nota" maxlength="200" .value=${e.nota ?? ""} @input=${(e) => this._aggiorna({ nota: e.target.value })} />
         </div>
-        ${this._problemi.length ? C`<div class="errori">${this._problemi.map((e) => C`<div>${K(e)}</div>`)}</div>` : T}
+        ${this._problemi.length ? C`<div class="errori">${this._problemi.map((e) => C`<div>${q(e)}</div>`)}</div>` : T}
       </div>
       <div class="azioni-modulo" slot="azioni">
-        ${t ? C`<button class="bottone pericolo" @click=${this._elimina}>${H.elimina}</button>` : T}
+        ${t ? C`<button class="bottone pericolo" @click=${this._elimina}>${U.elimina}</button>` : T}
         <span style="flex:1"></span>
-        <button class="bottone" @click=${() => this._bozza = void 0}>${H.annulla}</button>
-        <button class="bottone primario" @click=${this._salva}>${H.salva}</button>
+        <button class="bottone" @click=${() => this._bozza = void 0}>${U.annulla}</button>
+        <button class="bottone primario" @click=${this._salva}>${U.salva}</button>
       </div>
     </rd-finestra>`;
 	}
 	_riga(e) {
-		let t = this.lettura.configurazione.tipologie.find((t) => t.id === e.tipologia), n = e.tipo === "sposta" ? C`${W(e.da)} → ${W(e.a)}` : W(e.data);
-		return C`<button class="voce cliccabile" aria-label=${H.modifica} @click=${() => (this._bozza = X(e), this._problemi = [])}>
+		let t = this.lettura.configurazione.tipologie.find((t) => t.id === e.tipologia), n = e.tipo === "sposta" ? C`${G(e.da)} → ${G(e.a)}` : G(e.data);
+		return C`<button class="voce cliccabile" aria-label=${U.modifica} @click=${() => (this._bozza = Z(e), this._problemi = [])}>
       <div class="frase">
-        <span class="testa-eccezione"><span class="badge ${e.tipo}">${H.tipoEccezione[e.tipo]}</span>${t ? L(t) : T}</span>
+        <span class="testa-eccezione"><span class="badge ${e.tipo}">${U.tipoEccezione[e.tipo]}</span>${t ? F(t) : T}</span>
         <b>${n}</b>${e.nota ? C`<small>${e.nota}</small>` : T}
       </div>
       <ha-icon class="freccia" icon="mdi:chevron-right" aria-hidden="true"></ha-icon>
@@ -2658,16 +2709,16 @@ q("rd-eccezioni", class extends M {
 	render() {
 		let e = this.lettura.configurazione.eccezioni, t = this.lettura.oggi, n = (e) => e.tipo === "sposta" ? e.a > e.da ? e.a : e.da : e.data, r = e.filter((e) => n(e) >= t), i = e.filter((e) => n(e) < t);
 		return C`<div class="riquadro">
-        <h2>${H.pagine.eccezioni} <span class="conta">${r.length}</span></h2>
-        <p class="aiuto">${H.aiutoEccezioni}</p>
-        ${r.length ? r.map((e) => this._riga(e)) : C`<div class="vuoto">${H.nessunaEccezione}</div>`}
+        <h2>${U.pagine.eccezioni} <span class="conta">${r.length}</span></h2>
+        <p class="aiuto">${U.aiutoEccezioni}</p>
+        ${r.length ? r.map((e) => this._riga(e)) : C`<div class="vuoto">${U.nessunaEccezione}</div>`}
         <div class="riga-azioni">
-          <button class="bottone primario" @click=${() => this._nuova("aggiungi")}><ha-icon icon="mdi:plus"></ha-icon>${H.aggiungiRitiro}</button>
-          <button class="bottone" @click=${() => this._nuova("togli")}><ha-icon icon="mdi:minus"></ha-icon>${H.togliRitiro}</button>
-          <button class="bottone" @click=${() => this._nuova("sposta")}><ha-icon icon="mdi:arrow-right"></ha-icon>${H.spostaRitiro}</button>
+          <button class="bottone primario" @click=${() => this._nuova("aggiungi")}><ha-icon icon="mdi:plus"></ha-icon>${U.aggiungiRitiro}</button>
+          <button class="bottone" @click=${() => this._nuova("togli")}><ha-icon icon="mdi:minus"></ha-icon>${U.togliRitiro}</button>
+          <button class="bottone" @click=${() => this._nuova("sposta")}><ha-icon icon="mdi:arrow-right"></ha-icon>${U.spostaRitiro}</button>
         </div>
         ${i.length ? C`<details @toggle=${(e) => this._passate = e.target.open}>
-              <summary>${H.passate} (${i.length})</summary>
+              <summary>${U.passate} (${i.length})</summary>
               ${this._passate ? i.map((e) => this._riga(e)) : T}
             </details>` : T}
       </div>
@@ -2675,9 +2726,9 @@ q("rd-eccezioni", class extends M {
 	}
 	static {
 		this.styles = [
-			N,
-			I,
+			j,
 			P,
+			M,
 			o`
       .testa-eccezione {
         display: flex;
@@ -2740,11 +2791,11 @@ q("rd-eccezioni", class extends M {
 });
 //#endregion
 //#region src/pannello/pagine/promemoria.ts
-var _t = /* @__PURE__ */ new Set([
+var gt = /* @__PURE__ */ new Set([
 	"send_message",
 	"persistent_notification",
 	"notify"
-]), vt = [
+]), _t = [
 	10,
 	15,
 	20,
@@ -2755,7 +2806,7 @@ var _t = /* @__PURE__ */ new Set([
 	120,
 	180,
 	240
-], yt = {
+], vt = {
 	giorni_prima: () => ({
 		tipo: "giorni_prima",
 		giorni: 1,
@@ -2766,17 +2817,17 @@ var _t = /* @__PURE__ */ new Set([
 		ora: "06:30"
 	}),
 	apertura: () => ({ tipo: "apertura" })
-}, bt = (e) => `${e.tipo}:${e.id}`, xt = (e) => {
+}, yt = (e) => `${e.tipo}:${e.id}`, bt = (e) => {
 	let [t, ...n] = e.split(":");
 	return {
 		tipo: t,
 		id: n.join(":")
 	};
-}, St = (e) => {
+}, xt = (e) => {
 	let t = e.replaceAll("_", " ");
 	return t.charAt(0).toUpperCase() + t.slice(1);
-}, Ct = (e) => e.tipo === "servizio" && e.id.startsWith("mobile_app_");
-q("rd-promemoria", class extends M {
+}, St = (e) => e.tipo === "servizio" && e.id.startsWith("mobile_app_");
+J("rd-promemoria", class extends A {
 	constructor(...e) {
 		super(...e), this._vacanza = {
 			dal: "",
@@ -2798,75 +2849,75 @@ q("rd-promemoria", class extends M {
 		};
 	}
 	_disponibili() {
-		let e = Object.keys(this.hass.services?.notify ?? {}).filter((e) => !_t.has(e)).map((e) => {
+		let e = Object.keys(this.hass.services?.notify ?? {}).filter((e) => !gt.has(e)).map((e) => {
 			let t = e.startsWith("mobile_app_");
 			return {
 				id: `servizio:${e}`,
-				nome: St(e.replace(/^mobile_app_/, "")),
+				nome: xt(e.replace(/^mobile_app_/, "")),
 				dettaglio: `notify.${e}`,
-				etichetta: t ? H.conPulsanti : H.soloTesto,
+				etichetta: t ? U.conPulsanti : U.soloTesto,
 				etichettaEvidente: t,
 				icona: t ? "mdi:cellphone" : "mdi:message-text-outline",
-				gruppo: t ? H.gruppoCompanion : H.gruppoServizi
+				gruppo: t ? U.gruppoCompanion : U.gruppoServizi
 			};
 		}), t = Object.keys(this.hass.states ?? {}).filter((e) => e.startsWith("notify.")).map((e) => ({
 			id: `entita:${e}`,
 			nome: String(this.hass.states[e].attributes.friendly_name ?? e),
 			dettaglio: e,
-			etichetta: H.soloTesto,
+			etichetta: U.soloTesto,
 			icona: "mdi:bell-badge-outline",
-			gruppo: H.gruppoEntita
+			gruppo: U.gruppoEntita
 		})), n = [
-			H.gruppoCompanion,
-			H.gruppoServizi,
-			H.gruppoEntita
+			U.gruppoCompanion,
+			U.gruppoServizi,
+			U.gruppoEntita
 		];
 		return [...e, ...t].sort((e, t) => n.indexOf(e.gruppo) - n.indexOf(t.gruppo) || e.nome.localeCompare(t.nome));
 	}
 	_nuovo() {
 		this._bozza = {
-			id: R(),
+			id: I(),
 			nome: "",
 			attivo: !0,
-			quando: yt.giorni_prima(),
+			quando: vt.giorni_prima(),
 			tipologie: null,
 			destinatari: []
 		};
 	}
 	_salvaProfilo() {
-		let e = X(this.lettura.configurazione), t = {
+		let e = Z(this.lettura.configurazione), t = {
 			...this._bozza,
 			nome: this._bozza.nome.trim()
 		}, n = e.promemoria.findIndex((e) => e.id === t.id);
-		n >= 0 ? e.promemoria[n] = t : e.promemoria.push(t), J(this, e);
+		n >= 0 ? e.promemoria[n] = t : e.promemoria.push(t), Y(this, e);
 	}
 	_eliminaProfilo() {
-		let e = X(this.lettura.configurazione);
-		e.promemoria = e.promemoria.filter((e) => e.id !== this._bozza.id), J(this, e);
+		let e = Z(this.lettura.configurazione);
+		e.promemoria = e.promemoria.filter((e) => e.id !== this._bozza.id), Y(this, e);
 	}
 	_attiva(e) {
-		let t = X(this.lettura.configurazione), n = t.promemoria.find((t) => t.id === e.id);
-		n.attivo = !n.attivo, J(this, t);
+		let t = Z(this.lettura.configurazione), n = t.promemoria.find((t) => t.id === e.id);
+		n.attivo = !n.attivo, Y(this, t);
 	}
 	_solleciti(e) {
-		let t = X(this.lettura.configurazione);
+		let t = Z(this.lettura.configurazione);
 		t.solleciti = {
 			...t.solleciti,
 			...e
-		}, J(this, t);
+		}, Y(this, t);
 	}
 	_aggiungiVacanza() {
 		let { dal: e, al: t } = this._vacanza;
 		if (!e || !t) return;
-		let n = X(this.lettura.configurazione);
+		let n = Z(this.lettura.configurazione);
 		n.sospensioni = [...n.sospensioni, {
 			dal: e,
 			al: t
-		}].sort((e, t) => e.dal.localeCompare(t.dal)), J(this, n);
+		}].sort((e, t) => e.dal.localeCompare(t.dal)), Y(this, n);
 	}
 	_togliVacanza(e) {
-		let t = X(this.lettura.configurazione);
-		t.sospensioni = t.sospensioni.filter((t, n) => n !== e), J(this, t);
+		let t = Z(this.lettura.configurazione);
+		t.sospensioni = t.sospensioni.filter((t, n) => n !== e), Y(this, t);
 	}
 	_editor() {
 		let e = this._bozza;
@@ -2874,20 +2925,20 @@ q("rd-promemoria", class extends M {
 		let t = this.lettura.configurazione.promemoria.some((t) => t.id === e.id), n = this.lettura.configurazione.tipologie, r = (t) => this._bozza = {
 			...e,
 			...t
-		}, i = e.quando, a = (e, t) => C`<button class=${i.tipo === e ? "attivo" : ""} @click=${() => i.tipo !== e && r({ quando: yt[e]() })}>${t}</button>`, o = this._disponibili(), s = e.nome.trim() && e.destinatari.length && (e.tipologie === null || e.tipologie.length);
-		return C`<rd-finestra aperta titolo=${t && e.nome || H.nuovoPromemoria} @chiudi=${() => this._bozza = void 0}>
+		}, i = e.quando, a = (e, t) => C`<button class=${i.tipo === e ? "attivo" : ""} @click=${() => i.tipo !== e && r({ quando: vt[e]() })}>${t}</button>`, o = this._disponibili(), s = e.nome.trim() && e.destinatari.length && (e.tipologie === null || e.tipologie.length);
+		return C`<rd-finestra aperta titolo=${t && e.nome || U.nuovoPromemoria} @chiudi=${() => this._bozza = void 0}>
       <div class="modulo">
         <div class="campo">
-          <label for="nome">${H.nomePromemoria}</label>
-          <input id="nome" maxlength="40" placeholder=${H.nomePromemoriaAiuto} .value=${e.nome} @input=${(e) => r({ nome: e.target.value })} />
+          <label for="nome">${U.nomePromemoria}</label>
+          <input id="nome" maxlength="40" placeholder=${U.nomePromemoriaAiuto} .value=${e.nome} @input=${(e) => r({ nome: e.target.value })} />
         </div>
         <div class="campo">
-          <span class="etichetta">${H.quando}</span>
-          <div class="segmenti">${a("giorni_prima", H.giorniPrima)} ${a("giorno_stesso", H.giornoStesso)} ${a("apertura", H.apertura)}</div>
-          ${i.tipo === "apertura" ? C`<small>${H.aperturaAiuto}</small>` : T}
+          <span class="etichetta">${U.quando}</span>
+          <div class="segmenti">${a("giorni_prima", U.giorniPrima)} ${a("giorno_stesso", U.giornoStesso)} ${a("apertura", U.apertura)}</div>
+          ${i.tipo === "apertura" ? C`<small>${U.aperturaAiuto}</small>` : T}
         </div>
         ${i.tipo === "giorni_prima" ? C`<div class="campo">
-              <span class="etichetta">${H.quantiGiorni}</span>
+              <span class="etichetta">${U.quantiGiorni}</span>
               <div class="tonde">${[
 			1,
 			2,
@@ -2902,47 +2953,47 @@ q("rd-promemoria", class extends M {
 		} })}>${e}</button>`)}</div>
             </div>` : T}
         ${i.tipo === "apertura" ? T : C`<div class="campo">
-              <label for="ora">${H.alle}</label>
+              <label for="ora">${U.alle}</label>
               <input id="ora" type="time" .value=${i.ora} @change=${(e) => r({ quando: {
 			...i,
 			ora: e.target.value
 		} })} />
             </div>`}
         <div class="campo">
-          <span class="etichetta">${H.perQuali}</span>
+          <span class="etichetta">${U.perQuali}</span>
           <div class="scelta">
-            <button class="tutte ${e.tipologie === null ? "attivo" : ""}" @click=${() => r({ tipologie: e.tipologie === null ? n.map((e) => e.id) : null })}>${H.tutte}</button>
+            <button class="tutte ${e.tipologie === null ? "attivo" : ""}" @click=${() => r({ tipologie: e.tipologie === null ? n.map((e) => e.id) : null })}>${U.tutte}</button>
             ${n.map((t) => C`<button class=${e.tipologie === null || e.tipologie.includes(t.id) ? "attivo" : ""} @click=${() => {
 			let i = e.tipologie ?? n.map((e) => e.id);
 			r({ tipologie: i.includes(t.id) ? i.filter((e) => e !== t.id) : [...i, t.id] });
-		}}>${L(t)}</button>`)}
+		}}>${F(t)}</button>`)}
           </div>
-          <small>${H.tutteAiuto}</small>
+          <small>${U.tutteAiuto}</small>
         </div>
         <div class="campo">
-          <span class="etichetta">${H.destinatari}</span>
+          <span class="etichetta">${U.destinatari}</span>
           ${o.length || e.destinatari.length ? C`<rd-selettore
                 multiplo
                 .opzioni=${o}
-                .scelti=${e.destinatari.map(bt)}
-                etichetta=${H.destinatari}
-                segnaposto=${H.cercaDestinatario}
-                vuoto=${H.nessunDestinatarioScelto}
-                @cambia=${(e) => r({ destinatari: e.detail.map(xt) })}
-              ></rd-selettore>` : C`<div class="aiuto">${H.nessunDestinatario}</div>`}
-          <small>${H.destinatariAiuto}</small>
+                .scelti=${e.destinatari.map(yt)}
+                etichetta=${U.destinatari}
+                segnaposto=${U.cercaDestinatario}
+                vuoto=${U.nessunDestinatarioScelto}
+                @cambia=${(e) => r({ destinatari: e.detail.map(bt) })}
+              ></rd-selettore>` : C`<div class="aiuto">${U.nessunDestinatario}</div>`}
+          <small>${U.destinatariAiuto}</small>
         </div>
       </div>
       <div class="azioni-modulo" slot="azioni">
-        ${t ? C`<button class="bottone pericolo" @click=${this._eliminaProfilo}>${H.elimina}</button>` : T}
+        ${t ? C`<button class="bottone pericolo" @click=${this._eliminaProfilo}>${U.elimina}</button>` : T}
         <span style="flex:1"></span>
-        <button class="bottone" @click=${() => this._bozza = void 0}>${H.annulla}</button>
-        <button class="bottone primario" ?disabled=${!s} @click=${this._salvaProfilo}>${H.salva}</button>
+        <button class="bottone" @click=${() => this._bozza = void 0}>${U.annulla}</button>
+        <button class="bottone primario" ?disabled=${!s} @click=${this._salvaProfilo}>${U.salva}</button>
       </div>
     </rd-finestra>`;
 	}
 	_riepilogo(e) {
-		let t = this.lettura.configurazione.tipologie, n = e.tipologie === null ? H.tutte : e.tipologie.map((e) => t.find((t) => t.id === e)?.nome ?? e).join(", "), r = e.destinatari.filter(Ct).length;
+		let t = this.lettura.configurazione.tipologie, n = e.tipologie === null ? U.tutte : e.tipologie.map((e) => t.find((t) => t.id === e)?.nome ?? e).join(", "), r = e.destinatari.filter(St).length;
 		return C`${n} · ${e.destinatari.length} ${e.destinatari.length === 1 ? "destinatario" : "destinatari"}${r ? C` · ${r} con pulsanti` : T}`;
 	}
 	render() {
@@ -2950,59 +3001,59 @@ q("rd-promemoria", class extends M {
 		return C`<div class="griglia-2">
         <div>
           <div class="riquadro">
-            <h2>${H.pagine.promemoria} <span class="conta">${e.promemoria.length}</span></h2>
-            <p class="aiuto">${H.aiutoPromemoria}</p>
+            <h2>${U.pagine.promemoria} <span class="conta">${e.promemoria.length}</span></h2>
+            <p class="aiuto">${U.aiutoPromemoria}</p>
             ${e.promemoria.length ? e.promemoria.map((e) => C`<div class="voce ${e.attivo ? "" : "spento"}">
-                    <button class="apri" aria-label=${`${H.modifica}: ${e.nome}`} @click=${() => this._bozza = X(e)}>
+                    <button class="apri" aria-label=${`${U.modifica}: ${e.nome}`} @click=${() => this._bozza = Z(e)}>
                       <ha-icon class="campana" icon=${e.attivo ? "mdi:bell-ring-outline" : "mdi:bell-off-outline"}></ha-icon>
-                      <div class="frase"><b>${e.nome}</b> · ${tt(e.quando)}<small>${this._riepilogo(e)}</small></div>
+                      <div class="frase"><b>${e.nome}</b> · ${et(e.quando)}<small>${this._riepilogo(e)}</small></div>
                     </button>
-                    <button class="levetta ${e.attivo ? "acceso" : ""}" role="switch" aria-checked=${e.attivo} aria-label=${`${H.attivo}: ${e.nome}`} @click=${() => this._attiva(e)}></button>
-                  </div>`) : C`<div class="vuoto">${H.nessunPromemoria}</div>`}
+                    <button class="levetta ${e.attivo ? "acceso" : ""}" role="switch" aria-checked=${e.attivo} aria-label=${`${U.attivo}: ${e.nome}`} @click=${() => this._attiva(e)}></button>
+                  </div>`) : C`<div class="vuoto">${U.nessunPromemoria}</div>`}
             <div class="riga-azioni">
-              <button class="bottone primario" @click=${this._nuovo}><ha-icon icon="mdi:plus"></ha-icon>${H.nuovoPromemoria}</button>
+              <button class="bottone primario" @click=${this._nuovo}><ha-icon icon="mdi:plus"></ha-icon>${U.nuovoPromemoria}</button>
             </div>
           </div>
           <div class="riquadro">
-            <h2>${H.solleciti}</h2>
+            <h2>${U.solleciti}</h2>
             <div class="interruttore">
-              <div>${H.sollecitaSeNonConfermo}<small>${H.sollecitiAiuto}</small></div>
-              <button class="levetta ${t.attivi ? "acceso" : ""}" role="switch" aria-checked=${t.attivi} aria-label=${H.sollecitaSeNonConfermo} @click=${() => this._solleciti({ attivi: !t.attivi })}></button>
+              <div>${U.sollecitaSeNonConfermo}<small>${U.sollecitiAiuto}</small></div>
+              <button class="levetta ${t.attivi ? "acceso" : ""}" role="switch" aria-checked=${t.attivi} aria-label=${U.sollecitaSeNonConfermo} @click=${() => this._solleciti({ attivi: !t.attivi })}></button>
             </div>
             ${t.attivi ? C`<div class="riga-campi">
                   <div class="campo">
-                    <span class="etichetta">${H.richiami}</span>
+                    <span class="etichetta">${U.richiami}</span>
                     <div class="segmenti">${[1, 2].map((e) => C`<button class=${t.richiami === e ? "attivo" : ""} @click=${() => this._solleciti({ richiami: e })}>${e}</button>`)}</div>
                   </div>
                   <div class="campo">
-                    <label for="minuti">${H.ogniMinuti}</label>
+                    <label for="minuti">${U.ogniMinuti}</label>
                     <select id="minuti" @change=${(e) => this._solleciti({ richiamo_dopo: Number(e.target.value) })}>
-                      ${vt.map((e) => C`<option value=${e} ?selected=${t.richiamo_dopo === e}>${H.minuti(e)}</option>`)}
+                      ${_t.map((e) => C`<option value=${e} ?selected=${t.richiamo_dopo === e}>${U.minuti(e)}</option>`)}
                     </select>
                   </div>
                 </div>` : T}
           </div>
         </div>
         <div class="riquadro">
-          <h2>${H.vacanze}</h2>
-          <p class="aiuto">${H.vacanzeAiuto}</p>
+          <h2>${U.vacanze}</h2>
+          <p class="aiuto">${U.vacanzeAiuto}</p>
           ${e.sospensioni.length ? e.sospensioni.map((e, t) => C`<div class="voce">
                   <ha-icon icon="mdi:beach"></ha-icon>
-                  <div class="frase">${H.dalAl(e.dal, e.al)}</div>
-                  <button class="bottone piccolo" @click=${() => this._togliVacanza(t)}>${H.togli}</button>
-                </div>`) : C`<div class="vuoto">${H.nessunaVacanza}</div>`}
+                  <div class="frase">${U.dalAl(e.dal, e.al)}</div>
+                  <button class="bottone piccolo" @click=${() => this._togliVacanza(t)}>${U.togli}</button>
+                </div>`) : C`<div class="vuoto">${U.nessunaVacanza}</div>`}
           <div class="riga-campi vacanza">
-            <div class="campo"><label>${H.dal}</label><input type="date" .value=${this._vacanza.dal} @change=${(e) => this._vacanza = {
+            <div class="campo"><label>${U.dal}</label><input type="date" .value=${this._vacanza.dal} @change=${(e) => this._vacanza = {
 			...this._vacanza,
 			dal: e.target.value
 		}} /></div>
-            <div class="campo"><label>${H.al}</label><input type="date" .value=${this._vacanza.al} @change=${(e) => this._vacanza = {
+            <div class="campo"><label>${U.al}</label><input type="date" .value=${this._vacanza.al} @change=${(e) => this._vacanza = {
 			...this._vacanza,
 			al: e.target.value
 		}} /></div>
           </div>
           <div class="riga-azioni">
-            <button class="bottone" ?disabled=${!this._vacanza.dal || !this._vacanza.al} @click=${this._aggiungiVacanza}><ha-icon icon="mdi:plus"></ha-icon>${H.aggiungiVacanza}</button>
+            <button class="bottone" ?disabled=${!this._vacanza.dal || !this._vacanza.al} @click=${this._aggiungiVacanza}><ha-icon icon="mdi:plus"></ha-icon>${U.aggiungiVacanza}</button>
           </div>
         </div>
       </div>
@@ -3010,9 +3061,9 @@ q("rd-promemoria", class extends M {
 	}
 	static {
 		this.styles = [
-			N,
-			I,
+			j,
 			P,
+			M,
 			o`
       .voce.spento .apri {
         opacity: 0.6;
@@ -3114,14 +3165,316 @@ q("rd-promemoria", class extends M {
 	}
 });
 //#endregion
+//#region src/pannello/pagine/piattaforma.ts
+var Ct = 4, wt = 3, Tt = ["08:00", "12:00"], Et = () => Array.from({ length: 7 }, () => []);
+J("rd-piattaforma", class extends A {
+	static {
+		this.properties = {
+			hass: { attribute: !1 },
+			lettura: { attribute: !1 },
+			_bozza: { state: !0 }
+		};
+	}
+	willUpdate(e) {
+		if (!e.has("lettura")) return;
+		let t = this._bozza === void 0 || JSON.stringify(this._bozza) === this._base;
+		this._revisione !== this.lettura.revisione && t && this._ricomincia();
+	}
+	_ricomincia() {
+		this._bozza = Z(this.lettura.configurazione.piattaforma ?? null), this._base = JSON.stringify(this._bozza), this._revisione = this.lettura.revisione;
+	}
+	chiudiEditor() {
+		this._bozza = void 0, this._base = void 0, this._revisione = void 0;
+	}
+	_aggiorna(e) {
+		this._bozza = {
+			...this._bozza,
+			...e
+		};
+	}
+	_nuova() {
+		let e = this.lettura.oggi.slice(0, 4);
+		this._bozza = {
+			nome: U.piattaformaTitolo,
+			nota: "",
+			periodi: [{
+				id: I(),
+				dal: `${e}-01-01`,
+				al: `${e}-12-31`,
+				settimana: Et()
+			}],
+			eccezioni: []
+		};
+	}
+	_periodo(e, t) {
+		let n = this._bozza.periodi.map((n, r) => r === e ? {
+			...n,
+			...t
+		} : n);
+		this._aggiorna({ periodi: n });
+	}
+	_fasce(e, t, n) {
+		let r = this._bozza.periodi[e].settimana.map((e, r) => r === t ? n : e);
+		this._periodo(e, { settimana: r });
+	}
+	_aggiungiPeriodo() {
+		let e = [...this._bozza.periodi].sort((e, t) => e.dal.localeCompare(t.dal)).at(-1), t = e ? R(e.al, 1) : this.lettura.oggi, n = {
+			id: I(),
+			dal: t,
+			al: R(t, 364),
+			settimana: e ? Z(e.settimana) : Et()
+		};
+		this._aggiorna({ periodi: [...this._bozza.periodi, n] });
+	}
+	_eccezione(e, t) {
+		let n = this._bozza.eccezioni.map((n, r) => r === e ? {
+			...n,
+			...t
+		} : n);
+		this._aggiorna({ eccezioni: n });
+	}
+	_salva() {
+		let e = Z(this.lettura.configurazione), t = this._bozza ? Z(this._bozza) : null;
+		if (t) {
+			t.nome = t.nome.trim(), t.nota = t.nota.trim(), t.periodi.sort((e, t) => e.dal.localeCompare(t.dal)), t.eccezioni.sort((e, t) => e.data.localeCompare(t.data));
+			for (let e of t.eccezioni) e.tipo === "chiusa" && (e.fasce = []);
+		}
+		e.piattaforma = t, Y(this, e);
+	}
+	_togli() {
+		confirm(U.togliPiattaformaConferma) && (this._bozza = null);
+	}
+	_campoOra(e, t, n) {
+		return C`<input type="time" aria-label=${n} .value=${e} @change=${(e) => t(e.target.value)} />`;
+	}
+	_fasceModulo(e, t) {
+		return C`<div class="fasce">
+      ${e.length ? T : C`<span class="chiusa">${U.chiusa}</span>`}
+      ${e.map(([n, r], i) => C`<span class="fascia">
+          ${this._campoOra(n, (n) => t(e.map((e, t) => t === i ? [n, e[1]] : e)), U.orariDa)}
+          <span aria-hidden="true">–</span>
+          ${this._campoOra(r, (n) => t(e.map((e, t) => t === i ? [e[0], n] : e)), U.orariA)}
+          <button class="icona" aria-label=${U.togliFascia} title=${U.togliFascia} @click=${() => t(e.filter((e, t) => t !== i))}>
+            <ha-icon icon="mdi:close"></ha-icon>
+          </button>
+        </span>`)}
+      ${e.length < wt ? C`<button class="icona" aria-label=${U.aggiungiFascia} title=${U.aggiungiFascia}
+            @click=${() => t([...e, e.length ? [e.at(-1)[1], e.at(-1)[1]] : Tt])}>
+            <ha-icon icon="mdi:plus"></ha-icon>
+          </button>` : T}
+    </div>`;
+	}
+	_periodoModulo(e, t) {
+		let n = this._bozza.periodi.length > 1;
+		return C`<div class="periodo">
+      <div class="testa-periodo">
+        <div class="campo"><label>${U.dal}</label><input type="date" .value=${e.dal} @change=${(e) => this._periodo(t, { dal: e.target.value })} /></div>
+        <div class="campo"><label>${U.al}</label><input type="date" .value=${e.al} @change=${(e) => this._periodo(t, { al: e.target.value })} /></div>
+        ${n ? C`<button class="bottone piccolo pericolo" @click=${() => this._aggiorna({ periodi: this._bozza.periodi.filter((e, n) => n !== t) })}>${U.togliPeriodo}</button>` : T}
+      </div>
+      ${e.settimana.map((e, n) => C`<div class="giorno">
+          <b>${V[n]}</b>
+          ${this._fasceModulo(e, (e) => this._fasce(t, n, e))}
+        </div>`)}
+    </div>`;
+	}
+	_eccezioneModulo(e, t) {
+		return C`<div class="eccezione">
+      <input type="date" aria-label=${U.data} .value=${e.data} @change=${(e) => this._eccezione(t, { data: e.target.value })} />
+      <div class="segmenti">
+        ${["chiusa", "aperta"].map((n) => C`<button class=${e.tipo === n ? "attivo" : ""}
+            @click=${() => this._eccezione(t, {
+			tipo: n,
+			fasce: n === "aperta" && !e.fasce.length ? [Tt] : e.fasce
+		})}>
+            ${n === "chiusa" ? U.chiusa : U.aperta}
+          </button>`)}
+      </div>
+      ${e.tipo === "aperta" ? this._fasceModulo(e.fasce, (e) => this._eccezione(t, { fasce: e })) : T}
+      <input class="nota" placeholder=${U.nota} maxlength="200" .value=${e.nota} @input=${(e) => this._eccezione(t, { nota: e.target.value })} />
+      <button class="icona" aria-label=${U.elimina} title=${U.elimina} @click=${() => this._aggiorna({ eccezioni: this._bozza.eccezioni.filter((e, n) => n !== t) })}>
+        <ha-icon icon="mdi:delete-outline"></ha-icon>
+      </button>
+    </div>`;
+	}
+	render() {
+		if (this._bozza === void 0) return C``;
+		let e = JSON.stringify(this._bozza) !== this._base, t = this._bozza, n = C`<div class="azioni-modulo">
+      ${t ? C`<button class="bottone pericolo" @click=${this._togli}>${U.togliPiattaforma}</button>` : T}
+      <span style="flex:1"></span>
+      <button class="bottone" ?disabled=${!e} @click=${this._ricomincia}>${U.annulla}</button>
+      <button class="bottone primario" ?disabled=${!e} @click=${this._salva}>${U.salva}</button>
+    </div>`;
+		return t ? C`<div class="colonna">
+      <div class="riquadro">
+        <h2><ha-icon icon="mdi:recycle" aria-hidden="true"></ha-icon>${U.piattaformaTitolo}</h2>
+        <p class="aiuto">${U.piattaformaAiuto}</p>
+        <div class="modulo">
+          <div class="campo">
+            <label for="nome">${U.nomePiattaforma}</label>
+            <input id="nome" maxlength="40" .value=${t.nome} @input=${(e) => this._aggiorna({ nome: e.target.value })} />
+            <small>${U.nomePiattaformaAiuto}</small>
+          </div>
+          <div class="campo">
+            <label for="nota-p">${U.notaPiattaforma}</label>
+            <input id="nota-p" maxlength="200" .value=${t.nota} @input=${(e) => this._aggiorna({ nota: e.target.value })} />
+            <small>${U.notaPiattaformaAiuto}</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="riquadro">
+        <h2>${U.periodi} <span class="conta">${t.periodi.length}</span></h2>
+        <p class="aiuto">${U.periodiAiuto}</p>
+        ${t.periodi.map((e, t) => this._periodoModulo(e, t))}
+        ${t.periodi.length < Ct ? C`<button class="bottone" @click=${this._aggiungiPeriodo}><ha-icon icon="mdi:plus"></ha-icon>${U.aggiungiPeriodo}</button>` : T}
+      </div>
+
+      <div class="riquadro">
+        <h2>${U.eccezioniPiattaforma} <span class="conta">${t.eccezioni.length}</span></h2>
+        <p class="aiuto">${U.eccezioniPiattaformaAiuto}</p>
+        ${t.eccezioni.map((e, t) => this._eccezioneModulo(e, t))}
+        <button class="bottone"
+          @click=${() => this._aggiorna({ eccezioni: [...t.eccezioni, {
+			id: I(),
+			data: this.lettura.oggi,
+			tipo: "chiusa",
+			fasce: [],
+			nota: ""
+		}] })}>
+          <ha-icon icon="mdi:plus"></ha-icon>${U.aggiungiEccezionePiattaforma}
+        </button>
+      </div>
+      ${n}
+    </div>` : C`<div class="colonna">
+        <div class="riquadro vuota">
+          <ha-icon icon="mdi:recycle"></ha-icon>
+          <h2>${U.piattaformaTitolo}</h2>
+          <p class="aiuto">${U.piattaformaAiuto}</p>
+          <p>${U.piattaformaVuota}</p>
+          <button class="bottone primario" @click=${this._nuova}>${U.inserisciOrari}</button>
+        </div>
+        ${e ? n : T}
+      </div>`;
+	}
+	static {
+		this.styles = [
+			j,
+			P,
+			M,
+			o`
+      .colonna {
+        max-width: 760px;
+      }
+      h2 ha-icon {
+        --mdc-icon-size: 22px;
+        color: var(--rd-primario);
+        margin-right: 6px;
+      }
+      .vuota {
+        text-align: center;
+        padding: 28px 20px;
+      }
+      .vuota h2 {
+        justify-content: center;
+      }
+      .vuota > ha-icon {
+        --mdc-icon-size: 40px;
+        color: var(--rd-primario);
+      }
+      .periodo {
+        border: 1px solid var(--rd-bordo);
+        border-radius: 14px;
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+      .testa-periodo {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: end;
+        margin-bottom: 8px;
+      }
+      .testa-periodo .campo {
+        flex: 1 1 140px;
+        margin: 0;
+      }
+      .giorno {
+        display: grid;
+        grid-template-columns: 44px 1fr;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 0;
+        border-top: 1px solid var(--rd-bordo);
+      }
+      .fasce {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px 10px;
+      }
+      .fascia {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .fascia input[type="time"] {
+        width: 104px;
+        padding: 6px 8px;
+      }
+      .chiusa {
+        color: var(--rd-testo-2);
+        font-size: 13.5px;
+      }
+      .icona {
+        border: 0;
+        background: none;
+        color: var(--rd-testo-2);
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        --mdc-icon-size: 18px;
+      }
+      .icona:hover {
+        background: var(--rd-superficie-2);
+        color: var(--rd-testo);
+      }
+      .eccezione {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 10px;
+        padding: 10px 0;
+        border-top: 1px solid var(--rd-bordo);
+      }
+      .eccezione input[type="date"] {
+        width: 150px;
+      }
+      .eccezione .nota {
+        flex: 1 1 160px;
+      }
+      .bottone ha-icon {
+        --mdc-icon-size: 18px;
+      }
+      .azioni-modulo {
+        margin-top: 16px;
+      }
+    `
+		];
+	}
+});
+//#endregion
 //#region src/pannello/pagine/impostazioni.ts
-var Q = "foyer_raccolta_differenziata", wt = 1048576, Tt = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", Et = 30;
-async function Dt(e) {
+var Dt = "foyer_raccolta_differenziata", Ot = 1048576, kt = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", At = 30;
+async function jt(e) {
 	let t = new Uint8Array(await e.arrayBuffer()), n = "";
 	for (let e = 0; e < t.length; e += 32768) n += String.fromCharCode(...t.subarray(e, e + 32768));
 	return btoa(n);
 }
-q("rd-impostazioni", class extends M {
+J("rd-impostazioni", class extends A {
 	static {
 		this.properties = {
 			hass: { attribute: !1 },
@@ -3133,13 +3486,13 @@ q("rd-impostazioni", class extends M {
 	willUpdate(e) {
 		if (!e.has("lettura")) return;
 		let t = !this._bozza || JSON.stringify(this._bozza) === this._base;
-		this._revisione !== this.lettura.revisione && t && (this._bozza = X(this.lettura.configurazione), this._base = JSON.stringify(this._bozza), this._revisione = this.lettura.revisione);
+		this._revisione !== this.lettura.revisione && t && (this._bozza = Z(this.lettura.configurazione), this._base = JSON.stringify(this._bozza), this._revisione = this.lettura.revisione);
 	}
 	async _barra() {
 		await this.hass.callWS({
-			type: `${Q}/barra_laterale`,
+			type: `${Dt}/barra_laterale`,
 			mostra: !this.lettura.mostra_barra_laterale
-		}), ot(this);
+		}), at(this);
 	}
 	_finestra(e) {
 		this._bozza = {
@@ -3167,11 +3520,11 @@ q("rd-impostazioni", class extends M {
 		try {
 			let { path: t } = await this.hass.callWS({
 				type: "auth/sign_path",
-				path: `/api/${Q}/excel${e ? "?modello=1" : ""}`
+				path: `/api/${Dt}/excel${e ? "?modello=1" : ""}`
 			}), n = document.createElement("a");
 			n.href = t, n.download = "", document.body.append(n), n.click(), n.remove();
 		} catch {
-			at(this, H.scaricamentoFallito);
+			it(this, U.scaricamentoFallito);
 		}
 	}
 	_scegliFile(e) {
@@ -3185,7 +3538,7 @@ q("rd-impostazioni", class extends M {
 	async _importa() {
 		let e = this._importazione;
 		if (e?.file && e.modo && !e.occupato) {
-			if (e.file.size > wt) {
+			if (e.file.size > Ot) {
 				this._importazione = {
 					...e,
 					errori: [{
@@ -3204,12 +3557,12 @@ q("rd-impostazioni", class extends M {
 			};
 			try {
 				let t = await this.hass.callWS({
-					type: `${Q}/excel/importa`,
-					contenuto: await Dt(e.file),
+					type: `${Dt}/excel/importa`,
+					contenuto: await jt(e.file),
 					modo: e.modo
 				});
 				if (t.configurazione) {
-					this._importazione = void 0, J(this, t.configurazione, t.riepilogo);
+					this._importazione = void 0, Y(this, t.configurazione, t.riepilogo);
 					return;
 				}
 				this._importazione = {
@@ -3221,7 +3574,7 @@ q("rd-impostazioni", class extends M {
 				this._importazione = {
 					...e,
 					occupato: !1
-				}, at(this, H.erroreConnessione);
+				}, it(this, U.erroreConnessione);
 			}
 		}
 	}
@@ -3240,41 +3593,41 @@ q("rd-impostazioni", class extends M {
     >
       <span class="pallino" aria-hidden="true"></span>
       <span><b>${n}</b><small>${r}</small></span>
-    </button>`, n = e.errori.length - Et;
-		return C`<rd-finestra aperta titolo=${H.importaTitolo} @chiudi=${() => this._importazione = void 0}>
+    </button>`, n = e.errori.length - At;
+		return C`<rd-finestra aperta titolo=${U.importaTitolo} @chiudi=${() => this._importazione = void 0}>
       <div class="modulo">
         <div class="campo">
-          <span class="etichetta">${H.scegliFile}</span>
+          <span class="etichetta">${U.scegliFile}</span>
           <label class="file">
-            <input type="file" accept=".xlsx,${Tt}" @change=${this._scegliFile} />
+            <input type="file" accept=".xlsx,${kt}" @change=${this._scegliFile} />
             <ha-icon icon="mdi:file-table-outline" aria-hidden="true"></ha-icon>
-            <span class="nome-file">${e.file?.name ?? H.nessunFile}</span>
-            <span class="bottone piccolo">${e.file ? H.cambiaFile : H.scegliFile}</span>
+            <span class="nome-file">${e.file?.name ?? U.nessunFile}</span>
+            <span class="bottone piccolo">${e.file ? U.cambiaFile : U.scegliFile}</span>
           </label>
         </div>
         <div class="campo">
-          <span class="etichetta">${H.comeImportare}</span>
-          <div class="modi" role="radiogroup" aria-label=${H.comeImportare}>
-            ${t("sostituisci", H.sostituisci, H.sostituisciAiuto)}
-            ${t("aggiungi", H.aggiungiSoltanto, H.aggiungiSoltantoAiuto)}
+          <span class="etichetta">${U.comeImportare}</span>
+          <div class="modi" role="radiogroup" aria-label=${U.comeImportare}>
+            ${t("sostituisci", U.sostituisci, U.sostituisciAiuto)}
+            ${t("aggiungi", U.aggiungiSoltanto, U.aggiungiSoltantoAiuto)}
           </div>
         </div>
         ${e.errori.length ? C`<div class="errori-file" role="alert">
-              <b>${H.fileConProblemi}</b>
+              <b>${U.fileConProblemi}</b>
               <ul>
-                ${e.errori.slice(0, Et).map((e) => {
-			let t = Xe(e);
-			return C`<li>${t ? C`<span class="luogo">${t}</span>` : T}${Ye(e)}</li>`;
+                ${e.errori.slice(0, At).map((e) => {
+			let t = Ye(e);
+			return C`<li>${t ? C`<span class="luogo">${t}</span>` : T}${Je(e)}</li>`;
 		})}
               </ul>
-              ${n > 0 ? C`<small>${H.altriProblemi(n)}</small>` : T}
+              ${n > 0 ? C`<small>${U.altriProblemi(n)}</small>` : T}
             </div>` : T}
       </div>
       <div class="azioni-modulo" slot="azioni">
         <span style="flex:1"></span>
-        <button class="bottone" @click=${() => this._importazione = void 0}>${H.annulla}</button>
+        <button class="bottone" @click=${() => this._importazione = void 0}>${U.annulla}</button>
         <button class="bottone primario" ?disabled=${!e.file || !e.modo || e.occupato} @click=${this._importa}>
-          ${e.occupato ? H.leggoIlFile : H.continua}
+          ${e.occupato ? U.leggoIlFile : U.continua}
         </button>
       </div>
     </rd-finestra>`;
@@ -3283,8 +3636,8 @@ q("rd-impostazioni", class extends M {
 		this._base = void 0, this._bozza = void 0;
 	}
 	_salva() {
-		let e = X(this._bozza);
-		e.patrono && !e.patrono.nome.trim() && (e.patrono = null), e.patrono && (e.patrono.nome = e.patrono.nome.trim()), e.valido_fino_al ||= null, J(this, e);
+		let e = Z(this._bozza);
+		e.patrono && !e.patrono.nome.trim() && (e.patrono = null), e.patrono && (e.patrono.nome = e.patrono.nome.trim()), e.valido_fino_al ||= null, Y(this, e);
 	}
 	render() {
 		let e = this._bozza;
@@ -3292,90 +3645,90 @@ q("rd-impostazioni", class extends M {
 		let [t, n] = (e.patrono?.data ?? "01-01").split("-").map(Number), r = (e, t) => this._patrono({ data: `${String(e).padStart(2, "0")}-${String(t).padStart(2, "0")}` }), i = JSON.stringify(e) !== this._base;
 		return C`<div class="colonna">
       <div class="riquadro">
-        <h2>${H.pagine.impostazioni}</h2>
+        <h2>${U.pagine.impostazioni}</h2>
         <div class="interruttore">
-          <div>${H.mostraBarra}<small>${H.mostraBarraAiuto}</small></div>
-          <button class="levetta ${this.lettura.mostra_barra_laterale ? "acceso" : ""}" role="switch" aria-checked=${this.lettura.mostra_barra_laterale} aria-label=${H.mostraBarra} @click=${this._barra}></button>
+          <div>${U.mostraBarra}<small>${U.mostraBarraAiuto}</small></div>
+          <button class="levetta ${this.lettura.mostra_barra_laterale ? "acceso" : ""}" role="switch" aria-checked=${this.lettura.mostra_barra_laterale} aria-label=${U.mostraBarra} @click=${this._barra}></button>
         </div>
       </div>
 
       <div class="riquadro">
-        <h2>${H.esposizione}</h2>
-        <p class="aiuto">${H.esposizioneAiuto}</p>
+        <h2>${U.esposizione}</h2>
+        <p class="aiuto">${U.esposizioneAiuto}</p>
         <div class="modulo">
           <div class="riga-campi">
-            <div class="campo"><label>${H.dalle}</label><input type="time" .value=${e.esposizione.inizio_ora} @change=${(e) => this._finestra({ inizio_ora: e.target.value })} /></div>
+            <div class="campo"><label>${U.dalle}</label><input type="time" .value=${e.esposizione.inizio_ora} @change=${(e) => this._finestra({ inizio_ora: e.target.value })} /></div>
             <div class="campo">
-              <label>${H.del}</label>
+              <label>${U.del}</label>
               <select @change=${(e) => this._finestra({ inizio_giorno: e.target.value })}>
-                ${["giorno_prima", "giorno_stesso"].map((t) => C`<option value=${t} ?selected=${e.esposizione.inizio_giorno === t}>${H.inizioGiorno[t]}</option>`)}
+                ${["giorno_prima", "giorno_stesso"].map((t) => C`<option value=${t} ?selected=${e.esposizione.inizio_giorno === t}>${U.inizioGiorno[t]}</option>`)}
               </select>
             </div>
           </div>
-          <div class="campo"><label>${H.entroLe}</label><input type="time" .value=${e.esposizione.fine_ora} @change=${(e) => this._finestra({ fine_ora: e.target.value })} /></div>
+          <div class="campo"><label>${U.entroLe}</label><input type="time" .value=${e.esposizione.fine_ora} @change=${(e) => this._finestra({ fine_ora: e.target.value })} /></div>
         </div>
       </div>
 
       <div class="riquadro">
-        <h2>${H.calendarioComune}</h2>
+        <h2>${U.calendarioComune}</h2>
         <div class="modulo">
           <div class="campo">
-            <label for="validita">${H.validita}</label>
+            <label for="validita">${U.validita}</label>
             <input id="validita" type="date" .value=${e.valido_fino_al ?? ""} @change=${(t) => this._bozza = {
 			...e,
 			valido_fino_al: t.target.value || null
 		}} />
-            <small>${H.validitaAiuto}</small>
+            <small>${U.validitaAiuto}</small>
           </div>
           <div class="campo">
-            <span class="etichetta">${H.patrono}</span>
+            <span class="etichetta">${U.patrono}</span>
             <div class="patrono">
-              <input aria-label=${H.nomePatrono} placeholder="Sant'Ambrogio" maxlength="60" .value=${e.patrono?.nome ?? ""} @input=${(e) => this._patrono({ nome: e.target.value })} />
-              <select aria-label=${H.giorno} @change=${(e) => r(t, Number(e.target.value))}>
+              <input aria-label=${U.nomePatrono} placeholder="Sant'Ambrogio" maxlength="60" .value=${e.patrono?.nome ?? ""} @input=${(e) => this._patrono({ nome: e.target.value })} />
+              <select aria-label=${U.giorno} @change=${(e) => r(t, Number(e.target.value))}>
                 ${Array.from({ length: 31 }, (e, t) => t + 1).map((e) => C`<option value=${e} ?selected=${e === n}>${e}</option>`)}
               </select>
-              <select aria-label=${H.mese} @change=${(e) => r(Number(e.target.value), n)}>
-                ${V.map((e, n) => C`<option value=${n + 1} ?selected=${n + 1 === t}>${e}</option>`)}
+              <select aria-label=${U.mese} @change=${(e) => r(Number(e.target.value), n)}>
+                ${H.map((e, n) => C`<option value=${n + 1} ?selected=${n + 1 === t}>${e}</option>`)}
               </select>
             </div>
-            <small>${H.patronoAiuto}</small>
+            <small>${U.patronoAiuto}</small>
           </div>
         </div>
       </div>
       <div class="azioni-modulo">
         <button class="bottone" ?disabled=${!i} @click=${() => {
-			this._bozza = X(this.lettura.configurazione), this._base = JSON.stringify(this._bozza), this._revisione = this.lettura.revisione;
-		}}>${H.annulla}</button>
-        <button class="bottone primario" ?disabled=${!i} @click=${this._salva}>${H.salva}</button>
+			this._bozza = Z(this.lettura.configurazione), this._base = JSON.stringify(this._bozza), this._revisione = this.lettura.revisione;
+		}}>${U.annulla}</button>
+        <button class="bottone primario" ?disabled=${!i} @click=${this._salva}>${U.salva}</button>
       </div>
 
       <div class="riquadro excel">
-        <h2><ha-icon icon="mdi:file-table-outline" aria-hidden="true"></ha-icon>${H.excel}</h2>
-        <p class="aiuto">${H.excelAiuto}</p>
+        <h2><ha-icon icon="mdi:file-table-outline" aria-hidden="true"></ha-icon>${U.excel}</h2>
+        <p class="aiuto">${U.excelAiuto}</p>
         <div class="azioni-excel">
           <button class="bottone" @click=${() => this._scarica(!0)}>
-            <ha-icon icon="mdi:file-download-outline" aria-hidden="true"></ha-icon>${H.scaricaModello}
+            <ha-icon icon="mdi:file-download-outline" aria-hidden="true"></ha-icon>${U.scaricaModello}
           </button>
           <button class="bottone" ?disabled=${this.lettura.problemi.length > 0} @click=${() => this._scarica(!1)}>
-            <ha-icon icon="mdi:table-arrow-down" aria-hidden="true"></ha-icon>${H.esporta}
+            <ha-icon icon="mdi:table-arrow-down" aria-hidden="true"></ha-icon>${U.esporta}
           </button>
           <button class="bottone primario" @click=${() => this._importazione = {
 			errori: [],
 			occupato: !1
 		}}>
-            <ha-icon icon="mdi:table-arrow-up" aria-hidden="true"></ha-icon>${H.importa}
+            <ha-icon icon="mdi:table-arrow-up" aria-hidden="true"></ha-icon>${U.importa}
           </button>
         </div>
-        ${this.lettura.problemi.length ? C`<small class="avviso-excel">${H.esportaNonValida}</small>` : T}
+        ${this.lettura.problemi.length ? C`<small class="avviso-excel">${U.esportaNonValida}</small>` : T}
       </div>
     </div>
     ${this._finestraImportazione()}`;
 	}
 	static {
 		this.styles = [
-			N,
-			I,
+			j,
 			P,
+			M,
 			o`
       .colonna {
         max-width: 680px;
@@ -3547,14 +3900,15 @@ q("rd-impostazioni", class extends M {
 });
 //#endregion
 //#region src/pannello/raccolta-pannello.ts
-var $ = "foyer_raccolta_differenziata", Ot = [
+var $ = "foyer_raccolta_differenziata", Mt = [
 	"panoramica",
 	"tipologie",
 	"regole",
 	"eccezioni",
 	"promemoria",
+	"piattaforma",
 	"impostazioni"
-], kt = class extends M {
+], Nt = class extends A {
 	constructor(...e) {
 		super(...e), this.narrow = !1, this._pagina = "panoramica", this._problemi = [], this._occupato = !1;
 	}
@@ -3575,7 +3929,7 @@ var $ = "foyer_raccolta_differenziata", Ot = [
 	connectedCallback() {
 		super.connectedCallback();
 		let e = new URLSearchParams(location.search).get("pagina");
-		e && Ot.includes(e) && (this._pagina = e);
+		e && Mt.includes(e) && (this._pagina = e);
 	}
 	disconnectedCallback() {
 		super.disconnectedCallback(), this._disiscrivi?.then((e) => e()).catch(() => void 0), this._disiscrivi = void 0;
@@ -3590,7 +3944,7 @@ var $ = "foyer_raccolta_differenziata", Ot = [
 		try {
 			this._lettura = await this.hass.callWS({ type: `${$}/config/leggi` }), this._errore = void 0;
 		} catch {
-			this._errore = H.nonCaricata;
+			this._errore = U.nonCaricata;
 		}
 	}
 	_mostraAvviso(e) {
@@ -3610,7 +3964,7 @@ var $ = "foyer_raccolta_differenziata", Ot = [
 				riepilogo: n
 			};
 		} catch {
-			this._mostraAvviso(H.erroreConnessione);
+			this._mostraAvviso(U.erroreConnessione);
 		}
 	}
 	async _salva() {
@@ -3624,17 +3978,17 @@ var $ = "foyer_raccolta_differenziata", Ot = [
 				revisione: this._inAttesa.candidata.revisione
 			});
 		} catch {
-			this._mostraAvviso(H.erroreConnessione);
+			this._mostraAvviso(U.erroreConnessione);
 			return;
 		} finally {
 			this._occupato = !1;
 		}
 		if (e.salvato) {
-			this._inAttesa = void 0, this._problemi = [], await this._carica(), this._mostraAvviso(H.salvato), this._chiudiEditor();
+			this._inAttesa = void 0, this._problemi = [], await this._carica(), this._mostraAvviso(U.salvato), this._chiudiEditor();
 			return;
 		}
 		if (e.problemi.some((e) => e.codice === "revisione_superata")) {
-			this._inAttesa = void 0, await this._carica(), this._mostraAvviso(H.altroHaSalvato);
+			this._inAttesa = void 0, await this._carica(), this._mostraAvviso(U.altroHaSalvato);
 			return;
 		}
 		this._problemi = e.problemi;
@@ -3652,8 +4006,8 @@ var $ = "foyer_raccolta_differenziata", Ot = [
 			let r = t.find((e) => e.id === n.tipologia) ?? this._lettura?.configurazione.tipologie.find((e) => e.id === n.tipologia);
 			return C`<div class="differenza">
         <span class="segno ${e === "+" ? "piu" : "meno"}">${e}</span>
-        <b>${W(n.data)}</b>
-        ${r ? L(r) : n.tipologia}
+        <b>${G(n.data)}</b>
+        ${r ? F(r) : n.tipologia}
       </div>`;
 		}, { aggiunti: r, tolti: i } = e.anteprima.differenze, a = [...r.map((e) => ({
 			...e,
@@ -3661,22 +4015,22 @@ var $ = "foyer_raccolta_differenziata", Ot = [
 		})), ...i.map((e) => ({
 			...e,
 			segno: "−"
-		}))].sort((e, t) => e.data.localeCompare(t.data)), o = Object.entries(e.riepilogo ?? {}).map(([e, t]) => Qe(e, t)).filter((e) => e !== null);
-		return C`<rd-finestra aperta titolo=${H.primaDiSalvare} @chiudi=${() => this._inAttesa = void 0}>
+		}))].sort((e, t) => e.data.localeCompare(t.data)), o = Object.entries(e.riepilogo ?? {}).map(([e, t]) => Ze(e, t)).filter((e) => e !== null);
+		return C`<rd-finestra aperta titolo=${U.primaDiSalvare} @chiudi=${() => this._inAttesa = void 0}>
       ${e.riepilogo && !this._problemi.length ? C`<div class="riepilogo">
-            <b>${H.dalFile}</b>
-            ${o.length ? C`<ul>${o.map((e) => C`<li>${e}</li>`)}</ul>` : C`<p>${H.nienteDalFile}</p>`}
+            <b>${U.dalFile}</b>
+            ${o.length ? C`<ul>${o.map((e) => C`<li>${e}</li>`)}</ul>` : C`<p>${U.nienteDalFile}</p>`}
           </div>` : T}
       ${this._problemi.length ? C`<div class="errori">
-            ${H.nonSalvato}
+            ${U.nonSalvato}
             <ul>
-              ${this._problemi.map((e) => C`<li>${K(e)}</li>`)}
+              ${this._problemi.map((e) => C`<li>${q(e)}</li>`)}
             </ul>
-          </div>` : C`<p class="aiuto">${a.length ? H.cosaCambia : H.nienteCambia}</p>
+          </div>` : C`<p class="aiuto">${a.length ? U.cosaCambia : U.nienteCambia}</p>
             <div class="differenze">${a.slice(0, 40).map((e) => n(e.segno, e))}</div>`}
       <div class="azioni-finestra" slot="azioni">
-        <button class="bottone" @click=${() => this._inAttesa = void 0}>${H.indietro}</button>
-        ${this._problemi.length ? T : C`<button class="bottone primario" ?disabled=${this._occupato} @click=${this._salva}>${H.salva}</button>`}
+        <button class="bottone" @click=${() => this._inAttesa = void 0}>${U.indietro}</button>
+        ${this._problemi.length ? T : C`<button class="bottone primario" ?disabled=${this._occupato} @click=${this._salva}>${U.salva}</button>`}
       </div>
     </rd-finestra>`;
 	}
@@ -3687,6 +4041,7 @@ var $ = "foyer_raccolta_differenziata", Ot = [
 			case "regole": return C`<rd-regole .hass=${this.hass} .lettura=${e}></rd-regole>`;
 			case "eccezioni": return C`<rd-eccezioni .hass=${this.hass} .lettura=${e} .precompila=${this._precompila}></rd-eccezioni>`;
 			case "promemoria": return C`<rd-promemoria .hass=${this.hass} .lettura=${e}></rd-promemoria>`;
+			case "piattaforma": return C`<rd-piattaforma .hass=${this.hass} .lettura=${e}></rd-piattaforma>`;
 			case "impostazioni": return C`<rd-impostazioni .hass=${this.hass} .lettura=${e}></rd-impostazioni>`;
 			default: return C`<rd-panoramica .hass=${this.hass} .lettura=${e}></rd-panoramica>`;
 		}
@@ -3695,11 +4050,11 @@ var $ = "foyer_raccolta_differenziata", Ot = [
 		return C`
       <header class="testata">
         <ha-menu-button .hass=${this.hass} .narrow=${this.narrow}></ha-menu-button>
-        <span class="simbolo">${nt}</span>
-        <h1>${H.titolo}</h1>
+        <span class="simbolo">${tt}</span>
+        <h1>${U.titolo}</h1>
       </header>
       <nav class="schede" role="tablist">
-        ${Ot.map((e) => C`<button
+        ${Mt.map((e) => C`<button
             role="tab"
             aria-selected=${e === this._pagina}
             class=${e === this._pagina ? "attiva" : ""}
@@ -3707,7 +4062,7 @@ var $ = "foyer_raccolta_differenziata", Ot = [
 			this._pagina = e, this._precompila = void 0;
 		}}
           >
-            ${H.pagine[e]}
+            ${U.pagine[e]}
           </button>`)}
       </nav>
       <main
@@ -3717,14 +4072,14 @@ var $ = "foyer_raccolta_differenziata", Ot = [
         @ricarica=${() => void this._carica()}
         @avvisa=${(e) => this._mostraAvviso(e.detail)}
       >
-        ${this._errore ? C`<div class="vuoto">${this._errore}</div>` : this._lettura ? this._paginaCorrente() : C`<div class="vuoto">${H.carica}</div>`}
+        ${this._errore ? C`<div class="vuoto">${this._errore}</div>` : this._lettura ? this._paginaCorrente() : C`<div class="vuoto">${U.carica}</div>`}
       </main>
       ${this._finestraSalvataggio()}
       ${this._avviso ? C`<div class="avviso" role="status">${this._avviso}</div>` : T}
     `;
 	}
 	static {
-		this.styles = [N, o`
+		this.styles = [j, o`
       :host {
         display: block;
         min-height: 100vh;
@@ -3865,6 +4220,6 @@ var $ = "foyer_raccolta_differenziata", Ot = [
     `];
 	}
 };
-q("foyer-raccolta-pannello", kt);
+J("foyer-raccolta-pannello", Nt);
 //#endregion
-export { kt as RaccoltaPannello };
+export { Nt as RaccoltaPannello };

@@ -7,6 +7,25 @@ non solo "correzioni", e quello che richiede qualcosa da te viene prima di tutto
 
 ## [Non rilasciato]
 
+## [0.5.0] — 2026-09-26 — cosa va dove, e la piattaforma ecologica
+
+### Aggiunto
+- **Cosa va dove, nelle card.** Un **?** nella testata apre l'elenco delle tipologie con
+  la loro nota; toccando una chip con il piccolo **?** si legge la nota di quella
+  tipologia.
+- **La piattaforma ecologica.** Una scheda nuova del pannello, *Piattaforma*: nome,
+  nota, fino a quattro periodi con le date e l'anno, fino a tre fasce orarie al giorno,
+  e i giorni con un orario diverso. Nei festivi risulta chiusa, salvo eccezione; fuori
+  dai periodi l'orario è *non indicato*, e la Panoramica avvisa un mese prima che gli
+  orari finiscano.
+- **Aperta adesso?** Le card lo dicono nella testata (*Aperta fino alle 12:00*, *Chiusa ·
+  apre giovedì alle 14:00*); un tocco apre gli orari della settimana. Si nasconde
+  dall'editor della card.
+- **`binary_sensor.raccolta_differenziata_piattaforma_ecologica`**, acceso quando è
+  aperta, per le automazioni.
+- Il **file Excel** ha i fogli *Piattaforma* e *Piattaforma eccezioni*; un file della 0.4
+  si importa ancora e non tocca gli orari.
+
 ## [0.4.3] — 2026-09-26 — il modulo precompilato resta chiuso
 
 ### Corretto
