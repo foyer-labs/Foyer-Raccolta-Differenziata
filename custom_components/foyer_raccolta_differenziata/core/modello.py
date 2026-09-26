@@ -216,7 +216,8 @@ def carica_periodo(dati: dict[str, Any]) -> Periodo:
 
 
 def _fasce(elenco: list[list[str]]) -> tuple[Fascia, ...]:
-    return tuple((_ora(inizio), _ora(fine)) for inizio, fine in elenco)
+    """In ordine: inserite nel pannello anche il pomeriggio prima del mattino."""
+    return tuple(sorted((_ora(inizio), _ora(fine)) for inizio, fine in elenco))
 
 
 def carica_piattaforma(dati: dict[str, Any] | None) -> Piattaforma | None:

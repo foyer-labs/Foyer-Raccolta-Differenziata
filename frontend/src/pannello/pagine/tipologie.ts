@@ -1,12 +1,13 @@
 // Tipologie (SPEC §4.1, §10.1): elenco, creazione, modifica, eliminazione.
 import { LitElement, css, html, nothing } from "lit";
+import { live } from "lit/directives/live.js";
 
 import { nuovoId } from "../../comune/chip";
 import { piuGiorni } from "../../comune/date";
 import { base, moduli, pagina, testoSu } from "../../comune/stili";
 import { giornoMese, T } from "../../comune/testi";
 import type { Finestra, HomeAssistant, LetturaConfigurazione, LetturaRitiri, Tipologia } from "../../comune/tipi";
-import { copia, proponi } from "../contesto";
+import { avvisa, copia, proponi } from "../contesto";
 import "../../comune/finestra";
 import "../../comune/selettore";
 import { OPZIONI_ICONE } from "../../comune/icone";
@@ -60,10 +61,23 @@ export class RdTipologie extends LitElement {
     };
   }
 
+  private _esisteva = false;
+
+  override willUpdate(cambiati: Map<string, unknown>) {
+    if (cambiati.has("_bozza") && this._bozza && !cambiati.get("_bozza"))
+      this._esisteva = this.lettura.configurazione.tipologie.some((t) => t.id === this._bozza!.id);
+  }
+
   private _salva() {
     const bozza = this._bozza!;
     const nuova = copia(this.lettura.configurazione);
     const i = nuova.tipologie.findIndex((t) => t.id === bozza.id);
+    if (i < 0 && this._esisteva) {
+      // Eliminata altrove mentre la si modificava: non la si ricrea senza regole.
+      avvisa(this, T.eliminatoNelFrattempo);
+      this._bozza = undefined;
+      return;
+    }
     const pulita = { ...bozza, nome: bozza.nome.trim(), note: bozza.note.trim() };
     if (i >= 0) nuova.tipologie[i] = pulita;
     else nuova.tipologie.push(pulita);
@@ -78,7 +92,6 @@ export class RdTipologie extends LitElement {
     // Un promemoria che riguardava solo questa tipologia non avrebbe più nulla da dire.
     const soloQuesta = c.promemoria.filter((p) => p.tipologie?.length === 1 && p.tipologie[0] === bozza.id).length;
     const avviso = T.eliminaTipologia(bozza.nome, regole, eccezioni) + (soloQuesta ? ` ${T.profiloRimosso(soloQuesta)}` : "");
-    if (!confirm(avviso)) return;
     const nuova = copia(c);
     nuova.tipologie = nuova.tipologie.filter((t) => t.id !== bozza.id);
     nuova.regole = nuova.regole.filter((r) => r.tipologia !== bozza.id);
@@ -86,7 +99,9 @@ export class RdTipologie extends LitElement {
     nuova.promemoria = nuova.promemoria
       .map((p) => (p.tipologie === null ? p : { ...p, tipologie: p.tipologie.filter((t) => t !== bozza.id) }))
       .filter((p) => p.tipologie === null || p.tipologie.length > 0);
-    proponi(this, nuova);
+    // "Prima di salvare" mostra l'avviso e chiede conferma: niente confirm(), che
+    // nell'app Companion può non comparire.
+    proponi(this, nuova, undefined, avviso);
   }
 
   private _aggiorna(parziale: Partial<Tipologia>) {
@@ -151,7 +166,7 @@ export class RdTipologie extends LitElement {
                 </div>
                 <div class="campo">
                   <label>${T.del}</label>
-                  <select @change=${(e: Event) => this._aggiornaFinestra({ inizio_giorno: (e.target as HTMLSelectElement).value as Finestra["inizio_giorno"] })}>
+                  <select .value=${live(b.esposizione?.inizio_giorno ?? this.lettura.configurazione.esposizione.inizio_giorno)} @change=${(e: Event) => this._aggiornaFinestra({ inizio_giorno: (e.target as HTMLSelectElement).value as Finestra["inizio_giorno"] })}>
                     ${(["giorno_prima", "giorno_stesso"] as const).map((g) => html`<option value=${g} ?selected=${b.esposizione!.inizio_giorno === g}>${T.inizioGiorno[g]}</option>`)}
                   </select>
                 </div>

@@ -48,9 +48,20 @@ export abstract class CardRaccolta extends LitElement {
   setConfig(config: ConfigCard) {
     const prima = this._config;
     this._config = { ...config };
-    // Nell'editor visuale la configurazione cambia a card già caricata: l'intervallo
-    // da leggere può essere un altro (la settimana dal lunedì).
-    if (prima && this._dati && this.hass) void this.carica(this._dati.oggi);
+    // Nell'editor visuale la configurazione cambia a ogni tasto: si rilegge solo se
+    // cambia l'intervallo da leggere (la settimana dal lunedì), non per il titolo.
+    if (prima && this._dati && this.hass && prima.inizio !== config.inizio) void this.carica(this._dati.oggi);
+  }
+
+  /** "Oggi" nel fuso di Home Assistant, non in quello del browser. */
+  private _oggiHa(): string {
+    const fuso = this.hass?.config?.time_zone;
+    if (!fuso) return aIso(new Date());
+    try {
+      return new Intl.DateTimeFormat("en-CA", { timeZone: fuso, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    } catch {
+      return aIso(new Date());
+    }
   }
 
   /** L'intervallo di date da leggere, in base a "oggi" del backend. */
@@ -62,7 +73,10 @@ export abstract class CardRaccolta extends LitElement {
     // Le finestre si aprono e si chiudono: una volta al minuto si ridisegna, senza
     // rileggere nulla.
     this._minuto = window.setInterval(() => {
-      if (this._dati && aIso(new Date()) !== this._dati.oggi) void this.carica();
+      // Senza dati o dopo un errore (Home Assistant che si riavviava) si riprova: la
+      // card non resta "non disponibile" finché qualcuno non ricarica la pagina.
+      if (!this._disiscrivi && this.hass) this._avvia();
+      else if (!this._dati || this._errore || this._oggiHa() !== this._dati.oggi) void this.carica();
       else this.requestUpdate();
     }, 60_000);
     if (this.hass) this._avvia();
@@ -74,19 +88,40 @@ export abstract class CardRaccolta extends LitElement {
     clearInterval(this._minuto);
     this._disiscrivi?.then((f) => f()).catch(() => undefined);
     this._disiscrivi = undefined;
+    this.hass?.connection.removeEventListener?.("ready", this._riconnessa);
+    this._connessioneAscoltata = false;
+    // Una finestra aperta non riappare da sola tornando alla plancia.
+    this._finestra = undefined;
   }
+
+  private _connessioneAscoltata = false;
+
+  /** Home Assistant riconnesso (dopo un riavvio): iscrizione nuova e dati freschi. */
+  private _riconnessa = () => {
+    this._disiscrivi?.then((f) => f()).catch(() => undefined);
+    this._disiscrivi = undefined;
+    if (this._connessa && this.hass) this._avvia();
+  };
 
   protected override willUpdate(cambiati: PropertyValues) {
     if (cambiati.has("hass") && this.hass && this._connessa && !this._disiscrivi) this._avvia();
   }
 
   private _avvia() {
-    this._disiscrivi = this.hass.connection
+    if (!this._connessioneAscoltata) {
+      this.hass.connection.addEventListener?.("ready", this._riconnessa);
+      this._connessioneAscoltata = true;
+    }
+    const iscrizione = this.hass.connection
       .subscribeMessage(() => void this.carica(), { type: `${DOMINIO}/iscriviti` })
       .catch(() => {
+        // L'integrazione non è ancora caricata (Home Assistant che parte): si
+        // riprova al prossimo minuto.
+        if (this._disiscrivi === iscrizione) this._disiscrivi = undefined;
         this._errore = true;
         return () => undefined;
       });
+    this._disiscrivi = iscrizione;
     void this.carica();
   }
 
@@ -176,12 +211,15 @@ export abstract class CardRaccolta extends LitElement {
     return this._dati?.piattaforma ?? null;
   }
 
-  private _quandoApre(d: Date): string {
+  private _quandoApre(istante: string): string {
     const oggi = this._dati!.oggi;
-    const giorno = aIso(d);
-    if (giorno === oggi) return T.card.alle(ora(d));
-    if (giorno === piuGiorni(oggi, 1)) return T.card.domaniAlle(ora(d));
-    return T.card.giornoAlle(GIORNI[giornoSettimana(giorno)], ora(d));
+    const giorno = istante.slice(0, 10);
+    if (giorno === oggi) return T.card.alle(ora(istante));
+    if (giorno === piuGiorni(oggi, 1)) return T.card.domaniAlle(ora(istante));
+    // Oltre la settimana il nome del giorno non basta: "giovedì" sarebbe questo.
+    const nome = GIORNI[giornoSettimana(giorno)];
+    const oltre = giorno > piuGiorni(oggi, 6);
+    return T.card.giornoAlle(oltre ? `${nome} ${daIso(giorno).getDate()}` : nome, ora(istante));
   }
 
   private _pillola() {
@@ -194,7 +232,7 @@ export abstract class CardRaccolta extends LitElement {
         : s.aperta
           ? ["aperta", T.card.piattaformaAperta(ora(s.chiude!))]
           : ["chiusa", s.apre ? T.card.piattaformaApre(this._quandoApre(s.apre)) : T.card.piattaformaChiusa];
-    return html`<button class="pillola ${classe}" title=${p.nome} aria-label=${`${p.nome}: ${testo}`}
+    return html`<button class="pillola ${classe}" title=${`${p.nome}: ${testo}`} aria-label=${`${p.nome}: ${testo}`}
       @click=${() => (this._finestra = { tipo: "piattaforma" })}>
       <ha-icon icon="mdi:recycle"></ha-icon><span>${testo}</span>
     </button>`;
@@ -236,6 +274,12 @@ export abstract class CardRaccolta extends LitElement {
   protected finestre() {
     const f = this._finestra;
     if (!f) return nothing;
+    if (f.tipo === "piattaforma" && !this._piattaforma) {
+      // La piattaforma è sparita (tolta, o nascosta nell'editor): la finestra non
+      // resta in sospeso per ricomparire quando torna.
+      queueMicrotask(() => (this._finestra = undefined));
+      return nothing;
+    }
     const chiudi = () => (this._finestra = undefined);
     if (f.tipo === "piattaforma") {
       const p = this._piattaforma;
@@ -335,6 +379,18 @@ export abstract class CardRaccolta extends LitElement {
         white-space: nowrap;
         background: var(--rd-superficie-2);
         color: var(--rd-testo-2);
+        max-width: 100%;
+        min-width: 0;
+      }
+      .pillola span {
+        /* In una card stretta il testo finisce con i puntini, non tagliato di netto. */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+      }
+      .azioni {
+        min-width: 0;
+        max-width: 100%;
       }
       .pillola.aperta {
         background: color-mix(in srgb, var(--rd-ok) 16%, transparent);

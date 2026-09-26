@@ -25,6 +25,22 @@ const FASCIA_NUOVA: FasciaOraria = ["08:00", "12:00"];
 
 const settimanaVuota = (): FasciaOraria[][] => Array.from({ length: 7 }, () => []);
 
+const minuti = (ora: string): number => {
+  const [h, m] = ora.split(":").map(Number);
+  return h * 60 + m;
+};
+const orario = (min: number): string => `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+
+/** Una fascia nuova già valida: un'ora dopo la fine dell'ultima, per tre ore. */
+function fasciaDopo(fasce: FasciaOraria[]): FasciaOraria {
+  const ultima = fasce.at(-1);
+  if (!ultima) return FASCIA_NUOVA;
+  const inizio = Math.min(minuti(ultima[1]) + 60, 22 * 60);
+  return [orario(inizio), orario(Math.min(inizio + 180, 23 * 60 + 59))];
+}
+
+const ordinate = (fasce: FasciaOraria[]): FasciaOraria[] => [...fasce].sort((a, b) => a[0].localeCompare(b[0]));
+
 export class RdPiattaforma extends LitElement {
   static override properties = {
     hass: { attribute: false },
@@ -38,6 +54,10 @@ export class RdPiattaforma extends LitElement {
   private _bozza?: Piattaforma | null;
   private _base?: string;
   private _revisione?: number;
+
+  haModifiche(): boolean {
+    return this._bozza !== undefined && JSON.stringify(this._bozza) !== this._base;
+  }
 
   override willUpdate(cambiati: Map<string, unknown>) {
     // Come Impostazioni: una rilettura identica non tocca le modifiche in corso.
@@ -63,6 +83,13 @@ export class RdPiattaforma extends LitElement {
   }
 
   private _nuova() {
+    // Dopo "Togli", "Inserisci gli orari" riporta quelli di prima invece di ripartire
+    // da zero: si voleva tenerli.
+    const salvata = this.lettura.configurazione.piattaforma;
+    if (salvata) {
+      this._bozza = copia(salvata);
+      return;
+    }
     const anno = this.lettura.oggi.slice(0, 4);
     this._bozza = {
       nome: T.piattaformaTitolo,
@@ -85,7 +112,7 @@ export class RdPiattaforma extends LitElement {
   private _aggiungiPeriodo() {
     // Parte il giorno dopo l'ultimo, dura un anno e copia l'orario: di solito cambia
     // poco, e si corregge prima di salvare.
-    const ultimo = [...this._bozza!.periodi].sort((a, b) => a.dal.localeCompare(b.dal)).at(-1);
+    const ultimo = [...this._bozza!.periodi].filter((p) => p.al).sort((a, b) => a.al.localeCompare(b.al)).at(-1);
     const dal = ultimo ? piuGiorni(ultimo.al, 1) : this.lettura.oggi;
     const periodo: PeriodoPiattaforma = {
       id: nuovoId(),
@@ -101,6 +128,14 @@ export class RdPiattaforma extends LitElement {
     this._aggiorna({ eccezioni });
   }
 
+  /** Il primo giorno da oggi senza già un orario diverso: due giorni uguali sono un errore. */
+  private _giornoLibero(): string {
+    const usati = new Set(this._bozza!.eccezioni.map((e) => e.data));
+    let giorno = this.lettura.oggi;
+    while (usati.has(giorno)) giorno = piuGiorni(giorno, 1);
+    return giorno;
+  }
+
   private _salva() {
     const nuova = copia(this.lettura.configurazione) as Configurazione;
     const b = this._bozza ? copia(this._bozza) : null;
@@ -109,19 +144,31 @@ export class RdPiattaforma extends LitElement {
       b.nota = b.nota.trim();
       b.periodi.sort((x, y) => x.dal.localeCompare(y.dal));
       b.eccezioni.sort((x, y) => x.data.localeCompare(y.data));
-      for (const e of b.eccezioni) if (e.tipo === "chiusa") e.fasce = [];
+      for (const q of b.periodi) q.settimana = q.settimana.map(ordinate);
+      for (const e of b.eccezioni) {
+        e.nota = e.nota.trim();
+        e.fasce = e.tipo === "chiusa" ? [] : ordinate(e.fasce);
+      }
     }
     nuova.piattaforma = b;
-    proponi(this, nuova);
+    const togli = !b && this.lettura.configurazione.piattaforma;
+    proponi(this, nuova, undefined, togli ? T.togliPiattaformaAvviso : undefined);
   }
 
   private _togli() {
-    if (!confirm(T.togliPiattaformaConferma)) return;
+    // Niente confirm(): la bozza vuota dice cosa succederà, "Prima di salvare" chiede
+    // conferma, e Annulla riporta tutto.
     this._bozza = null;
   }
 
   private _campoOra(valore: string, cambia: (v: string) => void, etichetta: string) {
-    return html`<input type="time" aria-label=${etichetta} .value=${valore} @change=${(e: Event) => cambia((e.target as HTMLInputElement).value)} />`;
+    // Un campo svuotato non cambia niente: un orario vuoto non è un orario.
+    return html`<input type="time" required aria-label=${etichetta} .value=${valore}
+      @change=${(e: Event) => {
+        const v = (e.target as HTMLInputElement).value;
+        if (v) cambia(v);
+        else (e.target as HTMLInputElement).value = valore;
+      }} />`;
   }
 
   private _fasceModulo(fasce: FasciaOraria[], cambia: (f: FasciaOraria[]) => void) {
@@ -139,7 +186,7 @@ export class RdPiattaforma extends LitElement {
       )}
       ${fasce.length < MASSIMO_FASCE
         ? html`<button class="icona" aria-label=${T.aggiungiFascia} title=${T.aggiungiFascia}
-            @click=${() => cambia([...fasce, fasce.length ? ([fasce.at(-1)![1], fasce.at(-1)![1]] as FasciaOraria) : FASCIA_NUOVA])}>
+            @click=${() => cambia([...fasce, fasciaDopo(fasce)])}>
             <ha-icon icon="mdi:plus"></ha-icon>
           </button>`
         : nothing}
@@ -150,8 +197,8 @@ export class RdPiattaforma extends LitElement {
     const togliibile = this._bozza!.periodi.length > 1;
     return html`<div class="periodo">
       <div class="testa-periodo">
-        <div class="campo"><label>${T.dal}</label><input type="date" .value=${p.dal} @change=${(e: Event) => this._periodo(i, { dal: (e.target as HTMLInputElement).value })} /></div>
-        <div class="campo"><label>${T.al}</label><input type="date" .value=${p.al} @change=${(e: Event) => this._periodo(i, { al: (e.target as HTMLInputElement).value })} /></div>
+        <div class="campo"><label>${T.dal}</label><input type="date" required .value=${p.dal} @change=${(e: Event) => this._data(e, p.dal, (dal) => this._periodo(i, { dal }))} /></div>
+        <div class="campo"><label>${T.al}</label><input type="date" required .value=${p.al} @change=${(e: Event) => this._data(e, p.al, (al) => this._periodo(i, { al }))} /></div>
         ${togliibile
           ? html`<button class="bottone piccolo pericolo" @click=${() => this._aggiorna({ periodi: this._bozza!.periodi.filter((_, k) => k !== i) })}>${T.togliPeriodo}</button>`
           : nothing}
@@ -165,9 +212,16 @@ export class RdPiattaforma extends LitElement {
     </div>`;
   }
 
+  /** Una data svuotata torna quella di prima. */
+  private _data(e: Event, prima: string, cambia: (v: string) => void) {
+    const campo = e.target as HTMLInputElement;
+    if (campo.value) cambia(campo.value);
+    else campo.value = prima;
+  }
+
   private _eccezioneModulo(e: EccezionePiattaforma, i: number) {
     return html`<div class="eccezione">
-      <input type="date" aria-label=${T.data} .value=${e.data} @change=${(ev: Event) => this._eccezione(i, { data: (ev.target as HTMLInputElement).value })} />
+      <input type="date" required aria-label=${T.data} .value=${e.data} @change=${(ev: Event) => this._data(ev, e.data, (data) => this._eccezione(i, { data }))} />
       <div class="segmenti">
         ${(["chiusa", "aperta"] as const).map(
           (tipo) => html`<button class=${e.tipo === tipo ? "attivo" : ""}
@@ -176,7 +230,12 @@ export class RdPiattaforma extends LitElement {
           </button>`,
         )}
       </div>
-      ${e.tipo === "aperta" ? this._fasceModulo(e.fasce, (fasce) => this._eccezione(i, { fasce })) : nothing}
+      ${e.tipo === "aperta"
+        ? this._fasceModulo(e.fasce, (fasce) =>
+            // Aperta senza fasce non esiste: tolta l'ultima, il giorno è chiuso.
+            this._eccezione(i, fasce.length ? { fasce } : { tipo: "chiusa", fasce: [] }),
+          )
+        : nothing}
       <input class="nota" placeholder=${T.nota} maxlength="200" .value=${e.nota} @input=${(ev: InputEvent) => this._eccezione(i, { nota: (ev.target as HTMLInputElement).value })} />
       <button class="icona" aria-label=${T.elimina} title=${T.elimina} @click=${() => this._aggiorna({ eccezioni: this._bozza!.eccezioni.filter((_, k) => k !== i) })}>
         <ha-icon icon="mdi:delete-outline"></ha-icon>
@@ -200,7 +259,7 @@ export class RdPiattaforma extends LitElement {
           <ha-icon icon="mdi:recycle"></ha-icon>
           <h2>${T.piattaformaTitolo}</h2>
           <p class="aiuto">${T.piattaformaAiuto}</p>
-          <p>${T.piattaformaVuota}</p>
+          <p>${this.lettura.configurazione.piattaforma ? T.piattaformaDaTogliere : T.piattaformaVuota}</p>
           <button class="bottone primario" @click=${this._nuova}>${T.inserisciOrari}</button>
         </div>
         ${modificata ? azioni : nothing}
@@ -238,7 +297,7 @@ export class RdPiattaforma extends LitElement {
         <p class="aiuto">${T.eccezioniPiattaformaAiuto}</p>
         ${b.eccezioni.map((e, i) => this._eccezioneModulo(e, i))}
         <button class="bottone"
-          @click=${() => this._aggiorna({ eccezioni: [...b.eccezioni, { id: nuovoId(), data: this.lettura.oggi, tipo: "chiusa", fasce: [], nota: "" }] })}>
+          @click=${() => this._aggiorna({ eccezioni: [...b.eccezioni, { id: nuovoId(), data: this._giornoLibero(), tipo: "chiusa", fasce: [], nota: "" }] })}>
           <ha-icon icon="mdi:plus"></ha-icon>${T.aggiungiEccezionePiattaforma}
         </button>
       </div>

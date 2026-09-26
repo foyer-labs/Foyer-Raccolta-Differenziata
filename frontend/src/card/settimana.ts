@@ -43,12 +43,12 @@ export class RaccoltaSettimanaCard extends CardRaccolta {
     const delScelto = scelto ? ritiri.filter((r) => r.data === scelto) : [];
     return html`<ha-card>
       ${this.intestazione(T.card.settimana, `${dataBrevissima(primo)} – ${dataBrevissima(ultimo)}`)}
-      <div class="settimana" role="list">
+      <div class="settimana" role="group" aria-label=${T.card.settimana}>
         ${giorni.map((g) => {
           const delGiorno = ritiri.filter((r) => r.data === g);
           const passato = g < oggi;
           return html`<button
-            role="listitem"
+            aria-pressed=${g === scelto}
             class="g ${g === oggi ? "oggi" : ""} ${passato ? "passato" : ""} ${g === scelto ? "scelto" : ""}"
             aria-label=${`${GIORNI[giornoSettimana(g)]} ${daIso(g).getDate()}: ${delGiorno.map((r) => this.tipologia(r.tipologia)?.nome).join(", ") || T.card.nessunRitiro}`}
             @click=${() => (this._scelto = g === scelto ? undefined : g)}

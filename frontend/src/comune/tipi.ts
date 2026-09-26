@@ -2,7 +2,10 @@
 
 export interface HomeAssistant {
   callWS<T>(msg: Record<string, unknown>): Promise<T>;
+  config?: { time_zone?: string };
   connection: {
+    addEventListener?(evento: "ready" | "disconnected", ascolto: () => void): void;
+    removeEventListener?(evento: "ready" | "disconnected", ascolto: () => void): void;
     subscribeMessage<T>(
       callback: (msg: T) => void,
       msg: Record<string, unknown>,

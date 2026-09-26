@@ -2,10 +2,12 @@
 // patrono, configurazione in Excel. La barra laterale cambia subito; il resto passa
 // da "Prima di salvare", anche un file importato (decisioni 36 e 59).
 import { LitElement, css, html, nothing } from "lit";
+import { live } from "lit/directives/live.js";
 
 import "../../comune/finestra";
+import { sceltaGiornoMese } from "../../comune/giorno-mese";
 import { base, moduli, pagina } from "../../comune/stili";
-import { luogoErroreFile, MESI, messaggioErroreFile, T } from "../../comune/testi";
+import { luogoErroreFile, messaggioErroreFile, T } from "../../comune/testi";
 import type {
   Configurazione,
   ErroreFile,
@@ -54,6 +56,12 @@ export class RdImpostazioni extends LitElement {
 
   private _revisione?: number;
   private _base?: string;
+  /** L'importazione in corso: una risposta arrivata dopo Annulla si ignora. */
+  private _numeroImport = 0;
+
+  haModifiche(): boolean {
+    return !!this._bozza && JSON.stringify(this._bozza) !== this._base;
+  }
 
   override willUpdate(cambiati: Map<string, unknown>) {
     // Un ricalcolo (una conferma, mezzanotte) rilegge la configurazione identica: la
@@ -101,9 +109,17 @@ export class RdImpostazioni extends LitElement {
   }
 
   private _scegliFile(e: Event) {
-    const file = (e.target as HTMLInputElement).files?.[0];
+    const campo = e.target as HTMLInputElement;
+    const file = campo.files?.[0];
+    // Svuotato: scegliere di nuovo lo stesso file (corretto in Excel) è un cambio.
+    campo.value = "";
     if (!file || !this._importazione) return;
     this._importazione = { ...this._importazione, file, errori: [] };
+  }
+
+  private _chiudiImportazione() {
+    this._numeroImport++;
+    this._importazione = undefined;
   }
 
   private async _importa() {
@@ -113,13 +129,24 @@ export class RdImpostazioni extends LitElement {
       this._importazione = { ...stato, errori: [{ foglio: "", riga: null, colonna: null, codice: "file_troppo_grande" }] };
       return;
     }
+    const numero = ++this._numeroImport;
     this._importazione = { ...stato, occupato: true, errori: [] };
+    let contenuto: string;
+    try {
+      contenuto = await inBase64(stato.file);
+    } catch {
+      // Il file è stato modificato o spostato dopo averlo scelto.
+      if (numero === this._numeroImport) this._importazione = { ...stato, file: undefined, occupato: false };
+      avvisa(this, T.fileCambiato);
+      return;
+    }
     try {
       const esito = await this.hass.callWS<EsitoImportazione>({
         type: `${DOMINIO}/excel/importa`,
-        contenuto: await inBase64(stato.file),
+        contenuto,
         modo: stato.modo,
       });
+      if (numero !== this._numeroImport) return; // annullata nel frattempo
       if (esito.configurazione) {
         this._importazione = undefined;
         proponi(this, esito.configurazione, esito.riepilogo);
@@ -127,6 +154,7 @@ export class RdImpostazioni extends LitElement {
       }
       this._importazione = { ...stato, occupato: false, errori: esito.errori };
     } catch {
+      if (numero !== this._numeroImport) return;
       this._importazione = { ...stato, occupato: false };
       avvisa(this, T.erroreConnessione);
     }
@@ -145,7 +173,7 @@ export class RdImpostazioni extends LitElement {
       <span><b>${titolo}</b><small>${aiuto}</small></span>
     </button>`;
     const altri = stato.errori.length - ERRORI_MOSTRATI;
-    return html`<rd-finestra aperta titolo=${T.importaTitolo} @chiudi=${() => (this._importazione = undefined)}>
+    return html`<rd-finestra aperta titolo=${T.importaTitolo} @chiudi=${this._chiudiImportazione}>
       <div class="modulo">
         <div class="campo">
           <span class="etichetta">${T.scegliFile}</span>
@@ -178,7 +206,7 @@ export class RdImpostazioni extends LitElement {
       </div>
       <div class="azioni-modulo" slot="azioni">
         <span style="flex:1"></span>
-        <button class="bottone" @click=${() => (this._importazione = undefined)}>${T.annulla}</button>
+        <button class="bottone" @click=${this._chiudiImportazione}>${T.annulla}</button>
         <button class="bottone primario" ?disabled=${!stato.file || !stato.modo || stato.occupato} @click=${this._importa}>
           ${stato.occupato ? T.leggoIlFile : T.continua}
         </button>
@@ -193,19 +221,20 @@ export class RdImpostazioni extends LitElement {
   }
 
   private _salva() {
-    const bozza = copia(this._bozza!);
-    if (bozza.patrono && !bozza.patrono.nome.trim()) bozza.patrono = null;
-    if (bozza.patrono) bozza.patrono.nome = bozza.patrono.nome.trim();
-    if (!bozza.valido_fino_al) bozza.valido_fino_al = null;
-    proponi(this, bozza);
+    // Solo i campi di questa pagina, sulla configurazione di adesso: la bozza può
+    // essere più vecchia di un salvataggio fatto altrove, e con lei la revisione.
+    const b = this._bozza!;
+    const nuova = copia(this.lettura.configurazione);
+    nuova.esposizione = copia(b.esposizione);
+    nuova.valido_fino_al = b.valido_fino_al || null;
+    const nome = b.patrono?.nome.trim();
+    nuova.patrono = b.patrono && nome ? { data: b.patrono.data, nome } : null;
+    proponi(this, nuova);
   }
 
   override render() {
     const b = this._bozza;
     if (!b) return html``;
-    const [mese, giorno] = (b.patrono?.data ?? "01-01").split("-").map(Number);
-    const componi = (m: number, g: number) =>
-      this._patrono({ data: `${String(m).padStart(2, "0")}-${String(g).padStart(2, "0")}` });
     const modificata = JSON.stringify(b) !== this._base;
     return html`<div class="colonna">
       <div class="riquadro">
@@ -224,7 +253,7 @@ export class RdImpostazioni extends LitElement {
             <div class="campo"><label>${T.dalle}</label><input type="time" .value=${b.esposizione.inizio_ora} @change=${(e: Event) => this._finestra({ inizio_ora: (e.target as HTMLInputElement).value })} /></div>
             <div class="campo">
               <label>${T.del}</label>
-              <select @change=${(e: Event) => this._finestra({ inizio_giorno: (e.target as HTMLSelectElement).value as Finestra["inizio_giorno"] })}>
+              <select .value=${live(b.esposizione.inizio_giorno)} @change=${(e: Event) => this._finestra({ inizio_giorno: (e.target as HTMLSelectElement).value as Finestra["inizio_giorno"] })}>
                 ${(["giorno_prima", "giorno_stesso"] as const).map((g) => html`<option value=${g} ?selected=${b.esposizione.inizio_giorno === g}>${T.inizioGiorno[g]}</option>`)}
               </select>
             </div>
@@ -245,12 +274,7 @@ export class RdImpostazioni extends LitElement {
             <span class="etichetta">${T.patrono}</span>
             <div class="patrono">
               <input aria-label=${T.nomePatrono} placeholder="Sant'Ambrogio" maxlength="60" .value=${b.patrono?.nome ?? ""} @input=${(e: InputEvent) => this._patrono({ nome: (e.target as HTMLInputElement).value })} />
-              <select aria-label=${T.giorno} @change=${(e: Event) => componi(mese, Number((e.target as HTMLSelectElement).value))}>
-                ${Array.from({ length: 31 }, (_, i) => i + 1).map((n) => html`<option value=${n} ?selected=${n === giorno}>${n}</option>`)}
-              </select>
-              <select aria-label=${T.mese} @change=${(e: Event) => componi(Number((e.target as HTMLSelectElement).value), giorno)}>
-                ${MESI.map((nome, i) => html`<option value=${i + 1} ?selected=${i + 1 === mese}>${nome}</option>`)}
-              </select>
+              ${sceltaGiornoMese(b.patrono?.data ?? "01-01", (data) => this._patrono({ data }))}
             </div>
             <small>${T.patronoAiuto}</small>
           </div>

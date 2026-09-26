@@ -455,7 +455,7 @@ def _piattaforma(v: _Validatore, dati: Any) -> None:
         if _data(e.get("data")) is None:
             v.segnala(f"{percorso}.data", "data_non_valida")
         elif e["data"] in date_viste:
-            v.segnala(percorso, "eccezione_duplicata")
+            v.segnala(percorso, "giorno_duplicato")
         else:
             date_viste.add(e["data"])
         tipo = e.get("tipo")

@@ -2,13 +2,13 @@
 
 Tutto puro, come il resto del nucleo: l'istante corrente e il fuso sono parametri.
 
-Per un giorno valgono, in ordine:
+Per un giorno valgono, in ordine (decisione 69):
 
 1. un'eccezione su quella data (chiusa, o aperta con le sue fasce);
-2. un giorno festivo, nazionale o del patrono: chiusa;
-3. il periodo che copre la data: le fasce di quel giorno della settimana;
-4. nessun periodo: l'orario **non è indicato**. Mai "chiusa": il sistema non lo sa
-   (lo stesso principio di INV-2).
+2. nessun periodo copre la data: l'orario **non è indicato**. Mai "chiusa", nemmeno
+   in un festivo: il sistema non lo sa (lo stesso principio di INV-2);
+3. un giorno festivo, nazionale o del patrono: chiusa;
+4. le fasce del periodo per quel giorno della settimana.
 """
 
 from __future__ import annotations
@@ -57,12 +57,12 @@ def giorno(p: Piattaforma, d: date, patrono: Patrono | None) -> Giorno:
     eccezione = next((e for e in p.eccezioni if e.data == d), None)
     if eccezione is not None:
         return Giorno(d, eccezione.fasce, "eccezione", nota=eccezione.nota)
-    festivo = festivita_del_giorno(d, patrono)
-    if festivo is not None:
-        return Giorno(d, (), "festivo", festivo=festivo)
     periodo = _periodo_del(p, d)
     if periodo is None:
         return Giorno(d, None, None)
+    festivo = festivita_del_giorno(d, patrono)
+    if festivo is not None:
+        return Giorno(d, (), "festivo", festivo=festivo)
     return Giorno(d, periodo.settimana[d.weekday()], "periodo")
 
 
@@ -73,10 +73,27 @@ def giorni(
 
 
 def _intervalli(g: Giorno, fuso: tzinfo) -> tuple[tuple[datetime, datetime], ...]:
-    return tuple(
-        (istante_locale(g.data, inizio, fuso), istante_locale(g.data, fine, fuso))
-        for inizio, fine in (g.fasce or ())
-    )
+    """Le fasce del giorno come istanti, in ordine e con quelle che si toccano unite.
+
+    Una fascia che il passaggio all'ora legale svuota (02:00-02:30) non c'è: aprirebbe
+    e chiuderebbe nello stesso istante. 08-12 e 12-14 sono un'apertura sola, fino alle
+    14: "chiude alle 12" sarebbe falso.
+    """
+    uniti: list[tuple[datetime, datetime]] = []
+    for inizio, fine in sorted(g.fasce or ()):
+        a, b = istante_locale(g.data, inizio, fuso), istante_locale(g.data, fine, fuso)
+        if b <= a:
+            continue
+        if uniti and a <= uniti[-1][1]:
+            uniti[-1] = (uniti[-1][0], max(uniti[-1][1], b))
+        else:
+            uniti.append((a, b))
+    return tuple(uniti)
+
+
+def intervalli(g: Giorno, fuso: tzinfo) -> tuple[tuple[datetime, datetime], ...]:
+    """Gli istanti di apertura di un giorno, come li vedono sensore e card."""
+    return _intervalli(g, fuso)
 
 
 def stato(
@@ -124,10 +141,15 @@ def anomalie_piattaforma(p: Piattaforma | None, oggi: date) -> tuple[Anomalia, .
     """Orario di oggi non indicato, o l'ultimo periodo che finisce entro 30 giorni."""
     if p is None or not p.periodi:
         return ()
-    if not any(q.dal <= oggi <= q.al for q in p.periodi):
+    # Oggi ha un orario (un periodo, o un giorno con un orario diverso): nessun
+    # avviso che direbbe il contrario del sensore.
+    coperto = any(q.dal <= oggi <= q.al for q in p.periodi)
+    if not coperto and not any(e.data == oggi for e in p.eccezioni):
         # Una data futura coperta c'è? Allora è un buco; altrimenti è scaduto.
         prossimo = min((q.dal for q in p.periodi if q.dal > oggi), default=None)
         return (Anomalia("piattaforma_senza_orario", "avviso", data=prossimo),)
+    if not coperto:
+        return ()
     # La fine dell'orario continuo da oggi: un periodo che parte il giorno dopo la
     # fine di un altro lo prolunga; il primo buco è dove l'orario finisce.
     fine = next(q.al for q in p.periodi if q.dal <= oggi <= q.al)
