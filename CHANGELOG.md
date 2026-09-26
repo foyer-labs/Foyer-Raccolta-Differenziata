@@ -7,6 +7,17 @@ non solo "correzioni", e quello che richiede qualcosa da te viene prima di tutto
 
 ## [Non rilasciato]
 
+## [0.4.2] — 2026-09-26 — una finestra alla volta
+
+### Corretto
+- **"Annulla" non riapre più la finestra di modifica.** Premendo *Salva* in una
+  finestra di modifica (un ritiro, una regola, una tipologia, un promemoria) si apre
+  *Prima di salvare*, ma la finestra sotto restava visibile con i suoi *Annulla* e
+  *Salva*: il suo *Annulla* chiudeva soltanto *Prima di salvare*, e la finestra di
+  modifica sembrava ricomparire. Ora, mentre *Prima di salvare* è aperta, la finestra
+  sotto non si vede, e il pulsante per tornarci si chiama **Indietro**. Segnalato da
+  chi usa Firefox, ma valeva con ogni browser.
+
 ## [0.4.1] — 2026-09-26 — le card nel selettore
 
 ### Corretto

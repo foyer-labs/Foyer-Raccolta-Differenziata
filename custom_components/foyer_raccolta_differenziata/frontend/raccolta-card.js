@@ -939,6 +939,7 @@ var L = (e) => D`<span class="chip" style="background:${e.colore};color:${Ne(e.c
 	nessunRitiro: "Nessun ritiro",
 	salva: "Salva",
 	annulla: "Annulla",
+	indietro: "Indietro",
 	modifica: "Modifica",
 	elimina: "Elimina",
 	chiudi: "Chiudi",

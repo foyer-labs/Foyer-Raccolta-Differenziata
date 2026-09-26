@@ -46,7 +46,8 @@ controllare.
 
 **Ogni salvataggio passa da *Prima di salvare*:** vedi quali ritiri si aggiungono o
 spariscono nei prossimi 60 giorni prima di confermare. Una regola sbagliata non dà errori,
-dà un calendario plausibile e sbagliato: questo è il momento di accorgersene.
+dà un calendario plausibile e sbagliato: questo è il momento di accorgersene. Se qualcosa non
+va, **Indietro** ti riporta alla modifica; per lasciar perdere, lì premi *Annulla*.
 
 Non vuoi il pannello nella barra laterale? In *Impostazioni* del pannello, oppure in
 *Dispositivi e servizi → Raccolta differenziata → Configura*, spegni *Mostra nella barra
