@@ -215,12 +215,40 @@ automation:
 Se la configurazione non è valida o il calendario non si può calcolare, le entità diventano
 *non disponibili*: non dicono mai "Nessuno" quando il sistema non lo sa.
 
+## Il calendario in Excel
+
+Se preferisci un foglio di calcolo, in *Impostazioni* trovi **Configurazione in Excel**:
+
+- **Scarica il modello**: un file con una guida alla compilazione (foglio *Leggimi*) e un
+  foglio per ogni cosa: *Tipologie*, *Regole*, *Eccezioni*, *Promemoria*, *Vacanze*,
+  *Impostazioni*. Le sei tipologie di base sono già scritte; in ogni foglio una riga
+  grigia fa da esempio, e passando sulle intestazioni leggi cosa va in ogni colonna.
+- **Esporta in Excel**: lo stesso file, con la tua configurazione dentro. È il modo più
+  rapido per cambiare tante cose insieme, o per passare il calendario a un vicino.
+- **Importa da Excel…**: scegli il file e come importarlo.
+  - **Sostituisci tutto**: il file diventa la configurazione, e quello che nel file non
+    c'è viene tolto. Usalo dopo aver esportato e modificato.
+  - **Aggiungi soltanto**: le righe del file si aggiungono, e quelle che corrispondono a
+    qualcosa che c'è già lo aggiornano. Non si toglie niente: comodo per incollare le
+    date del calendario nuovo nel foglio *Eccezioni*.
+
+Si scrive come parli: giorni *Lun, Gio*, *2°, ultimo* per i mensili, date *22/09/2026*,
+periodi *Ogni anno* dal *01/06* al *30/09*, orari *20:00*. Se qualcosa non va, il pannello
+dice il foglio, la riga e la colonna, e non salva niente. Se va tutto bene, vedi prima
+cosa cambia, come per ogni altra modifica.
+
+<p align="center"><img src="screenshots/pannello-excel.png" alt="La finestra Importa da Excel: il file scelto e i due modi, Sostituisci tutto e Aggiungi soltanto" width="820"></p>
+
+Va bene qualunque programma che salvi in `.xlsx`: Excel, LibreOffice, Google Fogli.
+Non modificare la colonna nascosta *ID*: collega ogni riga a quello che c'è in Home
+Assistant.
+
 ## Quando cambia il calendario del comune
 
 In *Impostazioni* indica **fino a quando vale il calendario**. Un mese prima compare un
-avviso in *Riparazioni*: controlla il calendario nuovo, aggiorna regole ed eccezioni, poi
-dall'avviso indica la nuova data. Dopo la scadenza i ritiri continuano, segnati come *da
-verificare*.
+avviso in *Riparazioni*: controlla il calendario nuovo, aggiorna regole ed eccezioni (anche
+[dal file Excel](#il-calendario-in-excel)), poi dall'avviso indica la nuova data. Dopo la
+scadenza i ritiri continuano, segnati come *da verificare*.
 
 ## Domande frequenti
 

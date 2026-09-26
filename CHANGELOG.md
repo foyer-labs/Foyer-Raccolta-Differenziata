@@ -7,6 +7,20 @@ non solo "correzioni", e quello che richiede qualcosa da te viene prima di tutto
 
 ## [Non rilasciato]
 
+## [0.4.0] — 2026-09-26 — il calendario in Excel
+
+### Aggiunto
+- **Configurazione in Excel**, in *Impostazioni* del pannello. *Scarica il modello* dà un
+  file con una guida alla compilazione e un foglio per tipologie, regole, eccezioni,
+  promemoria, vacanze e impostazioni, con menu a tendina, un esempio per foglio e le sei
+  tipologie di base già scritte. *Esporta in Excel* dà lo stesso file con la tua
+  configurazione. *Importa da Excel…* lo rilegge: scegli ogni volta se **sostituire
+  tutto** o **aggiungere soltanto**. Gli errori dicono foglio, riga e colonna; prima di
+  salvare vedi cosa cambia, come per ogni modifica. Funziona con Excel, LibreOffice e
+  Google Fogli.
+- Home Assistant installa da solo la libreria `openpyxl`, che serve a leggere e scrivere
+  il file.
+
 ## [0.3.1] — 2026-09-26 — repository più pulito
 
 ### Cambiato
