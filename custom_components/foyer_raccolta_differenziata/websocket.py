@@ -20,9 +20,9 @@ import voluptuous as vol
 from .const import DOMINIO, OPZIONE_BARRA_LATERALE, SEGNALE_AGGIORNATO
 from .coordinatore import Coordinatore
 from .core import serializza
-from .core.calendario import anomalie, calcola, istante_locale
+from .core.calendario import anomalie, calcola
 from .core.modello import carica
-from .core.piattaforma import giorni
+from .core.piattaforma import giorni, intervalli
 from .core.promemoria import AnnullaConferma, Conferma
 from .core.validazione import problemi
 
@@ -98,11 +98,8 @@ def _piattaforma(coordinatore: Coordinatore) -> dict[str, Any] | None:
                 "fasce": None
                 if g.fasce is None
                 else [
-                    [
-                        istante_locale(g.data, inizio, fuso).isoformat(),
-                        istante_locale(g.data, fine, fuso).isoformat(),
-                    ]
-                    for inizio, fine in g.fasce
+                    [inizio.isoformat(), fine.isoformat()]
+                    for inizio, fine in intervalli(g, fuso)
                 ],
                 "motivo": g.motivo,
                 "festivo": g.festivo,

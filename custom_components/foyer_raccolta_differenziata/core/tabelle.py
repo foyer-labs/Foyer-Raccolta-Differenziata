@@ -285,6 +285,9 @@ def chiave_colonna(foglio: Foglio, intestazione: Any) -> str | None:
     if not isinstance(intestazione, str):
         return None
     cercata = norma(intestazione)
+    if foglio.nome == "Piattaforma" and cercata in _GIORNI_COMPLETI:
+        # "Lunedì" al posto di "Lun": lo stesso giorno, non un giorno chiuso.
+        return f"giorno_{_GIORNI_COMPLETI.index(cercata)}"
     return next(
         (c.chiave for c in foglio.colonne if norma(c.intestazione) == cercata), None
     )
@@ -860,7 +863,7 @@ def _uguali(a: Any, b: Any) -> bool:
             return {
                 k: forma(v)
                 for k, v in valore.items()
-                if k != "id" and v not in ("", None)
+                if k != "id" and v not in ("", None, [])
             }
         if isinstance(valore, list) and all(isinstance(v, int) for v in valore):
             return sorted(valore)
@@ -1340,52 +1343,81 @@ class _Lettore:
         """La piattaforma dai suoi due fogli e dalle righe di Impostazioni.
 
         Un file senza i fogli della piattaforma (esportato con la 0.4) la lascia
-        com'è, in entrambi i modi: non si svuota una sezione che il file non conosce.
+        com'è, in entrambi i modi: non si svuota una sezione che il file non conosce;
+        nome e nota, se ci sono, valgono solo per una piattaforma che c'è già. Con
+        "sostituisci", un solo foglio dei due è un errore: l'altro si svuoterebbe.
         """
         attuale = self.attuale.get("piattaforma")
         periodi_t = self.fogli.get(PIATTAFORMA.nome)
         eccezioni_t = self.fogli.get(PIATTAFORMA_ECCEZIONI.nome)
         nome, nota = letti.get("piattaforma_nome"), letti.get("piattaforma_nota")
-        if periodi_t is None and eccezioni_t is None and nome is None and nota is None:
-            self.origini["piattaforma.periodi"] = []
-            self.origini["piattaforma.eccezioni"] = []
-            return False, attuale
+        self.origini["piattaforma.periodi"] = []
+        self.origini["piattaforma.eccezioni"] = []
+        if periodi_t is None and eccezioni_t is None:
+            if not isinstance(attuale, dict) or (nome is None and nota is None):
+                return False, attuale
+            aggiornata = {**attuale, "nome": nome or attuale.get("nome")}
+            if nota is not None:
+                aggiornata["nota"] = nota
+            self.origini["piattaforma.periodi"] = [None] * len(
+                attuale.get("periodi", [])
+            )
+            self.origini["piattaforma.eccezioni"] = [None] * len(
+                attuale.get("eccezioni", [])
+            )
+            return True, aggiornata
+        if self.modo == "sostituisci":
+            for foglio, tabella in (
+                (PIATTAFORMA, periodi_t),
+                (PIATTAFORMA_ECCEZIONI, eccezioni_t),
+            ):
+                if tabella is None:
+                    self.errori.append(
+                        Errore(foglio.nome, None, None, "foglio_mancante")
+                    )
         aggiungi = self.modo == "aggiungi"
         base = attuale if aggiungi and isinstance(attuale, dict) else {}
         periodi = [dict(q) for q in base.get("periodi", [])]
         eccezioni = [dict(e) for e in base.get("eccezioni", [])]
         self.origini["piattaforma.periodi"] = [None] * len(periodi)
         self.origini["piattaforma.eccezioni"] = [None] * len(eccezioni)
-        esistenti_p = {q["id"]: q for q in (attuale or {}).get("periodi", [])}
-        esistenti_e = {e["id"]: e for e in (attuale or {}).get("eccezioni", [])}
+        esistenti = {
+            e["id"]
+            for sezione in ("periodi", "eccezioni")
+            for e in (attuale or {}).get(sezione, [])
+            if isinstance(e, dict)
+        }
 
         def colloca(elenco, origini, elemento, riga, trova):
+            """Riconosce un elemento solo se nessun'altra riga del file l'ha già
+            preso: una riga copiata in Excel (con l'ID nascosto) è un elemento
+            nuovo, e due righe sullo stesso giorno le giudica la validazione."""
             dal_file = _testo(riga["id"])
-            for i, esistente in enumerate(elenco):
-                if esistente.get("id") == dal_file or trova(esistente):
+            for k, esistente in enumerate(elenco):
+                if origini[k] is None and (
+                    (dal_file and esistente.get("id") == dal_file) or trova(esistente)
+                ):
                     elemento["id"] = esistente["id"]
-                    elenco[i], origini[i] = elemento, riga.numero
+                    elenco[k], origini[k] = elemento, riga.numero
                     return
-            ereditato = next(
-                (k for k, v in {**esistenti_p, **esistenti_e}.items() if k == dal_file),
-                None,
-            )
-            elemento["id"] = (
-                self.riserva(ereditato) if ereditato else self.nuovo_id(dal_file)
-            )
+            presi = {e.get("id") for e in elenco}
+            if dal_file and dal_file in esistenti and dal_file not in presi:
+                elemento["id"] = self.riserva(dal_file)
+            else:
+                libero = "" if dal_file in presi or dal_file in esistenti else dal_file
+                elemento["id"] = self.nuovo_id(libero)
             elenco.append(elemento)
             origini.append(riga.numero)
 
         f = PIATTAFORMA
-        # Un foglio della piattaforma che manca non è un errore (file della 0.4).
-        if f.nome in self.fogli and (tabella := self.tabella(f)) is not None:
+        if periodi_t is not None and (tabella := self.tabella(f)) is not None:
             for riga in tabella.righe:
                 prima = len(self.errori)
                 dal = self.obbligatoria(f, riga, "dal", leggi_data)
                 al = self.obbligatoria(f, riga, "al", leggi_data)
                 settimana = [
-                    self.cella(f, riga, f"giorno_{i}", leggi_fasce) or []
-                    for i in range(7)
+                    self.cella(f, riga, f"giorno_{g}", leggi_fasce) or []
+                    for g in range(7)
                 ]
                 if len(self.errori) != prima:
                     continue
@@ -1405,8 +1437,7 @@ class _Lettore:
                     ),
                 )
         f = PIATTAFORMA_ECCEZIONI
-        # Un foglio della piattaforma che manca non è un errore (file della 0.4).
-        if f.nome in self.fogli and (tabella := self.tabella(f)) is not None:
+        if eccezioni_t is not None and (tabella := self.tabella(f)) is not None:
             for riga in tabella.righe:
                 prima = len(self.errori)
                 giorno = self.obbligatoria(f, riga, "data", leggi_data)
@@ -1430,7 +1461,9 @@ class _Lettore:
                     riga,
                     lambda e, n=elemento: e.get("data") == n["data"],
                 )
-        if not periodi and not eccezioni and nome is None:
+        if not periodi and not eccezioni:
+            # Fogli presenti ma vuoti: la piattaforma non c'è più, anche se il nome
+            # è rimasto nel foglio Impostazioni (l'esportazione lo scrive sempre).
             return True, None
         return True, {
             "nome": nome or base.get("nome") or NOME_PIATTAFORMA_PREDEFINITO,
@@ -1693,7 +1726,9 @@ def _riepilogo(
         b = {e["id"]: e for e in nuova.get(sezione, [])}
         conti["aggiunte"] += len(b.keys() - a.keys())
         conti["tolte"] += len(a.keys() - b.keys())
-        conti["modificate"] += sum(1 for k in a.keys() & b.keys() if a[k] != b[k])
+        conti["modificate"] += sum(
+            1 for k in a.keys() & b.keys() if not _uguali(a[k], b[k])
+        )
     if (
         (vecchia.get("nome"), vecchia.get("nota"))
         != (nuova.get("nome"), nuova.get("nota"))
