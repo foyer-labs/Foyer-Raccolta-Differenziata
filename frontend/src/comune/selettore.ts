@@ -8,6 +8,7 @@ import { LitElement, css, html, nothing } from "lit";
 
 import { base } from "./stili";
 import { T } from "./testi";
+import { definisci } from "./definisci";
 
 export interface Opzione {
   id: string;
@@ -358,4 +359,4 @@ export class RdSelettore extends LitElement {
   ];
 }
 
-if (!customElements.get("rd-selettore")) customElements.define("rd-selettore", RdSelettore);
+definisci("rd-selettore", RdSelettore);

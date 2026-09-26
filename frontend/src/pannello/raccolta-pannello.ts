@@ -24,6 +24,7 @@ import "./pagine/regole";
 import "./pagine/eccezioni";
 import "./pagine/promemoria";
 import "./pagine/impostazioni";
+import { definisci } from "../comune/definisci";
 
 const DOMINIO = "foyer_raccolta_differenziata";
 const PAGINE = ["panoramica", "tipologie", "regole", "eccezioni", "promemoria", "impostazioni"] as const;
@@ -407,4 +408,4 @@ export class RaccoltaPannello extends LitElement {
   ];
 }
 
-if (!customElements.get("foyer-raccolta-pannello")) customElements.define("foyer-raccolta-pannello", RaccoltaPannello);
+definisci("foyer-raccolta-pannello", RaccoltaPannello);

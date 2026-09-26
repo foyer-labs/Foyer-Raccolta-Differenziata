@@ -4,6 +4,7 @@ import { LitElement, css, html, nothing } from "lit";
 import { base, moduli } from "../comune/stili";
 import { T } from "../comune/testi";
 import type { ConfigCard } from "./base";
+import { definisci } from "../comune/definisci";
 
 export class RaccoltaEditor extends LitElement {
   static override properties = { _config: { state: true } };
@@ -46,4 +47,4 @@ export class RaccoltaEditor extends LitElement {
   static override styles = [base, moduli, css`:host { display: block; }`];
 }
 
-if (!customElements.get("foyer-raccolta-editor")) customElements.define("foyer-raccolta-editor", RaccoltaEditor);
+definisci("foyer-raccolta-editor", RaccoltaEditor);

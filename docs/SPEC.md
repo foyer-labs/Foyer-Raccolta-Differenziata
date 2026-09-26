@@ -746,7 +746,9 @@ Come sono fatte (decisione 52):
 | Settimana | `custom:foyer-raccolta-settimana-card` | `titolo`, `inizio`: `oggi` (predefinito) o `lunedi` |
 | Mese | `custom:foyer-raccolta-mese-card` | `titolo` |
 
-- Compaiono nel selettore delle card di Home Assistant, con l'editor visuale.
+- Compaiono nel selettore delle card di Home Assistant, con l'editor visuale. Tutti gli
+  elementi si definiscono con `definisci` (`frontend/src/comune/definisci.ts`), che aspetta
+  il registro degli elementi definitivo di Home Assistant (decisione 60).
 - Leggono i ritiri con `…/ritiri` e si aggiornano con `…/iscriviti`: nessuna
   interrogazione a intervalli. Una volta al minuto si ridisegnano da sole, perché le
   finestre si aprono e si chiudono.
@@ -1064,6 +1066,18 @@ Configurazione in Excel, 2026-09-26 (richiesta del proprietario, domande una all
     pannello); lo scaricamento con un indirizzo firmato (funziona nell'app Companion); le
     parole del formato (intestazioni, scelte) stanno nel nucleo perché sono il formato,
     i testi della guida nel file stanno in `testi.py`.
+
+Correzione, 2026-09-26 (segnalazione del proprietario: la card non si trova).
+
+60. L'app di Home Assistant sostituisce il registro degli elementi personalizzati (il
+    polyfill dei registri con ambito) quando parte; un modulo extra caricato con
+    `add_extra_js_url` può eseguire prima. Un elemento definito nel registro vecchio non
+    esiste per quello nuovo: la card è in `window.customCards` ma il selettore non la
+    crea. Ogni elemento del frontend si definisce quindi con `definisci`, che aspetta la
+    definizione di `<home-assistant>`, e le card entrano nel selettore solo dopo. Un test
+    del repository vieta i `customElements.define` diretti. Verificato su un Home
+    Assistant 2026.6 locale: prima le card non erano definite, dopo si aggiungono dal
+    selettore con l'editor visuale.
 
 ---
 

@@ -6,6 +6,7 @@ import { daIso, giornoSettimana, lunediDi, piuGiorni } from "../comune/date";
 import { GIORNI, GIORNI_BREVI, T } from "../comune/testi";
 import { CardRaccolta, coloreTesto, dataBrevissima, registra } from "./base";
 import "./editor";
+import { definisci } from "../comune/definisci";
 
 const TIPO = "foyer-raccolta-settimana-card";
 
@@ -214,5 +215,5 @@ export class RaccoltaSettimanaCard extends CardRaccolta {
   ];
 }
 
-if (!customElements.get(TIPO)) customElements.define(TIPO, RaccoltaSettimanaCard);
+definisci(TIPO, RaccoltaSettimanaCard);
 registra(TIPO, T.card.nomeSettimana, T.card.descrizioneSettimana);

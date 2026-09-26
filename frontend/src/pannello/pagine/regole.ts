@@ -20,6 +20,7 @@ import {
 import type { Anteprima, HomeAssistant, LetturaConfigurazione, Periodo, Problema, Regola, Ricorrenza } from "../../comune/tipi";
 import { copia, proponi } from "../contesto";
 import "../../comune/finestra";
+import { definisci } from "../../comune/definisci";
 
 const DOMINIO = "foyer_raccolta_differenziata";
 
@@ -305,4 +306,4 @@ export class RdRegole extends LitElement {
   ];
 }
 
-if (!customElements.get("rd-regole")) customElements.define("rd-regole", RdRegole);
+definisci("rd-regole", RdRegole);

@@ -7,6 +7,7 @@ import { dataBreve, messaggioProblema, T } from "../../comune/testi";
 import type { Anteprima, Eccezione, HomeAssistant, LetturaConfigurazione, Problema } from "../../comune/tipi";
 import { copia, proponi, type Precompila } from "../contesto";
 import "../../comune/finestra";
+import { definisci } from "../../comune/definisci";
 
 const DOMINIO = "foyer_raccolta_differenziata";
 type Tipo = Eccezione["tipo"];
@@ -224,4 +225,4 @@ export class RdEccezioni extends LitElement {
   ];
 }
 
-if (!customElements.get("rd-eccezioni")) customElements.define("rd-eccezioni", RdEccezioni);
+definisci("rd-eccezioni", RdEccezioni);
