@@ -155,6 +155,14 @@ export class RdImpostazioni extends LitElement {
         grid-template-columns: 2fr 1fr 1.4fr;
         gap: 8px;
       }
+      @media (max-width: 560px) {
+        .patrono {
+          grid-template-columns: 1fr 1.6fr;
+        }
+        .patrono input {
+          grid-column: 1 / -1;
+        }
+      }
       .azioni-modulo {
         margin-top: 16px;
       }

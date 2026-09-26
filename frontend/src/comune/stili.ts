@@ -77,9 +77,17 @@ export const base = css`
     filter: brightness(1.08);
   }
   .bottone.piccolo {
-    padding: 3px 10px;
+    padding: 5px 12px;
+    min-height: 32px;
     font-size: 13px;
     border-radius: 8px;
+  }
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--rd-primario);
+    outline-offset: 2px;
   }
   .bottone.pericolo {
     color: var(--rd-errore);
@@ -132,6 +140,7 @@ export const moduli = css`
   }
   .segmenti {
     display: inline-flex;
+    max-width: 100%;
     background: var(--rd-superficie-2);
     border-radius: 12px;
     padding: 3px;
@@ -141,10 +150,12 @@ export const moduli = css`
   .segmenti button {
     border: 0;
     background: none;
-    padding: 7px 12px;
+    padding: 8px 12px;
+    min-height: 36px;
     border-radius: 9px;
     cursor: pointer;
     font-size: 14px;
+    flex: 1 1 auto;
   }
   .segmenti button.attivo {
     background: var(--rd-superficie);
@@ -175,6 +186,34 @@ export const moduli = css`
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
+  }
+  /* I sette giorni della settimana stanno sempre su una riga. */
+  .tonde.sette,
+  .tonde.otto {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    max-width: 360px;
+  }
+  .tonde.otto {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    max-width: 400px;
+  }
+  .tonde.sette button,
+  .tonde.otto button {
+    min-width: 0;
+    padding: 0;
+  }
+  .riepilogo {
+    background: color-mix(in srgb, var(--rd-primario) 10%, transparent);
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-weight: 500;
+  }
+  .riepilogo small {
+    display: block;
+    color: var(--rd-testo-2);
+    font-weight: 400;
+    margin-top: 2px;
   }
   .anteprima-date {
     display: flex;
@@ -295,7 +334,22 @@ export const pagina = css`
   }
   .voce .frase {
     flex: 1;
-    min-width: 180px;
+    min-width: 0;
+  }
+  button.voce {
+    width: 100%;
+    background: var(--rd-superficie);
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+    flex-wrap: nowrap;
+  }
+  button.voce:hover {
+    background: var(--rd-superficie-2);
+  }
+  .voce .freccia {
+    color: var(--rd-testo-2);
+    flex: none;
   }
   .voce .frase small {
     display: block;

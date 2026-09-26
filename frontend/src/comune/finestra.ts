@@ -61,8 +61,27 @@ export class RdFinestra extends LitElement {
         --mdc-icon-size: 22px;
       }
       .contenuto {
-        padding: 8px 20px 20px;
+        padding: 8px 20px 16px;
         overflow-y: auto;
+        overscroll-behavior: contain;
+      }
+      footer {
+        padding: 12px 20px 16px;
+        border-top: 1px solid var(--rd-bordo);
+      }
+      footer:not(:has(*)) {
+        display: none;
+      }
+      @media (max-width: 600px) {
+        .velo {
+          padding: 0;
+          align-items: end;
+        }
+        .dialogo {
+          max-width: none;
+          border-radius: 20px 20px 0 0;
+          max-height: 92vh;
+        }
       }
     `,
   ];
@@ -98,6 +117,7 @@ export class RdFinestra extends LitElement {
           <button aria-label=${T.chiudi} @click=${this._chiudi}><ha-icon icon="mdi:close"></ha-icon></button>
         </header>
         <div class="contenuto"><slot></slot></div>
+        <footer><slot name="azioni"></slot></footer>
       </div>
     </div>`;
   }

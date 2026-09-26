@@ -113,12 +113,12 @@ export class RdEccezioni extends LitElement {
         ${this._problemi.length
           ? html`<div class="errori">${this._problemi.map((p) => html`<div>${messaggioProblema(p)}</div>`)}</div>`
           : nothing}
-        <div class="azioni-modulo">
-          ${esistente ? html`<button class="bottone pericolo" @click=${this._elimina}>${T.elimina}</button>` : nothing}
-          <span style="flex:1"></span>
-          <button class="bottone" @click=${() => (this._bozza = undefined)}>${T.annulla}</button>
-          <button class="bottone primario" @click=${this._salva}>${T.salva}</button>
-        </div>
+      </div>
+      <div class="azioni-modulo" slot="azioni">
+        ${esistente ? html`<button class="bottone pericolo" @click=${this._elimina}>${T.elimina}</button>` : nothing}
+        <span style="flex:1"></span>
+        <button class="bottone" @click=${() => (this._bozza = undefined)}>${T.annulla}</button>
+        <button class="bottone primario" @click=${this._salva}>${T.salva}</button>
       </div>
     </rd-finestra>`;
   }
@@ -126,12 +126,13 @@ export class RdEccezioni extends LitElement {
   private _riga(e: Eccezione) {
     const t = this.lettura.configurazione.tipologie.find((x) => x.id === e.tipologia);
     const quando = e.tipo === "sposta" ? html`${dataBreve(e.da)} → ${dataBreve(e.a)}` : dataBreve(e.data);
-    return html`<div class="voce">
-      <span class="badge ${e.tipo}">${T.tipoEccezione[e.tipo]}</span>
-      ${t ? chip(t) : nothing}
-      <div class="frase"><b>${quando}</b>${e.nota ? html`<small>${e.nota}</small>` : nothing}</div>
-      <button class="bottone piccolo" @click=${() => ((this._bozza = copia(e)), (this._problemi = []))}>${T.modifica}</button>
-    </div>`;
+    return html`<button class="voce cliccabile" aria-label=${T.modifica} @click=${() => ((this._bozza = copia(e)), (this._problemi = []))}>
+      <div class="frase">
+        <span class="testa-eccezione"><span class="badge ${e.tipo}">${T.tipoEccezione[e.tipo]}</span>${t ? chip(t) : nothing}</span>
+        <b>${quando}</b>${e.nota ? html`<small>${e.nota}</small>` : nothing}
+      </div>
+      <ha-icon class="freccia" icon="mdi:chevron-right" aria-hidden="true"></ha-icon>
+    </button>`;
   }
 
   override render() {
@@ -164,6 +165,13 @@ export class RdEccezioni extends LitElement {
     pagina,
     moduli,
     css`
+      .testa-eccezione {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 4px;
+      }
       .badge {
         font-size: 11.5px;
         font-weight: 700;

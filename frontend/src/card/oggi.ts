@@ -46,6 +46,15 @@ export class RaccoltaOggiCard extends CardRaccolta {
     return { ritiri: daFare.length ? daFare : delGiorno, stato: daFare.length ? "prossimo" : "esposto" };
   }
 
+  /** "stasera", "oggi" o il giorno della settimana in cui si apre la finestra. */
+  private _giornoInizio(inizio: string): string {
+    const giorno = inizio.slice(0, 10);
+    const distanza = giorniTra(this._dati!.oggi, giorno);
+    if (distanza <= 0) return Number(inizio.slice(11, 13)) >= 17 ? T.card.stasera : T.card.oggiMinuscolo;
+    if (distanza === 1) return T.card.domani.toLowerCase();
+    return GIORNI[giornoSettimana(giorno)];
+  }
+
   private _quando(data: string, stato: string): string {
     const distanza = giorniTra(this._dati!.oggi, data);
     if (stato === "da_esporre") return distanza <= 0 ? T.card.daEsporreOra : T.card.staseraFuori;
@@ -77,7 +86,7 @@ export class RaccoltaOggiCard extends CardRaccolta {
             <button class="conferma fatto" @click=${() => this.annulla(data, tipologieId)}>${T.card.annullaConferma}</button>`
         : html`<div class="fino">
               <ha-icon icon="mdi:clock-outline"></ha-icon>
-              ${stato === "da_esporre" ? T.card.entroLe(fine, distanza <= 0) : T.card.dalle(inizio)}
+              ${stato === "da_esporre" ? T.card.entroLe(fine, distanza <= 0) : T.card.dalle(inizio, this._giornoInizio(ritiri[0].inizio_esposizione))}
             </div>
             ${distanza <= 1 ? html`<button class="conferma" @click=${() => this.conferma(data, tipologieId)}>${T.card.esposto}</button>` : nothing}`}
       ${ritiri.some((r) => r.da_verificare) ? html`<div class="nota">${T.card.daVerificare}</div>` : nothing}

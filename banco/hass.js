@@ -1,6 +1,6 @@
 // Banco di prova: un finto hass per pannello e card, con dati d'esempio.
 // Non è nel repository (.gitignore): si ricrea quando serve.
-const ICONE = await (await fetch("./icone.json")).json();
+const ICONE = await (await fetch("./icone.json", { cache: "no-store" })).json();
 
 // --- elementi di Home Assistant che il frontend usa -------------------------------
 class FintaIcona extends HTMLElement {
@@ -130,8 +130,13 @@ export function creaHass({ conferme = [] } = {}) {
   const ignorati = [];
   const hass = {
     user: { is_admin: true, name: "Luca" },
-    states: { "notify.telegram_famiglia": { state: "unknown", attributes: { friendly_name: "Telegram famiglia" } } },
-    services: { notify: { mobile_app_telefono_luca: {}, mobile_app_telefono_anna: {}, persistent_notification: {}, send_message: {} } },
+    states: {
+      "notify.telegram_famiglia": { state: "unknown", attributes: { friendly_name: "Telegram famiglia" } },
+      "notify.alexa_cucina": { state: "unknown", attributes: { friendly_name: "Alexa cucina" } },
+      "notify.email_casa": { state: "unknown", attributes: { friendly_name: "Email di casa" } },
+    },
+    services: { notify: { mobile_app_telefono_luca: {}, mobile_app_telefono_anna: {}, mobile_app_tablet_cucina: {},
+      mobile_app_telefono_nonna: {}, pushover: {}, persistent_notification: {}, send_message: {} } },
     themes: { darkMode: document.documentElement.dataset.tema === "scuro" },
     locale: { language: "it" },
     connection: { subscribeMessage: async (f) => { ascoltatori.push(f); return () => undefined; } },
