@@ -134,6 +134,27 @@ export interface Anteprima {
   anomalie: Anomalia[];
 }
 
+export interface ErroreFile {
+  foglio: string;
+  riga: number | null;
+  colonna: string | null;
+  codice: string;
+}
+
+export interface Conti {
+  aggiunte: number;
+  modificate: number;
+  tolte: number;
+}
+
+export type Riepilogo = Record<string, Conti>;
+
+export interface EsitoImportazione {
+  errori: ErroreFile[];
+  configurazione: Configurazione | null;
+  riepilogo?: Riepilogo;
+}
+
 export interface EsitoSalvataggio {
   salvato: boolean;
   problemi: Problema[];

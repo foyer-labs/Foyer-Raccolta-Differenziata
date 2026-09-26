@@ -12,6 +12,17 @@ export async function esegui() {
   if (!passi) return;
   for (const testo of passi.split("|")) {
     await attesa(500);
+    if (testo.startsWith("file:")) {
+      // Un file finto nel primo campo file: il banco non può aprire la scelta file.
+      const campo = [...tutti(document)].find((el) => el.tagName === "INPUT" && el.type === "file");
+      const trasferimento = new DataTransfer();
+      trasferimento.items.add(new File(["x"], testo.slice(5)));
+      if (campo) {
+        campo.files = trasferimento.files;
+        campo.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
+      }
+      continue;
+    }
     const [nome, n] = testo.split("#");
     const trovati = [...tutti(document)].filter((el) => el.tagName === "BUTTON" && el.textContent.trim().startsWith(nome));
     trovati[Number(n ?? 0)]?.click();

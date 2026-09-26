@@ -1,14 +1,26 @@
 // Quello che ogni pagina del pannello riceve, e come chiede di salvare.
-import type { Configurazione, HomeAssistant, LetturaConfigurazione } from "../comune/tipi";
+import type { Configurazione, HomeAssistant, LetturaConfigurazione, Riepilogo } from "../comune/tipi";
 
 export interface Contesto {
   hass: HomeAssistant;
   lettura: LetturaConfigurazione;
 }
 
+export interface Proposta {
+  configurazione: Configurazione;
+  /** Da un file importato: quante cose cambiano, sezione per sezione. */
+  riepilogo?: Riepilogo;
+}
+
 /** Evento con cui una pagina propone una configurazione nuova (decisione 36). */
-export const proponi = (el: HTMLElement, configurazione: Configurazione) =>
-  el.dispatchEvent(new CustomEvent("proponi", { detail: configurazione, bubbles: true, composed: true }));
+export const proponi = (el: HTMLElement, configurazione: Configurazione, riepilogo?: Riepilogo) =>
+  el.dispatchEvent(
+    new CustomEvent<Proposta>("proponi", { detail: { configurazione, riepilogo }, bubbles: true, composed: true }),
+  );
+
+/** Un messaggio breve in basso nel pannello. */
+export const avvisa = (el: HTMLElement, testo: string) =>
+  el.dispatchEvent(new CustomEvent("avvisa", { detail: testo, bubbles: true, composed: true }));
 
 export interface Precompila {
   tipo: "aggiungi" | "togli" | "sposta";

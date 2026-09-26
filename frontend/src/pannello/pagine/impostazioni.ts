@@ -1,24 +1,55 @@
 // Impostazioni (SPEC §10.1): barra laterale, finestra di esposizione, validità,
-// patrono. La barra laterale cambia subito; il resto passa da "Prima di salvare".
-import { LitElement, css, html } from "lit";
+// patrono, configurazione in Excel. La barra laterale cambia subito; il resto passa
+// da "Prima di salvare", anche un file importato (decisioni 36 e 59).
+import { LitElement, css, html, nothing } from "lit";
 
+import "../../comune/finestra";
 import { base, moduli, pagina } from "../../comune/stili";
-import { MESI, T } from "../../comune/testi";
-import type { Configurazione, Finestra, HomeAssistant, LetturaConfigurazione } from "../../comune/tipi";
-import { copia, proponi, ricarica } from "../contesto";
+import { luogoErroreFile, MESI, messaggioErroreFile, T } from "../../comune/testi";
+import type {
+  Configurazione,
+  ErroreFile,
+  EsitoImportazione,
+  Finestra,
+  HomeAssistant,
+  LetturaConfigurazione,
+} from "../../comune/tipi";
+import { avvisa, copia, proponi, ricarica } from "../contesto";
 
 const DOMINIO = "foyer_raccolta_differenziata";
+const MASSIMO_BYTE = 1024 * 1024;
+const TIPO_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+const ERRORI_MOSTRATI = 30;
+
+type Modo = "sostituisci" | "aggiungi";
+
+interface Importazione {
+  file?: File;
+  modo?: Modo;
+  errori: ErroreFile[];
+  occupato: boolean;
+}
+
+/** Il file in base64, a pezzi: un solo `fromCharCode` su tutto il file supera lo stack. */
+async function inBase64(file: File): Promise<string> {
+  const byte = new Uint8Array(await file.arrayBuffer());
+  let binario = "";
+  for (let i = 0; i < byte.length; i += 0x8000) binario += String.fromCharCode(...byte.subarray(i, i + 0x8000));
+  return btoa(binario);
+}
 
 export class RdImpostazioni extends LitElement {
   static override properties = {
     hass: { attribute: false },
     lettura: { attribute: false },
     _bozza: { state: true },
+    _importazione: { state: true },
   };
 
   hass!: HomeAssistant;
   lettura!: LetturaConfigurazione;
   private _bozza?: Configurazione;
+  private _importazione?: Importazione;
 
   private _revisione?: number;
   private _base?: string;
@@ -47,6 +78,111 @@ export class RdImpostazioni extends LitElement {
   private _patrono(parziale: Partial<{ data: string; nome: string }>) {
     const attuale = this._bozza!.patrono ?? { data: "01-01", nome: "" };
     this._bozza = { ...this._bozza!, patrono: { ...attuale, ...parziale } };
+  }
+
+  private async _scarica(modello: boolean) {
+    // Un indirizzo firmato e non un file costruito nel browser: così il download
+    // funziona anche nell'app Companion.
+    try {
+      const { path } = await this.hass.callWS<{ path: string }>({
+        type: "auth/sign_path",
+        path: `/api/${DOMINIO}/excel${modello ? "?modello=1" : ""}`,
+      });
+      const collegamento = document.createElement("a");
+      collegamento.href = path;
+      collegamento.download = "";
+      document.body.append(collegamento);
+      collegamento.click();
+      collegamento.remove();
+    } catch {
+      avvisa(this, T.scaricamentoFallito);
+    }
+  }
+
+  private _scegliFile(e: Event) {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file || !this._importazione) return;
+    this._importazione = { ...this._importazione, file, errori: [] };
+  }
+
+  private async _importa() {
+    const stato = this._importazione;
+    if (!stato?.file || !stato.modo || stato.occupato) return;
+    if (stato.file.size > MASSIMO_BYTE) {
+      this._importazione = { ...stato, errori: [{ foglio: "", riga: null, colonna: null, codice: "file_troppo_grande" }] };
+      return;
+    }
+    this._importazione = { ...stato, occupato: true, errori: [] };
+    try {
+      const esito = await this.hass.callWS<EsitoImportazione>({
+        type: `${DOMINIO}/excel/importa`,
+        contenuto: await inBase64(stato.file),
+        modo: stato.modo,
+      });
+      if (esito.configurazione) {
+        this._importazione = undefined;
+        proponi(this, esito.configurazione, esito.riepilogo);
+        return;
+      }
+      this._importazione = { ...stato, occupato: false, errori: esito.errori };
+    } catch {
+      this._importazione = { ...stato, occupato: false };
+      avvisa(this, T.erroreConnessione);
+    }
+  }
+
+  private _finestraImportazione() {
+    const stato = this._importazione;
+    if (!stato) return nothing;
+    const modo = (valore: Modo, titolo: string, aiuto: string) => html`<button
+      class="modo ${stato.modo === valore ? "attivo" : ""}"
+      role="radio"
+      aria-checked=${stato.modo === valore}
+      @click=${() => (this._importazione = { ...stato, modo: valore, errori: [] })}
+    >
+      <span class="pallino" aria-hidden="true"></span>
+      <span><b>${titolo}</b><small>${aiuto}</small></span>
+    </button>`;
+    const altri = stato.errori.length - ERRORI_MOSTRATI;
+    return html`<rd-finestra aperta titolo=${T.importaTitolo} @chiudi=${() => (this._importazione = undefined)}>
+      <div class="modulo">
+        <div class="campo">
+          <span class="etichetta">${T.scegliFile}</span>
+          <label class="file">
+            <input type="file" accept=".xlsx,${TIPO_XLSX}" @change=${this._scegliFile} />
+            <ha-icon icon="mdi:file-table-outline" aria-hidden="true"></ha-icon>
+            <span class="nome-file">${stato.file?.name ?? T.nessunFile}</span>
+            <span class="bottone piccolo">${stato.file ? T.cambiaFile : T.scegliFile}</span>
+          </label>
+        </div>
+        <div class="campo">
+          <span class="etichetta">${T.comeImportare}</span>
+          <div class="modi" role="radiogroup" aria-label=${T.comeImportare}>
+            ${modo("sostituisci", T.sostituisci, T.sostituisciAiuto)}
+            ${modo("aggiungi", T.aggiungiSoltanto, T.aggiungiSoltantoAiuto)}
+          </div>
+        </div>
+        ${stato.errori.length
+          ? html`<div class="errori-file" role="alert">
+              <b>${T.fileConProblemi}</b>
+              <ul>
+                ${stato.errori.slice(0, ERRORI_MOSTRATI).map((e) => {
+                  const luogo = luogoErroreFile(e);
+                  return html`<li>${luogo ? html`<span class="luogo">${luogo}</span>` : nothing}${messaggioErroreFile(e)}</li>`;
+                })}
+              </ul>
+              ${altri > 0 ? html`<small>${T.altriProblemi(altri)}</small>` : nothing}
+            </div>`
+          : nothing}
+      </div>
+      <div class="azioni-modulo" slot="azioni">
+        <span style="flex:1"></span>
+        <button class="bottone" @click=${() => (this._importazione = undefined)}>${T.annulla}</button>
+        <button class="bottone primario" ?disabled=${!stato.file || !stato.modo || stato.occupato} @click=${this._importa}>
+          ${stato.occupato ? T.leggoIlFile : T.continua}
+        </button>
+      </div>
+    </rd-finestra>`;
   }
 
   chiudiEditor() {
@@ -127,7 +263,25 @@ export class RdImpostazioni extends LitElement {
         }}>${T.annulla}</button>
         <button class="bottone primario" ?disabled=${!modificata} @click=${this._salva}>${T.salva}</button>
       </div>
-    </div>`;
+
+      <div class="riquadro excel">
+        <h2><ha-icon icon="mdi:file-table-outline" aria-hidden="true"></ha-icon>${T.excel}</h2>
+        <p class="aiuto">${T.excelAiuto}</p>
+        <div class="azioni-excel">
+          <button class="bottone" @click=${() => this._scarica(true)}>
+            <ha-icon icon="mdi:file-download-outline" aria-hidden="true"></ha-icon>${T.scaricaModello}
+          </button>
+          <button class="bottone" ?disabled=${this.lettura.problemi.length > 0} @click=${() => this._scarica(false)}>
+            <ha-icon icon="mdi:table-arrow-down" aria-hidden="true"></ha-icon>${T.esporta}
+          </button>
+          <button class="bottone primario" @click=${() => (this._importazione = { errori: [], occupato: false })}>
+            <ha-icon icon="mdi:table-arrow-up" aria-hidden="true"></ha-icon>${T.importa}
+          </button>
+        </div>
+        ${this.lettura.problemi.length ? html`<small class="avviso-excel">${T.esportaNonValida}</small>` : nothing}
+      </div>
+    </div>
+    ${this._finestraImportazione()}`;
   }
 
   static override styles = [
@@ -165,6 +319,139 @@ export class RdImpostazioni extends LitElement {
       }
       .azioni-modulo {
         margin-top: 16px;
+      }
+      .excel {
+        margin-top: 24px;
+      }
+      .excel h2 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .excel h2 ha-icon {
+        --mdc-icon-size: 22px;
+        color: var(--rd-primario);
+      }
+      .azioni-excel {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .azioni-excel .bottone {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .azioni-excel ha-icon {
+        --mdc-icon-size: 18px;
+      }
+      .avviso-excel {
+        display: block;
+        margin-top: 8px;
+        color: var(--rd-errore);
+      }
+      @media (max-width: 560px) {
+        .azioni-excel .bottone {
+          flex: 1 1 100%;
+          justify-content: center;
+        }
+      }
+      .campo > label.file {
+        position: relative;
+        display: flex;
+        margin: 0;
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--rd-testo);
+        align-items: center;
+        gap: 10px;
+        border: 1px dashed var(--rd-bordo);
+        border-radius: 12px;
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      .file:focus-within {
+        outline: 2px solid var(--rd-primario);
+        outline-offset: 2px;
+      }
+      .file input {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+      }
+      .file ha-icon {
+        color: var(--rd-primario);
+        flex: none;
+      }
+      .nome-file {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .modi {
+        display: grid;
+        gap: 8px;
+      }
+      .modo {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        text-align: left;
+        border: 1px solid var(--rd-bordo);
+        border-radius: 12px;
+        background: none;
+        color: inherit;
+        font: inherit;
+        padding: 12px;
+        cursor: pointer;
+      }
+      .modo small {
+        display: block;
+        color: var(--rd-testo-2);
+        font-size: 13px;
+        margin-top: 2px;
+      }
+      .modo.attivo {
+        border-color: var(--rd-primario);
+        background: color-mix(in srgb, var(--rd-primario) 8%, transparent);
+      }
+      .pallino {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid var(--rd-testo-2);
+        flex: none;
+        margin-top: 1px;
+        box-sizing: border-box;
+      }
+      .modo.attivo .pallino {
+        border: 5px solid var(--rd-primario);
+      }
+      .errori-file {
+        background: color-mix(in srgb, var(--rd-errore) 10%, transparent);
+        border-radius: 12px;
+        padding: 10px 14px;
+      }
+      .errori-file b {
+        color: var(--rd-errore);
+      }
+      .errori-file ul {
+        margin: 6px 0 0;
+        padding-left: 18px;
+      }
+      .errori-file li {
+        margin: 3px 0;
+      }
+      .luogo {
+        font-weight: 600;
+        margin-right: 6px;
+      }
+      .luogo::after {
+        content: ":";
       }
     `,
   ];

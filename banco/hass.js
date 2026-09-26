@@ -178,6 +178,28 @@ export function creaHass({ conferme = [] } = {}) {
       if (t === "config/salva") { config = { ...msg.configurazione, revisione: config.revisione + 1 }; return { salvato: true, problemi: [], revisione: config.revisione }; }
       if (t === "anomalie/ignora") { ignorati.push({ data: msg.data, tipologia: msg.tipologia }); return null; }
       if (t === "barra_laterale") { barra = msg.mostra; return null; }
+      if (msg.type === "auth/sign_path") return { path: msg.path };
+      if (t === "excel/importa") {
+        // ?importa=errori: un file con problemi; altrimenti il calendario nuovo del
+        // comune, con tre eccezioni in più.
+        if (new URLSearchParams(location.search).get("importa") === "errori") {
+          return { configurazione: null, errori: [
+            { foglio: "Regole", riga: 7, colonna: "Giorni della settimana", codice: "giorni_non_validi" },
+            { foglio: "Eccezioni", riga: 12, colonna: "Tipologia", codice: "tipologia_sconosciuta" },
+            { foglio: "Eccezioni", riga: 15, colonna: "Spostato al", codice: "valore_mancante" },
+          ] };
+        }
+        const nuova = structuredClone(config);
+        nuova.eccezioni.push(
+          { id: "x1", tipo: "sposta", tipologia: "carta", da: "2026-10-09", a: "2026-10-10", nota: "Sciopero" },
+          { id: "x2", tipo: "aggiungi", tipologia: "vetro", data: "2026-10-17", nota: "" },
+          { id: "x3", tipo: "togli", tipologia: "umido", data: "2026-10-26", nota: "" },
+        );
+        return { errori: [], configurazione: nuova, riepilogo: {
+          tipologie: { aggiunte: 0, modificate: 0, tolte: 0 }, regole: { aggiunte: 0, modificate: 1, tolte: 0 },
+          eccezioni: { aggiunte: 3, modificate: 0, tolte: 0 }, promemoria: { aggiunte: 0, modificate: 0, tolte: 0 },
+          sospensioni: { aggiunte: 0, modificate: 0, tolte: 0 }, impostazioni: { aggiunte: 0, modificate: 0, tolte: 0 } } };
+      }
       throw new Error(`comando non previsto: ${msg.type}`);
     },
   };

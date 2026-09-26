@@ -51,10 +51,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.async_on_unload(coordinatore.gestore.arresta)
     await hass.config_entries.async_forward_entry_setups(entry, PIATTAFORME)
 
-    from . import pannello, websocket
+    from . import pannello, scambio_excel, websocket
 
     if not hass.data.get(_WEBSOCKET):
         websocket.async_registra(hass)
+        scambio_excel.async_registra(hass)
         hass.data[_WEBSOCKET] = True
     await pannello.async_registra(hass, entry)
     entry.async_on_unload(entry.add_update_listener(_opzioni_cambiate))

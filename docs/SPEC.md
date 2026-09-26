@@ -1,6 +1,6 @@
 # Foyer Raccolta Differenziata — Specifica
 
-Stato: bozza 4 (2026-09-25). Tutto il progetto è in italiano: interfaccia, documentazione,
+Stato: bozza 5 (2026-09-26). Tutto il progetto è in italiano: interfaccia, documentazione,
 codice, commenti e commit (decisione 19).
 
 Questo documento è la fonte di verità. Dove una scelta sembra arbitraria, il motivo è
@@ -33,7 +33,8 @@ della spec.
 - **Più calendari** nella stessa installazione (casa + seconda casa): un solo calendario
   (decisione 13).
 - **Import/export** di ICS o JSON: il backup di Home Assistant copre la configurazione
-  (decisione 15).
+  (decisione 15). La configurazione si scambia solo come file Excel dal pannello
+  (§10.1.2, decisione 59).
 - **Scraping** dei siti dei gestori o dei comuni.
 - **Turni** su chi porta fuori il bidone (decisione 18).
 - **Filtri di presenza** ("solo chi è in casa") sui promemoria (decisione 9).
@@ -617,6 +618,12 @@ Le entità per tipologia nascono e spariscono con la tipologia.
 | `…/config/salva` | amministratori | Configurazione intera, con numero di revisione: rifiutata se nel frattempo qualcun altro ha salvato. |
 | `…/anteprima` | amministratori | `calcola` su una configurazione non salvata. |
 | `…/anomalie/ignora` | amministratori | Solo `ritiro_festivo`. |
+| `…/excel/importa` | amministratori | Un file Excel in base64 e il modo (`sostituisci` o `aggiungi`): la configurazione candidata, oppure gli errori con foglio, riga e colonna. Non salva (§10.1.2). |
+
+Il file Excel si scarica con una richiesta HTTP autenticata, `GET /api/foyer_raccolta_differenziata/excel`
+(`?modello=1` per il modello vuoto), solo per gli amministratori. Il pannello la apre con
+un indirizzo firmato (`auth/sign_path`): un file costruito nel browser non si scarica
+dall'app Companion.
 
 La validazione vive nel backend; il frontend la ripete solo per dare riscontro immediato.
 
@@ -645,7 +652,7 @@ barra laterale se l'utente non lo nasconde (§10.1.1). Pagine:
 4. **Eccezioni** — elenco per data, filtrabile per tipologia; modulo aggiungi/togli/sposta.
 5. **Promemoria** — profili, solleciti (§4.9), vacanze.
 6. **Impostazioni** — finestra di esposizione globale, patrono, validità, "Mostra nella
-   barra laterale". La finestra sta qui e non tra i promemoria perché governa anche il
+   barra laterale", configurazione in Excel (§10.1.2). La finestra sta qui e non tra i promemoria perché governa anche il
    calendario, i sensori e le card (decisione 50).
 
 #### 10.1.1 Barra laterale
@@ -670,6 +677,47 @@ uno qualsiasi di questi punti dà accesso a tutto.
 Ogni salvataggio passa dall'anteprima: l'utente vede cosa cambia nei prossimi 60 giorni
 prima di confermare (decisione 36). *Perché:* una regola sbagliata non dà errori,
 dà un calendario plausibile e sbagliato.
+
+#### 10.1.2 Configurazione in Excel
+
+Nella pagina Impostazioni tre pulsanti (decisione 59): **Scarica il modello**, **Esporta in
+Excel**, **Importa da Excel…**. Il modello e l'esportazione sono lo stesso file: si esporta,
+si modifica in Excel, LibreOffice o Google Fogli, si reimporta.
+
+Il file (`.xlsx`) ha un foglio *Leggimi* con la guida alla compilazione e l'elenco dei
+destinatari di notifica della casa, poi un foglio per sezione: *Tipologie*, *Regole*,
+*Eccezioni*, *Promemoria*, *Vacanze*, *Impostazioni* (finestra, validità, patrono,
+solleciti). In ogni foglio di dati: titolo, aiuto, una riga d'esempio in grigio **sopra**
+le intestazioni (così non si importa mai, anche se lo stile va perso), intestazioni con un
+commento che spiega la colonna, menu a tendina per le scelte chiuse e per la tipologia,
+una colonna nascosta *ID*.
+
+Il formato è pensato per chi scrive a mano: giorni "Lun, Gio", posizioni "2°, ultimo",
+giorni del mese "1, 15", date "22/09/2026", giorno e mese "01/06", orari "20:00", "Sì"/"No".
+La lettura accetta anche le forme in cui i fogli di calcolo riscrivono le celle (date vere,
+numeri di serie, orari come frazioni di giorno) e riconosce le colonne dal testo
+dell'intestazione, non dalla posizione. Una ricorrenza o un periodo lasciati vuoti si
+capiscono dalle colonne compilate. Un servizio di notifica si scrive senza `notify.`
+davanti, un'entità con.
+
+Il modello contiene le sei tipologie di base con colori e icone e nient'altro. Una
+tipologia con il nome di una esistente ne tiene l'id, e con lui le entità.
+
+**Importare** chiede ogni volta come:
+
+- **Sostituisci tutto** — il file diventa la configurazione; ciò che nel file non c'è si
+  toglie. Mancare un foglio è un errore (altrimenti svuoterebbe una sezione).
+- **Aggiungi soltanto** — le righe si aggiungono; una riga che riconosce un elemento
+  esistente lo aggiorna: per id, per nome (tipologie, promemoria), per tipologia e giorno
+  di partenza (eccezioni). Una regola identica a una esistente non si duplica. Nelle
+  impostazioni contano solo le celle compilate. Non si toglie niente.
+
+Il file passa dalla stessa validazione di ogni salvataggio: gli errori tornano al foglio,
+alla riga e alla colonna, e nulla si salva. Senza errori il pannello apre "Prima di
+salvare" con il riepilogo di cosa il file aggiunge, cambia e toglie, sezione per
+sezione, sopra le differenze dei ritiri (decisione 36). Limiti: 1 MB, 2000 righe per
+foglio. Il nucleo fa le conversioni (`core/tabelle.py`, puro); `excel.py` scrive e legge
+il file con `openpyxl`, requisito del manifest.
 
 ### 10.2 Card
 
@@ -742,6 +790,7 @@ custom_components/foyer_raccolta_differenziata/
     core/              motore e decisione dei promemoria (puri, INV-1)
     __init__.py, config_flow.py, calendar.py, sensor.py, binary_sensor.py,
     button.py, switch.py, repairs.py, pannello.py, websocket.py,
+    excel.py, scambio_excel.py (il file Excel, §10.1.2),
     esecutore.py, schedulatore.py, archivio.py
     translations/  frontend/ (compilato)
 frontend/          sorgenti Lit/TypeScript
@@ -851,7 +900,7 @@ Decisioni del proprietario, 2026-09-25.
     interruttore.
 13. Un solo calendario per installazione.
 14. Validità facoltativa con avviso 30 giorni prima; dopo la scadenza ritiri "da verificare".
-15. Nessun import/export.
+15. Nessun import/export. Superata dalla decisione 59 per il solo file Excel.
 16. Tipologia = nome, colore, icona, note; preset con i colori abituali.
 17. Ingombranti = tipologia senza regole più eccezioni "aggiungi".
 18. Nessun turno.
@@ -1000,6 +1049,21 @@ Revisione, 2026-09-26.
     (spec, `CLAUDE.md`, test, banco, sorgenti del frontend, script, prototipo) vive su
     `sviluppo`, da cui si lavora da qualsiasi installazione. Le release si fanno da `main`
     con `scripts/pubblica_main.sh`.
+
+Configurazione in Excel, 2026-09-26 (richiesta del proprietario, domande una alla volta).
+
+59. Import ed export della configurazione in Excel, dalla pagina Impostazioni del pannello
+    (§10.1.2). Il file contiene tutto, promemoria, solleciti e vacanze compresi; un
+    destinatario che la casa non ha si importa lo stesso e il pannello lo segnala come
+    ogni destinatario sparito. A ogni importazione si sceglie tra "Sostituisci tutto" e
+    "Aggiungi soltanto". Il modello vuoto ha le sei tipologie di base e il resto da
+    compilare, con una riga d'esempio che non si importa. Niente importazione durante
+    l'installazione e nessun servizio: una sola strada, quella con l'anteprima. Scelte
+    fatte in autonomia: `openpyxl` nel backend invece di una libreria nel browser (legge
+    in modo affidabile i file riscritti da Excel e LibreOffice e non appesantisce il
+    pannello); lo scaricamento con un indirizzo firmato (funziona nell'app Companion); le
+    parole del formato (intestazioni, scelte) stanno nel nucleo perché sono il formato,
+    i testi della guida nel file stanno in `testi.py`.
 
 ---
 
