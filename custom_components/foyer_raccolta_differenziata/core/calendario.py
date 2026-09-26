@@ -452,4 +452,8 @@ def anomalie(config: Configurazione, oggi: date) -> tuple[Anomalia, ...]:
             trovate.append(
                 Anomalia("calendario_in_scadenza", "avviso", data=config.valido_fino_al)
             )
+    # Importata qui: piattaforma usa Anomalia e istante_locale di questo modulo.
+    from .piattaforma import anomalie_piattaforma
+
+    trovate += anomalie_piattaforma(config.piattaforma, oggi)
     return tuple(trovate)

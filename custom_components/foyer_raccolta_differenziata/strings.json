@@ -36,6 +36,9 @@
     "binary_sensor": {
       "da_esporre": {
         "name": "Da esporre"
+      },
+      "piattaforma_ecologica": {
+        "name": "Piattaforma ecologica"
       }
     },
     "button": {

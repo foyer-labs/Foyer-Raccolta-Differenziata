@@ -197,6 +197,36 @@ VACANZE = Foglio(
     obbligatorie=("dal", "al"),
 )
 
+PIATTAFORMA = Foglio(
+    "Piattaforma",
+    (
+        Colonna("dal", "Dal", "data", larghezza=13),
+        Colonna("al", "Al", "data", larghezza=13),
+        *(Colonna(f"giorno_{i}", g, larghezza=22) for i, g in enumerate(GIORNI)),
+        _ID,
+    ),
+    obbligatorie=("dal", "al"),
+)
+
+ECCEZIONI_PIATTAFORMA_SCELTE = {"chiusa": "Chiusa", "aperta": "Aperta"}
+
+PIATTAFORMA_ECCEZIONI = Foglio(
+    "Piattaforma eccezioni",
+    (
+        Colonna("data", "Data", "data", larghezza=13),
+        Colonna(
+            "tipo",
+            "Cosa",
+            scelte=tuple(ECCEZIONI_PIATTAFORMA_SCELTE.values()),
+            larghezza=12,
+        ),
+        Colonna("fasce", "Orari", larghezza=26),
+        Colonna("nota", "Nota", larghezza=36),
+        _ID,
+    ),
+    obbligatorie=("data", "tipo"),
+)
+
 IMPOSTAZIONI = Foglio(
     "Impostazioni",
     (
@@ -212,6 +242,8 @@ FOGLI: tuple[Foglio, ...] = (
     ECCEZIONI_FOGLIO,
     PROMEMORIA,
     VACANZE,
+    PIATTAFORMA,
+    PIATTAFORMA_ECCEZIONI,
     IMPOSTAZIONI,
 )
 
@@ -234,7 +266,11 @@ VOCI_IMPOSTAZIONI: tuple[Impostazione, ...] = (
     Impostazione("solleciti", "Solleciti", scelte=(SI, NO)),
     Impostazione("solleciti_richiami", "Solleciti: quanti richiami", "numero"),
     Impostazione("solleciti_dopo", "Solleciti: dopo quanti minuti", "numero"),
+    Impostazione("piattaforma_nome", "Piattaforma: nome"),
+    Impostazione("piattaforma_nota", "Piattaforma: nota"),
 )
+
+NOME_PIATTAFORMA_PREDEFINITO = "Piattaforma ecologica"
 
 
 def norma(testo: str) -> str:
@@ -468,6 +504,31 @@ def leggi_giorni_mese(valore: Any) -> list[int]:
     return sorted(giorni)
 
 
+_FASCIA = re.compile(
+    r"^(\d{1,2}(?:[:.h]\d{2})?)\s*(?:-|–|—|alle)\s*(\d{1,2}(?:[:.h]\d{2})?)$"
+)
+_CHIUSA = {"chiusa", "chiuso", "no", "-"}
+
+
+def leggi_fasce(valore: Any) -> list[list[str]]:
+    """Le fasce di un giorno da "08:00-12:00, 14:00-18:00"; vuota o "chiusa": zero."""
+    testo = _testo(valore)
+    if not testo or norma(testo) in _CHIUSA:
+        return []
+    fasce = []
+    for parte in _parti(testo, r"[,;/\n]+|\s+e\s+"):
+        trovato = _FASCIA.match(parte.strip().lower())
+        if not trovato:
+            raise ValoreNonValido("orario_non_valido")
+        fasce.append([leggi_ora(trovato.group(1)), leggi_ora(trovato.group(2))])
+    return fasce
+
+
+def cella_fasce(fasce: Iterable[Iterable[str]]) -> str | None:
+    testo = ", ".join(f"{inizio}-{fine}" for inizio, fine in fasce)
+    return testo or None
+
+
 _ESADECIMALE = re.compile(r"^#?([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$")
 
 
@@ -629,6 +690,8 @@ def _impostazioni_righe(config: Mapping[str, Any]) -> list[dict[str, Any]]:
         "solleciti": SI if solleciti.get("attivi") else NO,
         "solleciti_richiami": solleciti.get("richiami", 1),
         "solleciti_dopo": solleciti.get("richiamo_dopo", 30),
+        "piattaforma_nome": (config.get("piattaforma") or {}).get("nome"),
+        "piattaforma_nota": (config.get("piattaforma") or {}).get("nota") or None,
     }
     return [
         {"impostazione": v.etichetta, "valore": valori[v.chiave]}
@@ -677,6 +740,36 @@ def in_tabelle(config: Mapping[str, Any]) -> dict[str, list[dict[str, Any]]]:
         VACANZE.nome: [
             {"dal": date.fromisoformat(v["dal"]), "al": date.fromisoformat(v["al"])}
             for v in sorted(config.get("sospensioni", []), key=lambda v: v["dal"])
+        ],
+        PIATTAFORMA.nome: [
+            {
+                "dal": date.fromisoformat(q["dal"]),
+                "al": date.fromisoformat(q["al"]),
+                **{
+                    f"giorno_{i}": cella_fasce(fasce)
+                    for i, fasce in enumerate(q["settimana"])
+                },
+                "id": q["id"],
+            }
+            for q in sorted(
+                (config.get("piattaforma") or {}).get("periodi", []),
+                key=lambda q: q["dal"],
+            )
+        ],
+        PIATTAFORMA_ECCEZIONI.nome: [
+            {
+                "data": date.fromisoformat(e["data"]),
+                "tipo": ECCEZIONI_PIATTAFORMA_SCELTE[e["tipo"]],
+                "fasce": cella_fasce(e.get("fasce") or [])
+                if e["tipo"] == "aperta"
+                else None,
+                "nota": e.get("nota") or None,
+                "id": e["id"],
+            }
+            for e in sorted(
+                (config.get("piattaforma") or {}).get("eccezioni", []),
+                key=lambda e: e["data"],
+            )
         ],
         IMPOSTAZIONI.nome: _impostazioni_righe(config),
     }
@@ -802,6 +895,7 @@ class _Lettore:
         self.origini: dict[str, list[int | None]] = {}
         self.usati: set[str] = set()
         self.righe_impostazioni: dict[str, int] = {}
+        self.letti_impostazioni: dict[str, Any] = {}
 
     # --- utilità -----------------------------------------------------------------
 
@@ -1242,6 +1336,109 @@ class _Lettore:
                 self.origini["sospensioni"].append(riga.numero)
         return risultato
 
+    def piattaforma(self, letti: Mapping[str, Any]) -> tuple[bool, Any]:
+        """La piattaforma dai suoi due fogli e dalle righe di Impostazioni.
+
+        Un file senza i fogli della piattaforma (esportato con la 0.4) la lascia
+        com'è, in entrambi i modi: non si svuota una sezione che il file non conosce.
+        """
+        attuale = self.attuale.get("piattaforma")
+        periodi_t = self.fogli.get(PIATTAFORMA.nome)
+        eccezioni_t = self.fogli.get(PIATTAFORMA_ECCEZIONI.nome)
+        nome, nota = letti.get("piattaforma_nome"), letti.get("piattaforma_nota")
+        if periodi_t is None and eccezioni_t is None and nome is None and nota is None:
+            self.origini["piattaforma.periodi"] = []
+            self.origini["piattaforma.eccezioni"] = []
+            return False, attuale
+        aggiungi = self.modo == "aggiungi"
+        base = attuale if aggiungi and isinstance(attuale, dict) else {}
+        periodi = [dict(q) for q in base.get("periodi", [])]
+        eccezioni = [dict(e) for e in base.get("eccezioni", [])]
+        self.origini["piattaforma.periodi"] = [None] * len(periodi)
+        self.origini["piattaforma.eccezioni"] = [None] * len(eccezioni)
+        esistenti_p = {q["id"]: q for q in (attuale or {}).get("periodi", [])}
+        esistenti_e = {e["id"]: e for e in (attuale or {}).get("eccezioni", [])}
+
+        def colloca(elenco, origini, elemento, riga, trova):
+            dal_file = _testo(riga["id"])
+            for i, esistente in enumerate(elenco):
+                if esistente.get("id") == dal_file or trova(esistente):
+                    elemento["id"] = esistente["id"]
+                    elenco[i], origini[i] = elemento, riga.numero
+                    return
+            ereditato = next(
+                (k for k, v in {**esistenti_p, **esistenti_e}.items() if k == dal_file),
+                None,
+            )
+            elemento["id"] = (
+                self.riserva(ereditato) if ereditato else self.nuovo_id(dal_file)
+            )
+            elenco.append(elemento)
+            origini.append(riga.numero)
+
+        f = PIATTAFORMA
+        # Un foglio della piattaforma che manca non è un errore (file della 0.4).
+        if f.nome in self.fogli and (tabella := self.tabella(f)) is not None:
+            for riga in tabella.righe:
+                prima = len(self.errori)
+                dal = self.obbligatoria(f, riga, "dal", leggi_data)
+                al = self.obbligatoria(f, riga, "al", leggi_data)
+                settimana = [
+                    self.cella(f, riga, f"giorno_{i}", leggi_fasce) or []
+                    for i in range(7)
+                ]
+                if len(self.errori) != prima:
+                    continue
+                elemento = {
+                    "id": "",
+                    "dal": dal.isoformat(),
+                    "al": al.isoformat(),
+                    "settimana": settimana,
+                }
+                colloca(
+                    periodi,
+                    self.origini["piattaforma.periodi"],
+                    elemento,
+                    riga,
+                    lambda q, e=elemento: (
+                        (q.get("dal"), q.get("al")) == (e["dal"], e["al"])
+                    ),
+                )
+        f = PIATTAFORMA_ECCEZIONI
+        # Un foglio della piattaforma che manca non è un errore (file della 0.4).
+        if f.nome in self.fogli and (tabella := self.tabella(f)) is not None:
+            for riga in tabella.righe:
+                prima = len(self.errori)
+                giorno = self.obbligatoria(f, riga, "data", leggi_data)
+                tipo = self.obbligatoria(
+                    f, riga, "tipo", lambda v: _scelta(v, ECCEZIONI_PIATTAFORMA_SCELTE)
+                )
+                fasce = self.cella(f, riga, "fasce", leggi_fasce) or []
+                if len(self.errori) != prima:
+                    continue
+                elemento = {
+                    "id": "",
+                    "data": giorno.isoformat(),
+                    "tipo": tipo,
+                    "fasce": fasce if tipo == "aperta" else [],
+                    "nota": _testo(riga["nota"]),
+                }
+                colloca(
+                    eccezioni,
+                    self.origini["piattaforma.eccezioni"],
+                    elemento,
+                    riga,
+                    lambda e, n=elemento: e.get("data") == n["data"],
+                )
+        if not periodi and not eccezioni and nome is None:
+            return True, None
+        return True, {
+            "nome": nome or base.get("nome") or NOME_PIATTAFORMA_PREDEFINITO,
+            "nota": nota if nota is not None else base.get("nota", ""),
+            "periodi": periodi,
+            "eccezioni": eccezioni,
+        }
+
     def impostazioni(self) -> dict[str, Any]:
         """Finestra, validità, patrono e solleciti dal foglio Impostazioni."""
         a = self.attuale
@@ -1278,6 +1475,7 @@ class _Lettore:
             valore = self.cella(f, riga, "valore", lettura)
             if valore is not None:
                 letti[voce.chiave] = valore
+        self.letti_impostazioni = letti
 
         finestra = risultato["esposizione"]
         for chiave, campo in (
@@ -1325,6 +1523,8 @@ class _Lettore:
 
     def posizione(self, percorso: str) -> Errore | None:
         """Il foglio, la riga e la colonna di un problema della validazione."""
+        if percorso.startswith("piattaforma"):
+            return self._posizione_piattaforma(percorso)
         trovato = re.match(r"^(\w+)\[(\d+)\](?:\.(.+))?$", percorso)
         if trovato:
             sezione, indice, campo = (
@@ -1361,6 +1561,42 @@ class _Lettore:
             IMPOSTAZIONI.colonna("valore").intestazione,
             "",
         )
+
+    def _posizione_piattaforma(self, percorso: str) -> Errore:
+        trovato = re.match(
+            r"^piattaforma\.(periodi|eccezioni)\[(\d+)\](?:\.(.+))?$", percorso
+        )
+        if trovato:
+            sezione, indice, campo = (
+                trovato.group(1),
+                int(trovato.group(2)),
+                trovato.group(3) or "",
+            )
+            foglio = PIATTAFORMA if sezione == "periodi" else PIATTAFORMA_ECCEZIONI
+            origini = self.origini.get(f"piattaforma.{sezione}", [])
+            riga = origini[indice] if indice < len(origini) else None
+            if giorno := re.match(r"^settimana\[(\d)\]$", campo):
+                chiave = f"giorno_{giorno.group(1)}"
+            else:
+                chiave = {
+                    "dal": "dal",
+                    "al": "al",
+                    "data": "data",
+                    "tipo": "tipo",
+                    "fasce": "fasce",
+                    "nota": "nota",
+                }.get(campo)
+            colonna = foglio.colonna(chiave).intestazione if chiave and riga else None
+            return Errore(foglio.nome, riga, colonna, "")
+        if percorso in ("piattaforma.nome", "piattaforma.nota"):
+            chiave = "piattaforma_" + percorso.rsplit(".", 1)[1]
+            return Errore(
+                IMPOSTAZIONI.nome,
+                self.righe_impostazioni.get(chiave),
+                IMPOSTAZIONI.colonna("valore").intestazione,
+                "",
+            )
+        return Errore(PIATTAFORMA.nome, None, None, "")
 
     def _colonna(self, sezione: str, indice: int, campo: str) -> str | None:
         """La colonna di un campo: di solito l'ultima parte del percorso."""
@@ -1421,6 +1657,8 @@ _LETTURE_IMPOSTAZIONI: dict[str, Callable[[Any], Any]] = {
     "solleciti": leggi_si_no,
     "solleciti_richiami": lambda v: _intero(v, "richiami_non_validi"),
     "solleciti_dopo": lambda v: _intero(v, "intervallo_non_valido"),
+    "piattaforma_nome": _testo,
+    "piattaforma_nota": _testo,
 }
 
 
@@ -1448,6 +1686,22 @@ def _riepilogo(
         "modificate": 0,
         "tolte": len(vecchie - nuove),
     }
+    vecchia, nuova = prima.get("piattaforma") or {}, dopo.get("piattaforma") or {}
+    conti = {"aggiunte": 0, "modificate": 0, "tolte": 0}
+    for sezione in ("periodi", "eccezioni"):
+        a = {e["id"]: e for e in vecchia.get(sezione, [])}
+        b = {e["id"]: e for e in nuova.get(sezione, [])}
+        conti["aggiunte"] += len(b.keys() - a.keys())
+        conti["tolte"] += len(a.keys() - b.keys())
+        conti["modificate"] += sum(1 for k in a.keys() & b.keys() if a[k] != b[k])
+    if (
+        (vecchia.get("nome"), vecchia.get("nota"))
+        != (nuova.get("nome"), nuova.get("nota"))
+        and vecchia
+        and nuova
+    ):
+        conti["modificate"] += 1
+    riepilogo["piattaforma"] = conti
     riepilogo["impostazioni"] = {
         "aggiunte": 0,
         "modificate": sum(
@@ -1500,6 +1754,10 @@ def da_tabelle(
     lettore.promemoria()
     sospensioni = lettore.vacanze()
     impostazioni = lettore.impostazioni()
+    toccata, piattaforma = lettore.piattaforma(lettore.letti_impostazioni)
+    # Nessuna piattaforma, né prima né nel file: la chiave resta assente.
+    if toccata and (piattaforma is not None or "piattaforma" in attuale):
+        impostazioni["piattaforma"] = piattaforma
     if lettore.errori:
         return Esito(None, _ordinati(lettore.errori))
 
