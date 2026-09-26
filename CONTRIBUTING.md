@@ -3,9 +3,16 @@
 Grazie dell'interesse. Il progetto è tutto in italiano: codice, commenti, commit,
 documentazione (SPEC §3, INV-5).
 
+## Due rami
+
+- **`main`** è quello che installa HACS: solo l'integrazione, la guida e i file per
+  l'utente.
+- **`sviluppo`** è dove si lavora: sorgenti del frontend, test, specifica, banco di prova,
+  script. Le pull request vanno verso `sviluppo`; `main` si aggiorna solo con le release.
+
 ## Prima di scrivere codice
 
-[`docs/SPEC.md`](docs/SPEC.md) è la fonte di verità: leggila, soprattutto gli invarianti
+[`docs/SPEC.md`](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/sviluppo/docs/SPEC.md) è la fonte di verità: leggila, soprattutto gli invarianti
 (§3) e il registro delle decisioni (§16). Una funzione che la spec non prevede si propone
 prima con una issue: il progetto sceglie la semplicità di proposito (INV-6).
 

@@ -2,7 +2,7 @@
 
 Questa guida spiega come si installa, come si inserisce il calendario del tuo comune e come
 si usano promemoria, card ed entità. Si legge in dieci minuti; per il perché delle scelte
-c'è la [specifica](SPEC.md).
+c'è la [specifica](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/sviluppo/docs/SPEC.md), sul ramo di sviluppo.
 
 - [Installazione](#installazione)
 - [Il pannello](#il-pannello)
