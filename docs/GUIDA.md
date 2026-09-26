@@ -14,6 +14,7 @@ c'è la [specifica](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/b
 - [Esposto ✓](#esposto-)
 - [Le card](#le-card)
 - [Entità e automazioni](#entità-e-automazioni)
+- [Il calendario in Excel](#il-calendario-in-excel)
 - [Quando cambia il calendario del comune](#quando-cambia-il-calendario-del-comune)
 - [Domande frequenti](#domande-frequenti)
 
