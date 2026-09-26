@@ -7,6 +7,50 @@ non solo "correzioni", e quello che richiede qualcosa da te viene prima di tutto
 
 ## [Non rilasciato]
 
+## [0.5.1] — 2026-09-26 — finestre più solide
+
+Una revisione approfondita di finestre, moduli e card. Dopo l'aggiornamento ricarica la
+pagina (nell'app: chiudila e riaprila).
+
+### Corretto
+- **Impostazioni:** se un'altra finestra o un altro dispositivo aveva salvato nel
+  frattempo, salvare non riusciva mai più ("qualcun altro ha salvato", all'infinito).
+- **Finestre delle card tagliate:** con alcuni temi (effetto vetro) o dentro un
+  carosello, la finestra degli orari o di *Cosa va dove* restava schiacciata dentro la
+  card. Ora le finestre stanno sempre sopra tutto.
+- **Escape e clic fuori:** chiudono solo la finestra in cima, non quella di Home
+  Assistant sotto; selezionare del testo trascinando fuori dalla finestra non la chiude
+  più; durante un salvataggio la finestra non si chiude.
+- **Dopo un salvataggio** la finestra di modifica non ricompare per un attimo.
+- **Errori più chiari:** *Prima di salvare* dice dove sta il problema ("Periodo dal 1
+  ottobre 2026 al 31 marzo 2027 · gio"), e nessun errore compare più come codice grezzo.
+- **Cambiare scheda** con modifiche non salvate in Impostazioni o Piattaforma chiede
+  conferma invece di buttarle via.
+- **Eliminare una tipologia o togliere la piattaforma:** l'avviso si legge in *Prima di
+  salvare*; prima era una finestra del browser che nell'app poteva non comparire.
+- **Qualcosa eliminato da un altro dispositivo** mentre lo modificavi non viene più
+  ricreato salvando.
+- **Importare da Excel:** *Annulla* ferma davvero l'importazione; si può scegliere di
+  nuovo lo stesso file corretto; un file cambiato dopo averlo scelto ha il suo messaggio.
+- **File Excel della piattaforma:** una riga copiata (con l'ID nascosto) non cancella più
+  l'originale; con *Sostituisci tutto* un solo foglio della piattaforma è un errore
+  invece di svuotare l'altro; fogli vuoti tolgono la piattaforma; i giorni si
+  riconoscono anche scritti per intero (*Lunedì*).
+- **Piattaforma:** una fascia nuova nasce già valida; un orario o una data svuotati non
+  si salvano vuoti; le fasce si mettono in ordine e quelle che si toccano (08-12 e
+  12-14) sono un'apertura sola; un festivo fuori dai periodi è *orario non indicato*;
+  nessun avviso "orario non indicato" in un giorno con un orario diverso.
+- **Card:** si riprendono da sole dopo un riavvio di Home Assistant; usano il fuso di
+  Home Assistant anche su un telefono in un altro fuso; oltre la settimana dicono il
+  giorno ("apre giovedì 8"); la pillola in una card stretta finisce con i puntini.
+- **Regole:** dopo un errore di rete *Salva* non resta spento; **Solleciti:** il menu
+  dei minuti mostra il valore salvato; **Tipologie:** un'icona scritta a mano vale anche
+  senza Invio; **Patrono e periodi annuali:** i giorni sono quelli del mese scelto.
+
+### Aggiunto
+- **Festivi ignorati** in Panoramica, con *Ripristina avviso* per chi ha premuto Ignora
+  per sbaglio.
+
 ## [0.5.0] — 2026-09-26 — cosa va dove, e la piattaforma ecologica
 
 ### Aggiunto
