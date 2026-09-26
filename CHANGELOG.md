@@ -7,6 +7,16 @@ non solo "correzioni", e quello che richiede qualcosa da te viene prima di tutto
 
 ## [Non rilasciato]
 
+## [0.5.2] — 2026-09-26 — card più ordinate
+
+### Corretto
+- **Testata delle card sul telefono:** la pillola della piattaforma e il "?" non vanno
+  più a capo sotto il titolo. Titolo e data stanno uno sopra l'altro a sinistra, pillola
+  e "?" sulla stessa riga a destra.
+- **Cosa va dove:** le descrizioni partono tutte dallo stesso margine, qualunque sia la
+  lunghezza del nome del rifiuto; sul telefono il nome sta sopra la sua descrizione, che
+  usa tutta la larghezza.
+
 ## [0.5.1] — 2026-09-26 — finestre più solide
 
 Una revisione approfondita di finestre, moduli e card. Dopo l'aggiornamento ricarica la
