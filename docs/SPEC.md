@@ -676,7 +676,9 @@ uno qualsiasi di questi punti dà accesso a tutto.
 
 Ogni salvataggio passa dall'anteprima: l'utente vede cosa cambia nei prossimi 60 giorni
 prima di confermare (decisione 36). *Perché:* una regola sbagliata non dà errori,
-dà un calendario plausibile e sbagliato.
+dà un calendario plausibile e sbagliato. Mentre "Prima di salvare" è aperta, la finestra
+di modifica da cui viene resta aperta ma nascosta; "Indietro" ci riporta, "Salva" salva
+(decisione 61).
 
 #### 10.1.2 Configurazione in Excel
 
@@ -1078,6 +1080,15 @@ Correzione, 2026-09-26 (segnalazione del proprietario: la card non si trova).
     del repository vieta i `customElements.define` diretti. Verificato su un Home
     Assistant 2026.6 locale: prima le card non erano definite, dopo si aggiungono dal
     selettore con l'editor visuale.
+
+Correzione, 2026-09-26 (segnalazione di un tester, Firefox).
+
+61. "Prima di salvare" si mostra da sola: la finestra di modifica sotto resta aperta
+    ma nascosta, e il suo pulsante per tornarci si chiama "Indietro", non "Annulla".
+    *Perché:* con le due finestre visibili c'erano due "Annulla"; quello della finestra
+    sotto, coperta dal velo di quella sopra, chiudeva solo "Prima di salvare", e la
+    modifica sembrava non potersi annullare. "Annulla" resta il pulsante che chiude la
+    finestra di modifica senza salvare.
 
 ---
 

@@ -21,6 +21,9 @@ export class RdFinestra extends LitElement {
       }
       :host([aperta]) {
         display: block;
+        /* Il pannello nasconde le finestre delle pagine mentre "Prima di salvare" è
+           aperta sopra di loro: una sola finestra, un solo paio di pulsanti. */
+        visibility: var(--rd-visibilita-finestre, visible);
       }
       .velo {
         position: fixed;
