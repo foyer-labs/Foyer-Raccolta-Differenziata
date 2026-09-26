@@ -52,6 +52,9 @@ export class RaccoltaMeseCard extends CardRaccolta {
     const celle = Math.ceil((giornoSettimana(primo) + giorniNelMese(anno, mese + 1)) / 7) * 7;
     const scelto = this._scelto ?? (primo === primoDelMese(oggi) ? oggi : primo);
     const delScelto = this._dati.ritiri.filter((r) => r.data === scelto);
+    const usate = [...new Set(this._dati.ritiri.map((r) => r.tipologia))]
+      .map((id) => this.tipologia(id))
+      .filter((t) => t !== undefined);
     return html`<ha-card>
       ${this.intestazione(T.card.calendario)}
       <div class="testa-mese">
@@ -66,7 +69,7 @@ export class RaccoltaMeseCard extends CardRaccolta {
           const ritiri = this._dati!.ritiri.filter((r) => r.data === g);
           const fuori = daIso(g).getMonth() !== mese;
           return html`<button
-            class="c ${fuori ? "fuori" : ""} ${g === oggi ? "oggi" : ""} ${g === scelto && g !== oggi ? "scelto" : ""}"
+            class="c ${fuori ? "fuori" : ""} ${g < oggi ? "passato" : ""} ${g === oggi ? "oggi" : ""} ${g === scelto && g !== oggi ? "scelto" : ""}"
             aria-label=${`${daIso(g).getDate()} ${MESI[daIso(g).getMonth()]}${ritiri.length ? `: ${ritiri.map((r) => this.tipologia(r.tipologia)?.nome ?? r.tipologia).join(", ")}` : ""}`}
             @click=${() => (this._scelto = g)}
           >
@@ -92,6 +95,9 @@ export class RaccoltaMeseCard extends CardRaccolta {
             })
           : html`<span class="note">${T.card.nessunRitiro}</span>`}
       </div>
+      ${usate.length
+        ? html`<div class="legenda">${usate.map((t) => html`<span><i class="pallino" style="background:${t.colore}"></i>${t.nome}</span>`)}</div>`
+        : nothing}
       ${this.banner()}
     </ha-card>`;
   }
@@ -154,6 +160,22 @@ export class RaccoltaMeseCard extends CardRaccolta {
       }
       .c.fuori {
         opacity: 0.4;
+      }
+      .c.passato:not(.oggi) {
+        color: var(--rd-testo-2);
+      }
+      .legenda {
+        display: flex;
+        gap: 6px 14px;
+        flex-wrap: wrap;
+        padding: 0 16px 14px;
+        font-size: 12.5px;
+        color: var(--rd-testo-2);
+      }
+      .legenda span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
       }
       .c.oggi {
         background: var(--rd-primario);

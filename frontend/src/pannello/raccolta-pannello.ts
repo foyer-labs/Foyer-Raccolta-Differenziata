@@ -74,6 +74,11 @@ export class RaccoltaPannello extends LitElement {
   }
 
   override updated(cambiati: Map<string, unknown>) {
+    if (cambiati.has("_pagina")) {
+      this.renderRoot
+        .querySelector<HTMLElement>(".schede button.attiva")
+        ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
     // Una sola iscrizione per volta: `_disiscrivi` c'è dal momento in cui la si chiede,
     // non da quando arriva la prima lettura. Riconnesso, il pannello si riscrive.
     if (cambiati.has("hass") && this.hass && !this._disiscrivi) {
@@ -187,7 +192,7 @@ export class RaccoltaPannello extends LitElement {
           </div>`
         : html`<p class="aiuto">${voci.length ? T.cosaCambia : T.nienteCambia}</p>
             <div class="differenze">${voci.slice(0, 40).map((v) => riga(v.segno, v))}</div>`}
-      <div class="azioni-finestra">
+      <div class="azioni-finestra" slot="azioni">
         <button class="bottone" @click=${() => (this._inAttesa = undefined)}>${T.annulla}</button>
         ${this._problemi.length
           ? nothing
@@ -349,7 +354,6 @@ export class RaccoltaPannello extends LitElement {
         display: flex;
         justify-content: flex-end;
         gap: 8px;
-        margin-top: 16px;
       }
       .errori {
         background: color-mix(in srgb, var(--rd-errore) 12%, transparent);

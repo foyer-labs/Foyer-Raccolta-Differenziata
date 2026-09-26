@@ -56,7 +56,10 @@ ignorate, ultimo istante di attività.
 - `banco/` è un banco di prova con un finto `hass`: pannello (`banco/pannello.html`) e
   card (`banco/card.html`) si aprono in un browser servendo la radice del repository
   (`python -m http.server 8766`). Parametri: `oggi`, `ora` (orologio fermo), `tema=scuro`,
-  `pagina`, `passi` (pulsanti da cliccare, per testo), `card`, `larghezza`.
+  `pagina`, `passi` (pulsanti da cliccare, per l'inizio del loro testo, separati da `|`),
+  `card`, `larghezza`.
+- Per guardare una pagina a larghezza telefono, Chrome headless non scende sotto circa
+  500 px di finestra: sotto tutti i punti di rottura del layout (560, 600, 820 px).
 - Il finto `ha-icon` disegna nello shadow DOM: figli nel light DOM sposterebbero gli
   indici dei nodi di Lit e i valori finirebbero nei posti sbagliati.
 - `banco/icone.json` si rigenera con `scripts/estrai_icone.py`; gli screenshot di

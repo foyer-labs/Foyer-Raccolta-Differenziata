@@ -19,8 +19,8 @@
       static now() { return fisso; }
     };
   }
-  const { creaHass } = await import("./hass.js");
-  await import("../custom_components/foyer_raccolta_differenziata/frontend/raccolta-card.js");
+  const { creaHass } = await import(`./hass.js?${Math.random()}`);
+  await import(`../custom_components/foyer_raccolta_differenziata/frontend/raccolta-card.js?${Math.random()}`);
   const larghezza = new URLSearchParams(location.search).get("larghezza");
   if (larghezza) document.getElementById("griglia").style.maxWidth = `${larghezza}px`;
   const hass = creaHass();

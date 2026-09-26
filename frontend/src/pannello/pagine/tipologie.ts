@@ -8,6 +8,8 @@ import { giornoMese, T } from "../../comune/testi";
 import type { Finestra, HomeAssistant, LetturaConfigurazione, LetturaRitiri, Tipologia } from "../../comune/tipi";
 import { copia, proponi } from "../contesto";
 import "../../comune/finestra";
+import "../../comune/selettore";
+import { OPZIONI_ICONE } from "../../comune/icone";
 
 const DOMINIO = "foyer_raccolta_differenziata";
 const COLORI = ["#795548", "#1e88e5", "#fdd835", "#43a047", "#757575", "#8bc34a", "#e53935", "#8e24aa", "#fb8c00", "#00897b"];
@@ -114,12 +116,22 @@ export class RdTipologie extends LitElement {
             ${COLORI.map(
               (c) => html`<button class="colore ${c === b.colore ? "attivo" : ""}" style="background:${c}" aria-label=${c} @click=${() => this._aggiorna({ colore: c })}></button>`,
             )}
-            <input type="color" .value=${b.colore} @input=${(e: InputEvent) => this._aggiorna({ colore: (e.target as HTMLInputElement).value })} />
+            <label class="colore altro ${COLORI.includes(b.colore) ? "" : "attivo"}" style=${COLORI.includes(b.colore) ? "" : `background:${b.colore}`} title=${T.altroColore}>
+              <ha-icon icon="mdi:palette"></ha-icon>
+              <input type="color" aria-label=${T.altroColore} .value=${b.colore} @input=${(e: InputEvent) => this._aggiorna({ colore: (e.target as HTMLInputElement).value })} />
+            </label>
           </div>
         </div>
         <div class="campo">
-          <label for="icona">${T.icona}</label>
-          <input id="icona" .value=${b.icona} @input=${(e: InputEvent) => this._aggiorna({ icona: (e.target as HTMLInputElement).value.trim() })} />
+          <span class="etichetta">${T.icona}</span>
+          <rd-selettore
+            libero
+            .opzioni=${OPZIONI_ICONE}
+            .scelti=${[b.icona]}
+            etichetta=${T.icona}
+            segnaposto=${T.cercaIcona}
+            @cambia=${(e: CustomEvent<string[]>) => this._aggiorna({ icona: e.detail[0] })}
+          ></rd-selettore>
           <small>${T.iconaAiuto}</small>
         </div>
         <div class="campo">
@@ -148,12 +160,12 @@ export class RdTipologie extends LitElement {
                 <input type="time" .value=${b.esposizione.fine_ora} @change=${(e: Event) => this._aggiornaFinestra({ fine_ora: (e.target as HTMLInputElement).value })} />
               </div>`
           : nothing}
-        <div class="azioni-modulo">
-          ${esistente ? html`<button class="bottone pericolo" @click=${this._elimina}>${T.elimina}</button>` : nothing}
-          <span style="flex:1"></span>
-          <button class="bottone" @click=${() => (this._bozza = undefined)}>${T.annulla}</button>
-          <button class="bottone primario" ?disabled=${!b.nome.trim()} @click=${this._salva}>${T.salva}</button>
-        </div>
+      </div>
+      <div class="azioni-modulo" slot="azioni">
+        ${esistente ? html`<button class="bottone pericolo" @click=${this._elimina}>${T.elimina}</button>` : nothing}
+        <span style="flex:1"></span>
+        <button class="bottone" @click=${() => (this._bozza = undefined)}>${T.annulla}</button>
+        <button class="bottone primario" ?disabled=${!b.nome.trim()} @click=${this._salva}>${T.salva}</button>
       </div>
     </rd-finestra>`;
   }
@@ -273,6 +285,22 @@ export class RdTipologie extends LitElement {
       .colore.attivo {
         border-color: var(--rd-testo);
         box-shadow: 0 0 0 2px var(--rd-superficie) inset;
+      }
+      .colore.altro {
+        position: relative;
+        display: grid;
+        place-items: center;
+        background: conic-gradient(#e53935, #fdd835, #43a047, #1e88e5, #8e24aa, #e53935);
+        color: #fff;
+        --mdc-icon-size: 16px;
+      }
+      .colore.altro input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
       }
       .spunta {
         display: flex;

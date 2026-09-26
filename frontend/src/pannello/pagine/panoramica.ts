@@ -132,7 +132,7 @@ export class RdPanoramica extends LitElement {
           <h2>${T.prossimiRitiri} <span class="conta">${T.giorni30}</span></h2>
           ${this._giorni()}
         </div>
-        <div>
+        <div class="laterale">
           <div class="riquadro">
             <h2>${T.daControllare} ${totale ? html`<span class="conta">${totale}</span>` : nothing}</h2>
             ${totale === 0 ? html`<div class="vuoto">${T.tuttoInOrdine}</div>` : nothing}
@@ -242,6 +242,11 @@ export class RdPanoramica extends LitElement {
       .errore {
         margin-bottom: 16px;
         color: var(--rd-errore);
+      }
+      @media (max-width: 820px) {
+        .laterale {
+          order: -1;
+        }
       }
     `,
   ];

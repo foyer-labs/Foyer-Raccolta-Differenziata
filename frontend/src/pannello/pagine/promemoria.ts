@@ -7,6 +7,8 @@ import { fraseQuando, T } from "../../comune/testi";
 import type { Destinatario, HomeAssistant, LetturaConfigurazione, Profilo, Quando } from "../../comune/tipi";
 import { copia, proponi } from "../contesto";
 import "../../comune/finestra";
+import "../../comune/selettore";
+import type { Opzione } from "../../comune/selettore";
 
 // Servizi del dominio notify che non sono destinatari.
 const NON_DESTINATARI = new Set(["send_message", "persistent_notification", "notify"]);
@@ -19,6 +21,15 @@ const QUANDO: Record<Quando["tipo"], () => Quando> = {
 };
 
 const chiave = (d: Destinatario) => `${d.tipo}:${d.id}`;
+const daChiave = (c: string): Destinatario => {
+  const [tipo, ...resto] = c.split(":");
+  return { tipo: tipo as Destinatario["tipo"], id: resto.join(":") };
+};
+/** "telefono_di_luca" → "Telefono di luca": il nome del servizio, leggibile. */
+const leggibile = (id: string) => {
+  const testo = id.replaceAll("_", " ");
+  return testo.charAt(0).toUpperCase() + testo.slice(1);
+};
 const conPulsanti = (d: Destinatario) => d.tipo === "servizio" && d.id.startsWith("mobile_app_");
 
 export class RdPromemoria extends LitElement {
@@ -39,25 +50,37 @@ export class RdPromemoria extends LitElement {
     this._vacanza = { dal: "", al: "" };
   }
 
-  /** Tutti i destinatari possibili: servizi notify e entità notify (decisione 31). */
-  private _disponibili(): { destinatario: Destinatario; nome: string }[] {
+  /** Tutti i destinatari possibili, come opzioni del selettore (decisione 31). */
+  private _disponibili(): Opzione[] {
     const servizi = Object.keys(this.hass.services?.notify ?? {})
       .filter((s) => !NON_DESTINATARI.has(s))
-      .sort()
-      .map((id) => ({ destinatario: { tipo: "servizio" as const, id }, nome: id.replace(/^mobile_app_/, "").replaceAll("_", " ") }));
+      .map((id): Opzione => {
+        const telefono = id.startsWith("mobile_app_");
+        return {
+          id: `servizio:${id}`,
+          nome: leggibile(id.replace(/^mobile_app_/, "")),
+          dettaglio: `notify.${id}`,
+          etichetta: telefono ? T.conPulsanti : T.soloTesto,
+          etichettaEvidente: telefono,
+          icona: telefono ? "mdi:cellphone" : "mdi:message-text-outline",
+          gruppo: telefono ? T.gruppoCompanion : T.gruppoServizi,
+        };
+      });
     const entita = Object.keys(this.hass.states ?? {})
       .filter((e) => e.startsWith("notify."))
-      .sort()
-      .map((id) => ({
-        destinatario: { tipo: "entita" as const, id },
+      .map((id): Opzione => ({
+        id: `entita:${id}`,
         nome: String(this.hass.states[id].attributes.friendly_name ?? id),
+        dettaglio: id,
+        etichetta: T.soloTesto,
+        icona: "mdi:bell-badge-outline",
+        gruppo: T.gruppoEntita,
       }));
-    // Un destinatario già scelto ma sparito (app disinstallata) resta visibile.
-    const note = new Set([...servizi, ...entita].map((v) => chiave(v.destinatario)));
-    const spariti = (this._bozza?.destinatari ?? [])
-      .filter((d) => !note.has(chiave(d)))
-      .map((d) => ({ destinatario: d, nome: d.id }));
-    return [...servizi, ...entita, ...spariti];
+    // Prima i telefoni (hanno i pulsanti), poi gli altri servizi, poi le entità.
+    const ordine = [T.gruppoCompanion, T.gruppoServizi, T.gruppoEntita];
+    return [...servizi, ...entita].sort(
+      (a, b) => ordine.indexOf(a.gruppo!) - ordine.indexOf(b.gruppo!) || a.nome.localeCompare(b.nome),
+    );
   }
 
   private _nuovo() {
@@ -122,7 +145,6 @@ export class RdPromemoria extends LitElement {
     const q = b.quando;
     const segmento = (tipo: Quando["tipo"], testo: string) =>
       html`<button class=${q.tipo === tipo ? "attivo" : ""} @click=${() => q.tipo !== tipo && aggiorna({ quando: QUANDO[tipo]() })}>${testo}</button>`;
-    const scelti = new Set(b.destinatari.map(chiave));
     const disponibili = this._disponibili();
     const valido = b.nome.trim() && b.destinatari.length && (b.tipologie === null || b.tipologie.length);
     return html`<rd-finestra aperta titolo=${esistente ? b.nome || T.nuovoPromemoria : T.nuovoPromemoria} @chiudi=${() => (this._bozza = undefined)}>
@@ -164,27 +186,25 @@ export class RdPromemoria extends LitElement {
         </div>
         <div class="campo">
           <span class="etichetta">${T.destinatari}</span>
-          ${disponibili.length
-            ? html`<div class="destinatari">
-                ${disponibili.map(({ destinatario, nome }) => html`<label class="destinatario">
-                  <input type="checkbox" .checked=${scelti.has(chiave(destinatario))} @change=${(e: Event) => {
-                    const acceso = (e.target as HTMLInputElement).checked;
-                    aggiorna({ destinatari: acceso ? [...b.destinatari, destinatario] : b.destinatari.filter((d) => chiave(d) !== chiave(destinatario)) });
-                  }} />
-                  <ha-icon .icon=${conPulsanti(destinatario) ? "mdi:cellphone" : "mdi:message-text-outline"}></ha-icon>
-                  <span class="nome">${nome}</span>
-                  <span class="etichetta-tipo ${conPulsanti(destinatario) ? "pulsanti" : ""}">${conPulsanti(destinatario) ? T.conPulsanti : T.soloTesto}</span>
-                </label>`)}
-              </div>`
+          ${disponibili.length || b.destinatari.length
+            ? html`<rd-selettore
+                multiplo
+                .opzioni=${disponibili}
+                .scelti=${b.destinatari.map(chiave)}
+                etichetta=${T.destinatari}
+                segnaposto=${T.cercaDestinatario}
+                vuoto=${T.nessunDestinatarioScelto}
+                @cambia=${(e: CustomEvent<string[]>) => aggiorna({ destinatari: e.detail.map(daChiave) })}
+              ></rd-selettore>`
             : html`<div class="aiuto">${T.nessunDestinatario}</div>`}
           <small>${T.destinatariAiuto}</small>
         </div>
-        <div class="azioni-modulo">
-          ${esistente ? html`<button class="bottone pericolo" @click=${this._eliminaProfilo}>${T.elimina}</button>` : nothing}
-          <span style="flex:1"></span>
-          <button class="bottone" @click=${() => (this._bozza = undefined)}>${T.annulla}</button>
-          <button class="bottone primario" ?disabled=${!valido} @click=${this._salvaProfilo}>${T.salva}</button>
-        </div>
+      </div>
+      <div class="azioni-modulo" slot="azioni">
+        ${esistente ? html`<button class="bottone pericolo" @click=${this._eliminaProfilo}>${T.elimina}</button>` : nothing}
+        <span style="flex:1"></span>
+        <button class="bottone" @click=${() => (this._bozza = undefined)}>${T.annulla}</button>
+        <button class="bottone primario" ?disabled=${!valido} @click=${this._salvaProfilo}>${T.salva}</button>
       </div>
     </rd-finestra>`;
   }
@@ -207,10 +227,11 @@ export class RdPromemoria extends LitElement {
             ${c.promemoria.length
               ? c.promemoria.map(
                   (p) => html`<div class="voce ${p.attivo ? "" : "spento"}">
-                    <ha-icon class="campana" icon=${p.attivo ? "mdi:bell-ring-outline" : "mdi:bell-off-outline"}></ha-icon>
-                    <div class="frase"><b>${p.nome}</b> · ${fraseQuando(p.quando)}<small>${this._riepilogo(p)}</small></div>
-                    <button class="levetta ${p.attivo ? "acceso" : ""}" role="switch" aria-checked=${p.attivo} aria-label=${T.attivo} @click=${() => this._attiva(p)}></button>
-                    <button class="bottone piccolo" @click=${() => (this._bozza = copia(p))}>${T.modifica}</button>
+                    <button class="apri" aria-label=${`${T.modifica}: ${p.nome}`} @click=${() => (this._bozza = copia(p))}>
+                      <ha-icon class="campana" icon=${p.attivo ? "mdi:bell-ring-outline" : "mdi:bell-off-outline"}></ha-icon>
+                      <div class="frase"><b>${p.nome}</b> · ${fraseQuando(p.quando)}<small>${this._riepilogo(p)}</small></div>
+                    </button>
+                    <button class="levetta ${p.attivo ? "acceso" : ""}" role="switch" aria-checked=${p.attivo} aria-label=${`${T.attivo}: ${p.nome}`} @click=${() => this._attiva(p)}></button>
                   </div>`,
                 )
               : html`<div class="vuoto">${T.nessunPromemoria}</div>`}
@@ -269,8 +290,20 @@ export class RdPromemoria extends LitElement {
     pagina,
     moduli,
     css`
-      .voce.spento {
+      .voce.spento .apri {
         opacity: 0.6;
+      }
+      .apri {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border: 0;
+        background: none;
+        padding: 0;
+        text-align: left;
+        cursor: pointer;
       }
       .campana {
         color: var(--rd-primario);

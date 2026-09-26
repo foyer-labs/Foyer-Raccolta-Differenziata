@@ -10,6 +10,7 @@ import {
   dataBreve,
   frasePeriodo,
   fraseRicorrenza,
+  GIORNI,
   GIORNI_BREVI,
   MESI,
   messaggioProblema,
@@ -114,6 +115,14 @@ export class RdRegole extends LitElement {
     this._imposta({ ...this._bozza!, periodo: { ...this._bozza!.periodo, ...parziale } as Periodo });
   }
 
+  /** Abbastanza completa da scriverla come frase. */
+  private _valida(r: Regola): boolean {
+    const q = r.ricorrenza;
+    if (q.tipo === "settimanale") return q.giorni.length > 0;
+    if (q.tipo === "mensile_posizione") return q.posizioni.length > 0;
+    return q.giorni.length > 0;
+  }
+
   private _elimina() {
     const nuova = copia(this.lettura.configurazione);
     nuova.regole = nuova.regole.filter((r) => r.id !== this._bozza!.id);
@@ -132,15 +141,15 @@ export class RdRegole extends LitElement {
       </div>
       ${r.tipo === "settimanale"
         ? html`<div class="campo">
-              <span class="etichetta">${T.ogni}</span>
-              <div class="segmenti">
-                ${[1, 2, 3, 4, 5, 6, 7, 8].map((n) => html`<button class=${r.ogni === n ? "attivo" : ""} @click=${() => this._ricorrenza({ ogni: n })}>${n === 1 || n === 2 ? T.settimane(n) : n}</button>`)}
+              <span class="etichetta">${T.ogniQuanteSettimane}</span>
+              <div class="tonde otto" role="radiogroup" aria-label=${T.ogniQuanteSettimane}>
+                ${[1, 2, 3, 4, 5, 6, 7, 8].map((n) => html`<button role="radio" aria-checked=${r.ogni === n} class=${r.ogni === n ? "attivo" : ""} @click=${() => this._ricorrenza({ ogni: n })}>${n}</button>`)}
               </div>
             </div>
             <div class="campo">
               <span class="etichetta">${T.neiGiorni}</span>
-              <div class="tonde">
-                ${GIORNI_BREVI.map((g, i) => html`<button class=${r.giorni.includes(i) ? "attivo" : ""} aria-pressed=${r.giorni.includes(i)} @click=${() => this._ricorrenza({ giorni: alterna(r.giorni, i).sort() })}>${g.slice(0, 2)}</button>`)}
+              <div class="tonde sette">
+                ${GIORNI_BREVI.map((g, i) => html`<button class=${r.giorni.includes(i) ? "attivo" : ""} aria-pressed=${r.giorni.includes(i)} aria-label=${GIORNI[i]} @click=${() => this._ricorrenza({ giorni: alterna(r.giorni, i).sort() })}>${g.slice(0, 2)}</button>`)}
               </div>
             </div>
             ${r.ogni > 1
@@ -160,7 +169,7 @@ export class RdRegole extends LitElement {
             </div>
             <div class="campo">
               <span class="etichetta">${T.giornoSettimana}</span>
-              <div class="tonde">
+              <div class="tonde sette">
                 ${GIORNI_BREVI.map((g, i) => html`<button class=${r.giorno === i ? "attivo" : ""} @click=${() => this._ricorrenza({ giorno: i })}>${g.slice(0, 2)}</button>`)}
               </div>
             </div>`
@@ -216,6 +225,10 @@ export class RdRegole extends LitElement {
     const esistente = this.lettura.configurazione.regole.some((r) => r.id === b.id);
     return html`<rd-finestra aperta titolo=${`${esistente ? T.modifica : T.nuovaRegola} · ${tipologia?.nome ?? ""}`} @chiudi=${() => (this._bozza = undefined)}>
       <div class="modulo">
+        <div class="riepilogo" aria-live="polite">
+          ${this._valida(b) ? fraseRicorrenza(b.ricorrenza) : T.completaLaRegola}
+          <small>${frasePeriodo(b.periodo)}</small>
+        </div>
         <div class="campo">
           <label for="nome">${T.nomeRegola}</label>
           <input id="nome" maxlength="40" .value=${b.nome} placeholder=${T.nomeRegolaAiuto} @input=${(e: InputEvent) => (this._bozza = { ...b, nome: (e.target as HTMLInputElement).value })} />
@@ -229,12 +242,12 @@ export class RdRegole extends LitElement {
               ? html`<div class="anteprima-date">${this._date.map((d) => html`<span>${dataBreve(d)}</span>`)}</div>`
               : html`<div class="aiuto">${T.nessunaData}</div>`}
         </div>
-        <div class="azioni-modulo">
-          ${esistente ? html`<button class="bottone pericolo" @click=${this._elimina}>${T.elimina}</button>` : nothing}
-          <span style="flex:1"></span>
-          <button class="bottone" @click=${() => (this._bozza = undefined)}>${T.annulla}</button>
-          <button class="bottone primario" ?disabled=${this._problemi.length > 0 || this._inCorso} @click=${() => proponi(this, this._candidata())}>${T.salva}</button>
-        </div>
+      </div>
+      <div class="azioni-modulo" slot="azioni">
+        ${esistente ? html`<button class="bottone pericolo" @click=${this._elimina}>${T.elimina}</button>` : nothing}
+        <span style="flex:1"></span>
+        <button class="bottone" @click=${() => (this._bozza = undefined)}>${T.annulla}</button>
+        <button class="bottone primario" ?disabled=${this._problemi.length > 0 || this._inCorso} @click=${() => proponi(this, this._candidata())}>${T.salva}</button>
       </div>
     </rd-finestra>`;
   }
@@ -250,13 +263,13 @@ export class RdRegole extends LitElement {
             <div class="titolo">${chip(t)}</div>
             ${regole.length
               ? regole.map(
-                  (r) => html`<div class="voce">
+                  (r) => html`<button class="voce cliccabile" aria-label=${`${T.modifica}: ${r.nome || fraseRicorrenza(r.ricorrenza)}`} @click=${() => this._imposta(copia(r))}>
                     <div class="frase">
                       ${r.nome ? html`<b>${r.nome}</b> · ` : nothing}${fraseRicorrenza(r.ricorrenza)}
                       <small>${frasePeriodo(r.periodo)}</small>
                     </div>
-                    <button class="bottone piccolo" @click=${() => this._imposta(copia(r))}>${T.modifica}</button>
-                  </div>`,
+                    <ha-icon class="freccia" icon="mdi:chevron-right" aria-hidden="true"></ha-icon>
+                  </button>`,
                 )
               : html`<div class="vuoto">${T.nessunaRegola}</div>`}
             <button class="bottone piccolo" @click=${() => this._nuova(t.id)}><ha-icon icon="mdi:plus"></ha-icon>${T.nuovaRegola}</button>
