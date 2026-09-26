@@ -587,3 +587,132 @@ def test_un_impostazione_sconosciuta_con_un_valore_e_un_errore():
     assert _errori(esito) == [
         ("Impostazioni", 5, "Impostazione", "impostazione_sconosciuta")
     ]
+
+
+# --- la piattaforma ecologica (decisione 67) ------------------------------------------
+
+PIATTAFORMA = {
+    "nome": "Isola ecologica",
+    "nota": "Via Roma 1",
+    "periodi": [
+        {
+            "id": "inv",
+            "dal": "2026-10-01",
+            "al": "2027-03-31",
+            "settimana": [
+                [["08:00", "12:00"], ["14:00", "18:00"]],
+                [],
+                [["14:00", "18:00"]],
+                [],
+                [],
+                [["08:00", "12:00"]],
+                [],
+            ],
+        }
+    ],
+    "eccezioni": [
+        {
+            "id": "pe1",
+            "data": "2026-12-24",
+            "tipo": "aperta",
+            "fasce": [["08:00", "12:00"]],
+            "nota": "Vigilia",
+        },
+        {"id": "pe2", "data": "2026-11-02", "tipo": "chiusa", "fasce": [], "nota": ""},
+    ],
+}
+
+
+def test_la_piattaforma_va_e_torna():
+    config = _completa() | {"piattaforma": PIATTAFORMA}
+    assert problemi(config) == []
+    righe = tb.in_tabelle(config)
+    assert righe["Piattaforma"][0]["giorno_0"] == "08:00-12:00, 14:00-18:00"
+    assert righe["Piattaforma"][0]["giorno_1"] is None
+    esito = _importa(righe, config)
+    assert esito.errori == []
+    assert esito.configurazione["piattaforma"] == PIATTAFORMA | {
+        "eccezioni": sorted(PIATTAFORMA["eccezioni"], key=lambda e: e["data"])
+    }
+    assert esito.riepilogo["piattaforma"] == {
+        "aggiunte": 0,
+        "modificate": 0,
+        "tolte": 0,
+    }
+
+
+@pytest.mark.parametrize(
+    ("valore", "atteso"),
+    [
+        ("8-12", [["08:00", "12:00"]]),
+        ("08.00 – 12.30; 15:00-18:00", [["08:00", "12:30"], ["15:00", "18:00"]]),
+        ("chiusa", []),
+        (None, []),
+        ("9 alle 12", [["09:00", "12:00"]]),
+    ],
+)
+def test_le_fasce_scritte_a_mano(valore, atteso):
+    assert tb.leggi_fasce(valore) == atteso
+
+
+def test_un_file_senza_i_fogli_della_piattaforma_la_lascia_com_e():
+    config = _completa() | {"piattaforma": PIATTAFORMA}
+    righe = tb.in_tabelle(config)
+    del righe["Piattaforma"], righe["Piattaforma eccezioni"]
+    righe["Impostazioni"] = [
+        r
+        for r in righe["Impostazioni"]
+        if not r["impostazione"].startswith("Piattaforma")
+    ]
+    esito = _importa(righe, config)
+    assert esito.errori == []
+    assert esito.configurazione["piattaforma"] == config["piattaforma"]
+
+
+def test_aggiungere_un_eccezione_della_piattaforma():
+    config = _completa() | {"piattaforma": PIATTAFORMA}
+    esito = _importa(
+        {
+            "Piattaforma eccezioni": [
+                {"data": "24/12/2026", "tipo": "Chiusa"},
+                {"data": "31/12/2026", "tipo": "Aperta", "fasce": "9-12"},
+            ]
+        },
+        config,
+        "aggiungi",
+    )
+    assert esito.errori == []
+    eccezioni = {e["data"]: e for e in esito.configurazione["piattaforma"]["eccezioni"]}
+    assert (
+        eccezioni["2026-12-24"]["tipo"] == "chiusa"
+        and eccezioni["2026-12-24"]["id"] == "pe1"
+    )
+    assert eccezioni["2026-12-31"]["fasce"] == [["09:00", "12:00"]]
+    assert esito.riepilogo["piattaforma"] == {
+        "aggiunte": 1,
+        "modificate": 1,
+        "tolte": 0,
+    }
+
+
+def test_gli_errori_della_piattaforma_tornano_alla_cella():
+    config = _completa() | {"piattaforma": PIATTAFORMA}
+    righe = tb.in_tabelle(config)
+    righe["Piattaforma"][0]["giorno_2"] = "18:00-14:00"
+    righe["Piattaforma eccezioni"][0]["fasce"] = "boh"
+    esito = _importa(righe, config)
+    assert ("Piattaforma eccezioni", 5, "Orari", "orario_non_valido") in _errori(esito)
+    righe["Piattaforma eccezioni"][0]["fasce"] = "08:00-12:00"
+    esito = _importa(righe, config)
+    assert _errori(esito) == [("Piattaforma", 5, "Mer", "fascia_non_valida")]
+
+
+def test_piattaforma_nuova_senza_nome_prende_quello_predefinito():
+    esito = _importa(
+        _foglio_minimo(
+            Piattaforma=[{"dal": "01/01/2027", "al": "31/12/2027", "giorno_0": "8-12"}]
+        ),
+        grezza(),
+    )
+    assert esito.errori == []
+    assert esito.configurazione["piattaforma"]["nome"] == "Piattaforma ecologica"
