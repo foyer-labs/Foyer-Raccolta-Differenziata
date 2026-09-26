@@ -963,6 +963,21 @@ Revisione, 2026-09-26.
 55. Il preset dei pannolini (anche pannoloni) completa il set standard, ma non è
     selezionato all'installazione: serve solo a chi li usa, e agli altri darebbe una
     tipologia senza ritiri segnalata come anomalia. Richiesta del proprietario, 2026-09-26.
+56. Revisione completa del codice (0.2.0). Regole precisate:
+    - un invio che mette insieme tipologie con finestre diverse perde solo quelle con la
+      finestra chiusa, non tutto l'invio (§8.6);
+    - i solleciti in attesa di un profilo spento o eliminato non partono, e abbassare il
+      numero di richiami vale anche per quelli già programmati (§8.5);
+    - la conferma dalle card vale come il pulsante: oggi o domani, finestra non chiusa
+      (§8.4);
+    - eliminare una tipologia toglie dallo stato le sue conferme, i festivi ignorati e i
+      solleciti in attesa (§4.1);
+    - le date dell'archivio sono solo `AAAA-MM-GG`;
+    - un destinatario non può comparire due volte nello stesso promemoria;
+    - `giorno_inesistente` si segnala solo se il periodo della regola comprende un mese
+      senza quel giorno;
+    - i salvataggi della configurazione avvengono uno alla volta, così il controllo della
+      revisione non si può eludere con due schede aperte (§9.4).
 
 ---
 
