@@ -82,7 +82,7 @@ tuo comune, le eccezioni, i promemoria, le card e le automazioni, in dieci minut
 
 | | |
 |---|---|
-| [Guida](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/docs/GUIDA.md) | Installazione, tipologie, regole, eccezioni, festività, promemoria, *Esposto ✓*, card, entità e automazioni, domande frequenti |
+| [Guida](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/docs/GUIDA.md) | Installazione, tipologie, regole, eccezioni, festività, promemoria, *Esposto ✓*, card, entità e automazioni, il calendario in Excel, domande frequenti |
 | [Novità](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/CHANGELOG.md) | Cosa cambia in ogni versione |
 | [Aiuto](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/SUPPORT.md) | Come chiedere aiuto e segnalare un problema |
 
@@ -94,8 +94,8 @@ il calendario nuovo, va aggiornato — e per questo te lo ricorda.
 
 ## Stato
 
-Questa è la prima versione. Ogni versione è una release GitHub, proposta da HACS per
-numero di versione, e il [changelog](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/CHANGELOG.md) dice cosa cambia in ognuna: quello che
+Il progetto è in uso e si aggiorna per versioni. Ogni versione è una release GitHub,
+proposta da HACS per numero di versione, e il [changelog](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/CHANGELOG.md) dice cosa cambia in ognuna: quello che
 ti chiede di fare qualcosa viene per primo. La configurazione salvata porta la versione
 del suo schema e viene migrata in avanti a ogni aggiornamento.
 
