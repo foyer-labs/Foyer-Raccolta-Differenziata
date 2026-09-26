@@ -7,6 +7,11 @@ non solo "correzioni", e quello che richiede qualcosa da te viene prima di tutto
 
 ## [Non rilasciato]
 
+### Aggiunto
+- **I pannolini tra le tipologie pronte**, con il loro colore e la loro icona. Non sono
+  selezionati all'installazione: li scegli se ti servono. Chi ha già installato
+  l'integrazione li aggiunge dal pannello, in *Tipologie → Nuova tipologia*.
+
 ## [0.1.0] — 2026-09-26 — la prima versione
 
 Il calendario della raccolta, i promemoria e le tre card. La guida è in

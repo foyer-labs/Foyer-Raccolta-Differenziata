@@ -27,8 +27,8 @@ che funziona (l'app Companion va benissimo).
    *Integrazione*. Installa **Foyer Raccolta Differenziata** e riavvia Home Assistant.
 2. *Impostazioni → Dispositivi e servizi → Aggiungi integrazione →
    Foyer Raccolta Differenziata*.
-3. Scegli le tipologie da cui partire (umido, carta, plastica, vetro, secco, verde: le
-   potrai cambiare) e quando si espongono i sacchi. Di solito è *dalle 20:00 del giorno
+3. Scegli le tipologie da cui partire (umido, carta, plastica, vetro, secco, verde e, se
+   ti servono, pannolini: le potrai cambiare) e quando si espongono i sacchi. Di solito è *dalle 20:00 del giorno
    prima alle 06:00 del giorno del ritiro*: controlla cosa dice il tuo comune.
 
 Senza HACS: copia la cartella `custom_components/foyer_raccolta_differenziata` di una

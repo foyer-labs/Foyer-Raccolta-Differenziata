@@ -118,7 +118,7 @@ riutilizzate. Rinominare una tipologia non cambia il suo identificatore, né gli
 | `note` | stringa, max 500, facoltativa | "Cosa ci va". Mostrata nelle card al tocco. |
 | `esposizione` | finestra, facoltativa | Sovrascrive la finestra globale (§4.5). |
 
-Preset proposti all'installazione (tutti selezionati, deselezionabili):
+Preset proposti all'installazione (selezionati tutti tranne i pannolini, decisione 55):
 
 | Nome | Colore | Icona |
 |---|---|---|
@@ -128,6 +128,7 @@ Preset proposti all'installazione (tutti selezionati, deselezionabili):
 | Vetro | `#43a047` verde | `mdi:glass-fragile` |
 | Secco | `#757575` grigio | `mdi:trash-can` |
 | Verde | `#8bc34a` verde chiaro | `mdi:leaf` |
+| Pannolini | `#ec407a` rosa | `mdi:baby-carriage` |
 
 *Perché questi colori:* sono quelli dei contenitori più diffusi in Italia. Molti comuni ne
 usano altri (la plastica in blu, il secco in rosso); il colore è modificabile.
@@ -956,6 +957,12 @@ Fase 7, 2026-09-26 (in autonomia).
 54. Gli screenshot della documentazione vengono dal banco di prova (`banco/`, nel
     repository) con Chrome headless, con data e ora fisse: si rifanno identici da
     qualunque installazione.
+
+Revisione, 2026-09-26.
+
+55. Il preset dei pannolini (anche pannoloni) completa il set standard, ma non è
+    selezionato all'installazione: serve solo a chi li usa, e agli altri darebbe una
+    tipologia senza ritiri segnalata come anomalia. Richiesta del proprietario, 2026-09-26.
 
 ---
 

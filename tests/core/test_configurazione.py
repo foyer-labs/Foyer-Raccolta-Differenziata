@@ -31,8 +31,31 @@ def test_tutti_i_preset_nell_ordine_dei_preset():
     nomi = [t["nome"] for t in configurazione["tipologie"]]
     assert nomi == [p.nome for p in PRESET]
     assert [t["id"] for t in configurazione["tipologie"]] == [
-        f"id{i}" for i in range(1, 7)
+        f"id{i}" for i in range(1, len(PRESET) + 1)
     ]
+
+
+def test_i_pannolini_ci_sono_ma_non_sono_predefiniti():
+    """Decisione 55."""
+    from custom_components.foyer_raccolta_differenziata.core.preset import (
+        CHIAVI_PREDEFINITE,
+    )
+
+    pannolini = next(p for p in PRESET if p.chiave == "pannolini")
+    assert (pannolini.nome, pannolini.colore, pannolini.icona) == (
+        "Pannolini",
+        "#ec407a",
+        "mdi:baby-carriage",
+    )
+    assert "pannolini" not in CHIAVI_PREDEFINITE
+    assert CHIAVI_PREDEFINITE == (
+        "umido",
+        "carta",
+        "plastica",
+        "vetro",
+        "secco",
+        "verde",
+    )
 
 
 def test_i_colori_e_le_icone_della_spec():
@@ -92,7 +115,7 @@ def test_il_resto_nasce_vuoto_e_i_solleciti_spenti():
 
 def test_preset_sconosciuto_rifiutato():
     with pytest.raises(ValueError, match="preset sconosciuti"):
-        configurazione_iniziale(["pannolini"], FINESTRA_PREDEFINITA, _id_progressivi())
+        configurazione_iniziale(["tetrapak"], FINESTRA_PREDEFINITA, _id_progressivi())
 
 
 def test_finestra_non_valida_rifiutata():
