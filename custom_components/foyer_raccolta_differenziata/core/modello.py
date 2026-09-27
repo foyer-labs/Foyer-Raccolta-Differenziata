@@ -38,6 +38,8 @@ class Tipologia:
     icona: str
     note: str
     esposizione: Finestra | None
+    # Vuota: le notifiche la ricavano dall'icona (decisione 71).
+    emoji: str = ""
 
 
 @dataclass(frozen=True)
@@ -256,6 +258,7 @@ def carica(dati: dict[str, Any]) -> Configurazione:
             colore=t["colore"],
             icona=t["icona"],
             note=t.get("note") or "",
+            emoji=(t.get("emoji") or "").strip(),
             esposizione=(
                 carica_finestra(t["esposizione"]) if t.get("esposizione") else None
             ),

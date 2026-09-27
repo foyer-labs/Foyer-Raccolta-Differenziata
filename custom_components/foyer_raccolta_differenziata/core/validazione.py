@@ -16,6 +16,7 @@ import re
 from typing import Any
 
 from .configurazione import errore_finestra
+from .emoji import LUNGHEZZA_MASSIMA
 from .modello import ULTIMA
 
 DATA_MINIMA = date(2000, 1, 1)
@@ -214,6 +215,13 @@ class _Validatore:
             note = t.get("note") or ""
             if not isinstance(note, str) or len(note) > 500:
                 self.segnala(f"{percorso}.note", "note_troppo_lunghe")
+            emoji = t.get("emoji") or ""
+            if (
+                not isinstance(emoji, str)
+                or len(emoji.strip()) > LUNGHEZZA_MASSIMA
+                or any(c.isspace() for c in emoji.strip())
+            ):
+                self.segnala(f"{percorso}.emoji", "emoji_non_valida")
             if t.get("esposizione") is not None:
                 _finestra(t["esposizione"], f"{percorso}.esposizione", self.trovati)
 
