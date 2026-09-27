@@ -78,11 +78,19 @@ async def test_la_sera_prima_arriva_la_notifica_con_il_pulsante(
     await _scatta(hass, freezer, "2026-09-23T20:30:00")
 
     (chiamata,) = chiamate
-    assert chiamata.data["title"] == "Raccolta differenziata"
-    assert chiamata.data["message"] == "Stasera fuori: Umido"
+    assert chiamata.data["title"] == "🍎 Umido"
+    assert (
+        chiamata.data["message"]
+        == "Da mettere fuori stasera, entro domani alle 06:00\nRitiro domani, giovedì 24"
+    )
     azioni = chiamata.data["data"]["actions"]
     assert [a["title"] for a in azioni] == ["Esposto ✓"]
     assert chiamata.data["data"]["tag"] == "raccolta-2026-09-24"
+    # Android: icona e colore della tipologia, un canale e un gruppo propri.
+    assert chiamata.data["data"]["notification_icon"] == "mdi:food-apple"
+    assert chiamata.data["data"]["color"] == "#795548"
+    assert chiamata.data["data"]["channel"] == "Raccolta differenziata"
+    assert chiamata.data["data"]["group"] == "raccolta-differenziata"
 
     await _scatta(hass, freezer, "2026-09-23T20:31:00")
     assert len(chiamate) == 1, "un invio non parte mai due volte"
@@ -172,7 +180,9 @@ async def test_al_riavvio_si_recupera_se_serve_ancora(hass, hass_storage, freeze
 
     await installa(hass, hass_storage, _config(), _stato("2026-09-23T18:00:00"))
 
-    assert [c.data["message"] for c in chiamate] == ["Stasera fuori: Umido"]
+    assert [c.data["message"] for c in chiamate] == [
+        "Da mettere fuori stasera, entro domani alle 06:00\nRitiro domani, giovedì 24"
+    ]
 
 
 async def test_al_riavvio_non_si_recupera_a_finestra_chiusa(
@@ -201,8 +211,8 @@ async def test_sollecito_con_il_pulsante_rimanda(hass, hass_storage, freezer):
     await _scatta(hass, freezer, "2026-09-23T21:00:00")
 
     assert [c.data["message"] for c in chiamate] == [
-        "Stasera fuori: Umido",
-        "Ancora da esporre: Umido",
+        "Da mettere fuori stasera, entro domani alle 06:00\nRitiro domani, giovedì 24",
+        "Ancora da mettere fuori, entro domani alle 06:00\nRitiro domani, giovedì 24",
     ]
 
 
@@ -220,8 +230,8 @@ async def test_rinvio_dal_pulsante_della_notifica(hass, hass_storage, freezer):
     await _scatta(hass, freezer, "2026-09-23T21:00:00")
 
     assert [c.data["message"] for c in chiamate] == [
-        "Stasera fuori: Umido",
-        "Ancora da esporre: Umido",
+        "Da mettere fuori stasera, entro domani alle 06:00\nRitiro domani, giovedì 24",
+        "Ancora da mettere fuori, entro domani alle 06:00\nRitiro domani, giovedì 24",
     ]
 
 
@@ -240,8 +250,8 @@ async def test_entita_notify_riceve_solo_il_testo(hass, hass_storage, freezer):
     (chiamata,) = chiamate
     assert chiamata.data == {
         "entity_id": "notify.telegram_casa",
-        "title": "Raccolta differenziata",
-        "message": "Stasera fuori: Umido",
+        "title": "🍎 Umido",
+        "message": "Da mettere fuori stasera, entro domani alle 06:00\nRitiro domani, giovedì 24",
     }
 
 
@@ -320,3 +330,81 @@ async def test_il_pulsante_senza_niente_da_confermare_lo_dice(
         await hass.services.async_call(
             "button", "press", {"entity_id": PULSANTE}, blocking=True
         )
+
+
+async def test_l_emoji_scelta_va_nel_titolo(hass, hass_storage, freezer):
+    from .conftest import tipologia
+
+    _a(freezer, "2026-09-23T20:29:00")
+    chiamate = async_mock_service(hass, "notify", "mobile_app_luca")
+    config = _config()
+    config["tipologie"] = [
+        tipologia("umido", "Umido", emoji="🥕"),
+        tipologia("carta", "Carta"),
+    ]
+    await installa(hass, hass_storage, config, _stato("2026-09-23T20:28:00"))
+
+    await _scatta(hass, freezer, "2026-09-23T20:30:00")
+
+    assert chiamate[0].data["title"] == "🥕 Umido"
+
+
+async def test_prova_manda_il_prossimo_ritiro_con_pulsanti_inerti(
+    hass, hass_storage, hass_ws_client
+):
+    """Senza orologio congelato: il client di prova usa l'ora vera."""
+    chiamate = async_mock_service(hass, "notify", "mobile_app_luca")
+    config = _config(solleciti=True)
+    config["regole"][0]["ricorrenza"]["giorni"] = [0, 1, 2, 3, 4, 5, 6]
+    await installa(hass, hass_storage, config)
+    client = await hass_ws_client(hass)
+
+    await client.send_json_auto_id(
+        {
+            "type": f"{DOMINIO}/promemoria/prova",
+            "destinatari": [
+                {"tipo": "servizio", "id": "mobile_app_luca"},
+                {"tipo": "servizio", "id": "non_esiste"},
+            ],
+            "tipologie": ["umido"],
+        }
+    )
+    risposta = await client.receive_json()
+
+    assert risposta["result"] == {
+        "consegnate": 1,
+        "fallite": ["servizio:non_esiste"],
+    }
+    (chiamata,) = chiamate
+    assert chiamata.data["title"] == "🍎 Umido"
+    assert chiamata.data["message"].startswith("Da mettere fuori")
+    assert chiamata.data["message"].endswith(
+        "Questa è una prova: i pulsanti non confermano nulla."
+    )
+    assert chiamata.data["data"]["tag"] == "raccolta-prova"
+    azioni = [a["action"] for a in chiamata.data["data"]["actions"]]
+    assert len(azioni) == 2
+    assert all(a.startswith("RACCOLTA_PROVA_") for a in azioni)
+
+    # Premere i pulsanti di una prova non conferma nulla.
+    for azione in azioni:
+        hass.bus.async_fire("mobile_app_notification_action", {"action": azione})
+    await hass.async_block_till_done()
+    voce = hass.config_entries.async_entries(DOMINIO)[0]
+    assert voce.runtime_data.conferme == frozenset()
+
+
+async def test_prova_senza_ritiri_lo_dice(hass, hass_storage, hass_ws_client):
+    async_mock_service(hass, "notify", "mobile_app_luca")
+    await installa(hass, hass_storage, _config())
+    client = await hass_ws_client(hass)
+
+    await client.send_json_auto_id(
+        {
+            "type": f"{DOMINIO}/promemoria/prova",
+            "destinatari": [{"tipo": "servizio", "id": "mobile_app_luca"}],
+            "tipologie": ["nessuna"],
+        }
+    )
+
+    assert (await client.receive_json())["error"]["code"] == "nessun_ritiro"

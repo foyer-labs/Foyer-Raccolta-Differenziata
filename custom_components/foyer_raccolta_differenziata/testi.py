@@ -9,7 +9,8 @@ stanno qui, in un solo posto, e nessun altro modulo scrive testo visibile
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from dataclasses import dataclass
+from datetime import date, datetime, timedelta
 
 TITOLO_VOCE = "Raccolta differenziata"
 TITOLO_PANNELLO = "Raccolta"
@@ -35,31 +36,90 @@ def festivo(nome: str) -> str:
     return f"Giorno festivo: {nome}"
 
 
-# --- notifiche (SPEC §8.2) ------------------------------------------------------------
+# --- notifiche (SPEC §8.2, decisione 71) ----------------------------------------
 
 AZIONE_ESPOSTO = "Esposto ✓"
 AZIONE_RINVIA = "Ricordamelo tra 30 minuti"
+# Il canale delle notifiche su Android: suono e importanza si scelgono lì.
+CANALE_NOTIFICHE = "Raccolta differenziata"
 _GIORNI = ("Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica")
 
 
-def elenco(nomi: list[str]) -> str:
-    """ "Umido", "Umido e Carta", "Umido, Carta e Vetro"."""
-    if len(nomi) <= 1:
-        return "".join(nomi)
-    return f"{', '.join(nomi[:-1])} e {nomi[-1]}"
+@dataclass(frozen=True)
+class VoceNotifica:
+    """Una tipologia di un invio: il nome, l'emoji e la sua finestra di esposizione."""
+
+    nome: str
+    emoji: str
+    # Nessuna finestra se il ritiro non è più nel calendario calcolato.
+    inizio: datetime | None = None
+    fine: datetime | None = None
 
 
-def messaggio(tipo: str, nomi: list[str], giorno: date) -> str:
-    cosa = elenco(nomi)
-    if tipo == "stasera":
-        return f"Stasera fuori: {cosa}"
-    if tipo == "oggi":
-        return f"Oggi: {cosa}"
-    if tipo == "domani":
-        return f"Domani: {cosa}"
-    if tipo == "sollecito":
-        return f"Ancora da esporre: {cosa}"
-    return f"{_GIORNI[giorno.weekday()]} {giorno.day}: {cosa}"
+PROVA = "Questa è una prova: i pulsanti non confermano nulla."
+
+
+def _giornata(giorno: date) -> str:
+    return f"{_GIORNI[giorno.weekday()].lower()} {giorno.day}"
+
+
+def _momento(istante: datetime, oggi: date) -> str:
+    """ "stasera", "oggi", "domani", "domani sera", "venerdì 26 sera"."""
+    giorno = istante.date()
+    sera = istante.hour >= 18
+    if giorno == oggi:
+        return "stasera" if sera else "oggi"
+    nome = "domani" if giorno == oggi + timedelta(days=1) else _giornata(giorno)
+    return f"{nome} sera" if sera else nome
+
+
+def notifica(
+    voci: list[VoceNotifica],
+    giorno: date,
+    ora: datetime,
+    *,
+    sollecito: bool = False,
+    prova: bool = False,
+) -> tuple[str, str]:
+    """Titolo e testo di un promemoria (decisione 71).
+
+    Il titolo dice cosa, con l'emoji di ogni tipologia; il testo dice quando
+    metterlo fuori e quando passa il ritiro. Con più tipologie vale la finestra che
+    le comprende tutte: dall'inizio più tardo alla fine più presto.
+    """
+    titolo = " · ".join(f"{v.emoji} {v.nome}" for v in voci)
+    fuso = ora.tzinfo
+    oggi = ora.date()
+    inizi = [v.inizio.astimezone(fuso) for v in voci if v.inizio]
+    fini = [v.fine.astimezone(fuso) for v in voci if v.fine]
+    base = "Ancora da mettere fuori" if sollecito else "Da mettere fuori"
+    if not inizi or not fini:
+        inizio = fine = ora
+    else:
+        inizio, fine = max(inizi), min(fini)
+        if inizio >= fine:
+            inizio = min(inizi)
+    if ora < inizio:
+        cosa = f"{base} {_momento(inizio, oggi)} dalle {inizio:%H:%M}"
+    elif ora < fine:
+        entro = (
+            f"entro le {fine:%H:%M}"
+            if fine.date() == oggi
+            else f"entro {_momento(fine, oggi)} alle {fine:%H:%M}"
+        )
+        if not sollecito and ora.hour >= 18:
+            base = f"{base} stasera"
+        cosa = f"{base}, {entro}"
+    else:
+        cosa = base
+    if giorno == oggi:
+        ritiro = f"Ritiro oggi, {_giornata(giorno)}"
+    elif giorno == oggi + timedelta(days=1):
+        ritiro = f"Ritiro domani, {_giornata(giorno)}"
+    else:
+        ritiro = f"Ritiro {_giornata(giorno)}"
+    righe = [cosa, ritiro] + ([PROVA] if prova else [])
+    return titolo, "\n".join(righe)
 
 
 # --- il file Excel (decisione 59) ---------------------------------------------------
@@ -113,6 +173,8 @@ EXCEL_AIUTO_COLONNE: dict[tuple[str, str], str] = {
     ("Tipologie", "nome"): "Il nome della tipologia, come compare nelle card.",
     ("Tipologie", "colore"): "Codice esadecimale, per esempio #795548.",
     ("Tipologie", "icona"): "Un'icona Material Design, per esempio mdi:food-apple.",
+    ("Tipologie", "emoji"): "L'emoji del titolo delle notifiche. Vuoto: si ricava "
+    "dall'icona. Facoltativo.",
     ("Tipologie", "note"): "Cosa ci va: si legge nelle card al tocco. Facoltativo.",
     ("Tipologie", "esposizione_dalle"): "Da che ora si espone, se diversa dal "
     "generale.",

@@ -71,7 +71,7 @@ async def test_il_modello_ha_leggimi_i_fogli_e_le_tipologie_di_base(
     # L'intestazione è alla riga 4, l'esempio sopra; l'ID è nascosto.
     assert tipologie["A4"].value == "Nome"
     assert tipologie["A3"].value == "Umido"
-    assert tipologie.column_dimensions["H"].hidden
+    assert tipologie.column_dimensions["I"].hidden
     assert tipologie["A4"].comment is not None
     assert _righe(cartella, "Regole") == []
     menu = {

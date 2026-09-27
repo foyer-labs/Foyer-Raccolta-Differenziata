@@ -10,7 +10,7 @@ import type { Finestra, HomeAssistant, LetturaConfigurazione, LetturaRitiri, Tip
 import { avvisa, copia, proponi } from "../contesto";
 import "../../comune/finestra";
 import "../../comune/selettore";
-import { OPZIONI_ICONE } from "../../comune/icone";
+import { OPZIONI_ICONE, emojiDi } from "../../comune/icone";
 import { definisci } from "../../comune/definisci";
 
 const DOMINIO = "foyer_raccolta_differenziata";
@@ -56,6 +56,7 @@ export class RdTipologie extends LitElement {
       nome: "",
       colore: COLORI.find((c) => !usati.has(c)) ?? COLORI[0],
       icona: "mdi:trash-can-outline",
+      emoji: "",
       note: "",
       esposizione: null,
     };
@@ -78,7 +79,7 @@ export class RdTipologie extends LitElement {
       this._bozza = undefined;
       return;
     }
-    const pulita = { ...bozza, nome: bozza.nome.trim(), note: bozza.note.trim() };
+    const pulita = { ...bozza, nome: bozza.nome.trim(), note: bozza.note.trim(), emoji: (bozza.emoji ?? "").trim() };
     if (i >= 0) nuova.tipologie[i] = pulita;
     else nuova.tipologie.push(pulita);
     proponi(this, nuova);
@@ -151,6 +152,11 @@ export class RdTipologie extends LitElement {
           <small>${T.iconaAiuto}</small>
         </div>
         <div class="campo">
+          <label for="emoji">${T.emoji}</label>
+          <input id="emoji" class="emoji" maxlength="16" placeholder=${emojiDi(b.icona)} .value=${b.emoji ?? ""} @input=${(e: InputEvent) => this._aggiorna({ emoji: (e.target as HTMLInputElement).value })} />
+          <small>${T.emojiAiuto(emojiDi(b.icona))}</small>
+        </div>
+        <div class="campo">
           <label for="note">${T.note}</label>
           <textarea id="note" maxlength="500" .value=${b.note} @input=${(e: InputEvent) => this._aggiorna({ note: (e.target as HTMLTextAreaElement).value })}></textarea>
         </div>
@@ -215,6 +221,10 @@ export class RdTipologie extends LitElement {
     pagina,
     moduli,
     css`
+      input.emoji {
+        width: 7em;
+        font-size: 18px;
+      }
       .griglia {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));

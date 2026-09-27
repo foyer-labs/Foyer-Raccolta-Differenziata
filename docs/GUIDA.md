@@ -57,8 +57,9 @@ collegamento alla configurazione.
 
 ## Tipologie
 
-Una tipologia è un tipo di rifiuto: nome, colore, icona e una nota su cosa ci va, che le
-card mostrano. Per l'icona scrivi cosa cerchi (*umido*, *pannolini*, *divano*…) e scegli
+Una tipologia è un tipo di rifiuto: nome, colore, icona, l'emoji delle notifiche e una
+nota su cosa ci va, che le card mostrano. L'emoji si può lasciare vuota: la notifica usa
+quella che corrisponde all'icona (🍎 per la mela, 📰 per il giornale…). Per l'icona scrivi cosa cerchi (*umido*, *pannolini*, *divano*…) e scegli
 dall'elenco, oppure scrivi direttamente un'icona di Material Design come `mdi:recycle`.
 
 <p align="center"><img src="screenshots/pannello-tipologie.png" alt="Le tipologie come riquadri colorati, ciascuno con la nota e la data del prossimo ritiro" width="820"></p>
@@ -136,9 +137,20 @@ Nel campo *A chi* scrivi per cercare (un nome o un pezzo di `notify.…`), scegl
 suggerimenti, e togli un destinatario con la ✕ accanto. I filtri sopra i suggerimenti
 separano i telefoni con l'app Companion dagli altri servizi e dalle entità di notifica.
 
-Più rifiuti nello stesso giorno arrivano in un messaggio solo: *Stasera fuori: Umido e
-Plastica*. I telefoni con l'app Companion ricevono anche il pulsante **Esposto ✓**; gli
-altri servizi (Telegram, email, …) ricevono il testo.
+Più rifiuti nello stesso giorno arrivano in un messaggio solo:
+
+> **🍎 Umido · 🧴 Plastica**\
+> Da mettere fuori stasera, entro domani alle 06:00\
+> Ritiro domani, giovedì 24
+
+I telefoni con l'app Companion ricevono anche il pulsante **Esposto ✓**, e su Android la
+notifica ha l'icona e il colore del rifiuto; gli altri servizi (Telegram, email, …)
+ricevono titolo e testo. Su Android le notifiche hanno un canale proprio, *Raccolta
+differenziata*: nelle impostazioni dell'app ne scegli suono e importanza.
+
+**Prova.** *Invia una prova*, sotto *A chi*, manda subito la notifica del prossimo ritiro ai
+destinatari scelti, anche prima di salvare: vedi com'è fatta e se arriva. I suoi pulsanti
+non confermano nulla.
 
 **Solleciti.** Spenti di default. Accesi, il promemoria si ripete (una o due volte, a
 intervalli che scegli) finché qualcuno non conferma, e la notifica ha anche *Ricordamelo
