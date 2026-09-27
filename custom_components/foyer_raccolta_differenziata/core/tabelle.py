@@ -125,6 +125,7 @@ TIPOLOGIE = Foglio(
         Colonna("nome", "Nome", larghezza=20),
         Colonna("colore", "Colore", larghezza=11),
         Colonna("icona", "Icona", larghezza=24),
+        Colonna("emoji", "Emoji", larghezza=8),
         Colonna("note", "Cosa ci va", larghezza=40),
         Colonna("esposizione_dalle", "Esposizione: dalle", "ora", larghezza=12),
         Colonna(
@@ -713,6 +714,7 @@ def in_tabelle(config: Mapping[str, Any]) -> dict[str, list[dict[str, Any]]]:
                 "nome": t["nome"],
                 "colore": t["colore"],
                 "icona": t["icona"],
+                "emoji": t.get("emoji") or None,
                 "note": t.get("note") or None,
                 "esposizione_dalle": _ora_cella(finestra["inizio_ora"])
                 if finestra
@@ -1003,6 +1005,10 @@ class _Lettore:
             icona = self.cella(f, riga, "icona", leggi_icona) or (
                 base["icona"] if base else p.icona if p else ICONA_PREDEFINITA
             )
+            if "emoji" in tabella.colonne:
+                emoji = _testo(riga["emoji"])
+            else:
+                emoji = (base or {}).get("emoji") or ""
             if "note" in tabella.colonne:
                 note = _testo(riga["note"])
             else:
@@ -1015,6 +1021,10 @@ class _Lettore:
                 "note": note,
                 "esposizione": self.finestra_tipologia(riga),
             }
+            if emoji:
+                # Vuota vale "dall'icona": la chiave non si scrive, come negli archivi
+                # nati prima della decisione 71.
+                elemento["emoji"] = emoji
             if base is not None:
                 presi.add(base["id"])
                 elemento["id"] = self.riserva(base["id"])
@@ -1651,7 +1661,7 @@ def _stesse(*chiavi: str) -> dict[str, str]:
 
 
 _COLONNE_DEI_CAMPI: dict[str, dict[str, str]] = {
-    "tipologie": _stesse("nome", "colore", "icona", "note"),
+    "tipologie": _stesse("nome", "colore", "icona", "emoji", "note"),
     "regole": _stesse(
         "tipologia", "nome", "ogni", "posizioni", "ancora", "ricorrenza", "periodo"
     )

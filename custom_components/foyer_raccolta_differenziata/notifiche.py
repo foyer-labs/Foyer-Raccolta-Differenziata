@@ -21,8 +21,10 @@ from homeassistant.helpers.event import (
 from homeassistant.util import dt as dt_util
 
 from . import testi
+from .core.emoji import EMOJI_PREDEFINITA, emoji_di
 from .core.promemoria import (
     Conferma,
+    Destinatario,
     Evento,
     Invio,
     Rinvio,
@@ -38,6 +40,9 @@ _LOGGER = logging.getLogger(__name__)
 
 AZIONE_ESPOSTO = "RACCOLTA_ESPOSTO"
 AZIONE_RINVIA = "RACCOLTA_RINVIA"
+# I pulsanti di una prova: nessuno li ascolta.
+AZIONE_PROVA = "RACCOLTA_PROVA"
+GRUPPO = "raccolta-differenziata"
 EVENTO_AZIONE = "mobile_app_notification_action"
 SECONDI_SALVATAGGIO = 10
 
@@ -166,17 +171,115 @@ class GestorePromemoria:
 
     # --- invio ---------------------------------------------------------------------
 
-    def _nomi(self, invio: Invio) -> list[str]:
-        nomi = []
-        for identificativo in invio.tipologie:
-            tipologia = self.coordinatore.tipologia(identificativo)
-            nomi.append(tipologia.nome if tipologia else identificativo)
-        return nomi
+    def _voci(
+        self, giorno: date, tipologie: tuple[str, ...]
+    ) -> list[testi.VoceNotifica]:
+        """Nome, emoji e finestra di ogni tipologia, dai ritiri calcolati."""
+        coordinatore = self.coordinatore
+        ritiri = {
+            r.tipologia: r
+            for r in (coordinatore.risultato.ritiri if coordinatore.risultato else ())
+            if r.data == giorno
+        }
+        voci = []
+        for identificativo in tipologie:
+            tipologia = coordinatore.tipologia(identificativo)
+            ritiro = ritiri.get(identificativo)
+            voci.append(
+                testi.VoceNotifica(
+                    nome=tipologia.nome if tipologia else identificativo,
+                    emoji=emoji_di(tipologia.icona, tipologia.emoji)
+                    if tipologia
+                    else EMOJI_PREDEFINITA,
+                    inizio=ritiro.inizio_esposizione if ritiro else None,
+                    fine=ritiro.fine_esposizione if ritiro else None,
+                )
+            )
+        return voci
+
+    def _extra_app(self, tipologie: tuple[str, ...]) -> dict[str, Any]:
+        """Colore e icona della prima tipologia: li usa l'app Companion su Android;
+        iOS li ignora e mostra l'emoji del titolo (decisione 71)."""
+        extra: dict[str, Any] = {"group": GRUPPO, "channel": testi.CANALE_NOTIFICHE}
+        prima = self.coordinatore.tipologia(tipologie[0]) if tipologie else None
+        if prima is not None:
+            extra["color"] = prima.colore
+            if prima.icona.startswith("mdi:"):
+                extra["notification_icon"] = prima.icona
+        return extra
 
     async def _invia(self, invio: Invio) -> None:
-        titolo = testi.TITOLO_VOCE
-        messaggio = testi.messaggio(invio.testo, self._nomi(invio), invio.data)
-        for destinatario in invio.destinatari:
+        await self._consegna(
+            invio.destinatari,
+            invio.data,
+            invio.tipologie,
+            sollecito=invio.testo == "sollecito",
+            esposto=f"{AZIONE_ESPOSTO}_{invio.gettone}",
+            rinvia=f"{AZIONE_RINVIA}_{invio.gettone}" if invio.azioni_rinvio else None,
+            tag=f"raccolta-{invio.data.isoformat()}",
+        )
+
+    async def async_prova(
+        self, destinatari: tuple[Destinatario, ...], tipologie: tuple[str, ...] | None
+    ) -> tuple[int, list[str]] | None:
+        """Una notifica d'esempio col prossimo ritiro, a chi la chiede dal pannello.
+
+        I pulsanti hanno un identificativo che nessuno ascolta: la prova non conferma
+        né rimanda nulla. Nessuno se il calendario non ha un ritiro da mostrare.
+        """
+        risultato = self.coordinatore.risultato
+        if risultato is None:
+            return None
+        ora = dt_util.now()
+        prossimi = [
+            r
+            for r in risultato.ritiri
+            if r.fine_esposizione > ora
+            and (tipologie is None or r.tipologia in tipologie)
+        ]
+        if not prossimi:
+            return None
+        giorno = min(r.data for r in prossimi)
+        scelte = tuple(dict.fromkeys(r.tipologia for r in prossimi if r.data == giorno))
+        return await self._consegna(
+            destinatari,
+            giorno,
+            scelte,
+            sollecito=False,
+            esposto=f"{AZIONE_PROVA}_ESPOSTO",
+            rinvia=f"{AZIONE_PROVA}_RINVIA" if self._solleciti_attivi else None,
+            tag="raccolta-prova",
+            prova=True,
+        )
+
+    @property
+    def _solleciti_attivi(self) -> bool:
+        return carica_promemoria(
+            self.coordinatore.archivi.configurazione
+        ).solleciti.attivi
+
+    async def _consegna(
+        self,
+        destinatari: tuple[Destinatario, ...],
+        giorno: date,
+        tipologie: tuple[str, ...],
+        *,
+        sollecito: bool,
+        esposto: str,
+        rinvia: str | None,
+        tag: str,
+        prova: bool = False,
+    ) -> tuple[int, list[str]]:
+        """Manda a ogni destinatario; restituisce quanti l'hanno avuta e chi no."""
+        titolo, messaggio = testi.notifica(
+            self._voci(giorno, tipologie),
+            giorno,
+            dt_util.now(),
+            sollecito=sollecito,
+            prova=prova,
+        )
+        consegnate, fallite = 0, []
+        for destinatario in destinatari:
             try:
                 if destinatario.tipo == "entita":
                     await self.hass.services.async_call(
@@ -189,38 +292,36 @@ class GestorePromemoria:
                         },
                         blocking=True,
                     )
+                    consegnate += 1
                     continue
                 dati: dict[str, Any] = {
                     "title": titolo,
                     "message": messaggio,
                 }
                 if destinatario.con_azioni:
-                    azioni = [
-                        {
-                            "action": f"{AZIONE_ESPOSTO}_{invio.gettone}",
-                            "title": testi.AZIONE_ESPOSTO,
-                        }
-                    ]
-                    if invio.azioni_rinvio:
+                    azioni = [{"action": esposto, "title": testi.AZIONE_ESPOSTO}]
+                    if rinvia is not None:
                         azioni.append(
                             {
-                                "action": (
-                                    f"{AZIONE_RINVIA}_{invio.gettone}_{destinatario.chiave}"
-                                ),
+                                "action": f"{rinvia}_{destinatario.chiave}",
                                 "title": testi.AZIONE_RINVIA,
                             }
                         )
                     # Lo stesso tag per lo stesso giorno: il sollecito sostituisce il
                     # promemoria invece di accumularsi.
                     dati["data"] = {
-                        "tag": f"raccolta-{invio.data.isoformat()}",
+                        "tag": tag,
                         "actions": azioni,
+                        **self._extra_app(tipologie),
                     }
                 await self.hass.services.async_call(
                     "notify", destinatario.id, dati, blocking=True
                 )
+                consegnate += 1
             except Exception:
                 _LOGGER.exception("Promemoria non consegnato a %s", destinatario.chiave)
+                fallite.append(destinatario.chiave)
+        return consegnate, fallite
 
     # --- pulsanti delle notifiche -----------------------------------------------------
 

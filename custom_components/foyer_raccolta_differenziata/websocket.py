@@ -23,7 +23,7 @@ from .core import serializza
 from .core.calendario import anomalie, calcola
 from .core.modello import carica
 from .core.piattaforma import giorni, intervalli
-from .core.promemoria import AnnullaConferma, Conferma
+from .core.promemoria import AnnullaConferma, Conferma, Destinatario
 from .core.validazione import problemi
 
 GIORNI_ANTEPRIMA = 60
@@ -127,6 +127,7 @@ def async_registra(hass: HomeAssistant) -> None:
         ws_anteprima,
         ws_ignora_anomalia,
         ws_barra_laterale,
+        ws_prova_notifica,
     ):
         websocket_api.async_register_command(hass, comando)
 
@@ -442,3 +443,43 @@ def ws_barra_laterale(hass: HomeAssistant, connection, msg: dict[str, Any]) -> N
         entry, options={**entry.options, OPZIONE_BARRA_LATERALE: msg["mostra"]}
     )
     connection.send_result(msg["id"])
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMINIO}/promemoria/prova",
+        vol.Required("destinatari"): vol.All(
+            [
+                {
+                    vol.Required("tipo"): vol.In(("servizio", "entita")),
+                    vol.Required("id"): vol.All(str, vol.Length(min=1)),
+                }
+            ],
+            vol.Length(min=1),
+        ),
+        vol.Optional("tipologie"): vol.Any(None, [str]),
+    }
+)
+@websocket_api.async_response
+async def ws_prova_notifica(
+    hass: HomeAssistant, connection, msg: dict[str, Any]
+) -> None:
+    """Il pulsante "Prova" di un promemoria: la notifica vera del prossimo ritiro,
+    subito, ai destinatari del modulo anche se non è ancora salvato (decisione 72)."""
+    coordinatore = _coordinatore(hass)
+    if coordinatore is None:
+        _senza_coordinatore(connection, msg)
+        return
+    tipologie = msg.get("tipologie")
+    esito = await coordinatore.gestore.async_prova(
+        tuple(Destinatario(d["tipo"], d["id"]) for d in msg["destinatari"]),
+        tuple(tipologie) if tipologie else None,
+    )
+    if esito is None:
+        connection.send_error(
+            msg["id"], "nessun_ritiro", "Nessun ritiro in calendario per la prova"
+        )
+        return
+    consegnate, fallite = esito
+    connection.send_result(msg["id"], {"consegnate": consegnate, "fallite": fallite})

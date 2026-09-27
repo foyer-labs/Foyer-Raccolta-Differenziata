@@ -118,6 +118,7 @@ riutilizzate. Rinominare una tipologia non cambia il suo identificatore, né gli
 | `colore` | `#rrggbb` | Il testo sopra il colore è scelto automaticamente (bianco/nero) per il contrasto. |
 | `icona` | `mdi:…` | |
 | `note` | stringa, max 500, facoltativa | "Cosa ci va". Mostrata nelle card al tocco. |
+| `emoji` | stringa, max 16, senza spazi, facoltativa | Il titolo delle notifiche. Vuota: ricavata dall'icona, altrimenti ♻️ (decisione 71). |
 | `esposizione` | finestra, facoltativa | Sovrascrive la finestra globale (§4.5). |
 
 Preset proposti all'installazione (selezionati tutti tranne i pannolini, decisione 55):
@@ -475,8 +476,19 @@ l'invio avviene al primo minuto valido successivo; se esiste due volte, alla pri
 
 Un **invio** raggruppa tutti i ritiri che hanno lo stesso profilo, la stessa data di ritiro e
 lo stesso istante di invio. Due tipologie con finestre diverse e profilo "all'apertura"
-generano due invii distinti. Testo: "Stasera fuori: Umido e Carta" / "Domani: Vetro" /
-"Oggi: Secco" secondo la distanza; le note delle tipologie non entrano nel messaggio.
+generano due invii distinti.
+
+Il **titolo** elenca le tipologie con la loro emoji: "🍎 Umido · 📰 Carta". Il **testo** dice
+quando metterle fuori e quando passa il ritiro, rispetto all'istante dell'invio (decisione
+71):
+
+- prima della finestra: "Da mettere fuori stasera dalle 20:00";
+- a finestra aperta: "Da mettere fuori stasera, entro domani alle 06:00";
+- un sollecito: "Ancora da mettere fuori, entro domani alle 06:00";
+- poi il ritiro: "Ritiro domani, giovedì 24" / "Ritiro oggi, …" / "Ritiro sabato 27".
+
+Con più tipologie vale la finestra che le comprende tutte. Le note delle tipologie non
+entrano nel messaggio.
 
 Un ritiro già confermato non entra in un invio. Un invio senza ritiri non parte.
 
@@ -493,6 +505,17 @@ A tutti gli altri servizi e alle entità
 indica accanto a ogni destinatario se riceverà i pulsanti. Le azioni
 tornano come evento `mobile_app_notification_action`; l'identificativo dell'azione porta
 un gettone opaco che il sistema riconduce all'invio.
+
+All'app Companion arrivano anche il colore e l'icona della prima tipologia
+(`color`, `notification_icon`), il gruppo `raccolta-differenziata` e il canale Android
+"Raccolta differenziata", dove l'utente sceglie suono e importanza. iOS li ignora e mostra
+l'emoji del titolo.
+
+**Prova.** Nel modulo di un promemoria, *Invia una prova* manda subito ai destinatari del
+modulo, anche non salvato, la notifica vera del prossimo ritiro delle sue tipologie, con
+una riga che dice che è una prova (decisione 72). I pulsanti della prova hanno un
+identificativo che nessuno ascolta: non confermano e non rimandano nulla. Senza un ritiro
+in calendario la prova non parte e il pannello lo dice. Solo gli amministratori.
 
 ### 8.4 Conferma
 
@@ -1177,6 +1200,16 @@ in autonomia con l'opzione consigliata).
     copiata con l'ID nascosto è un elemento nuovo, e con "sostituisci" un solo foglio
     della piattaforma è un errore. Le card usano il fuso di Home Assistant e si
     riprendono da sole dopo un riavvio.
+
+Notifiche più ricche, 2026-09-27 (richiesta del proprietario).
+
+71. Titolo con le tipologie e la loro emoji, testo con il quando: prima era sempre
+    "Raccolta differenziata" / "Stasera fuori: Umido". L'emoji perché iOS non mostra le
+    icone Material Design: si ricava dall'icona (tabella in `core/emoji.py`, la stessa
+    del pannello, lo controlla un test) e si può scegliere per tipologia, anche dal file
+    Excel. Su Android icona e colore della tipologia, e un canale proprio.
+72. Il pulsante *Invia una prova* nel modulo di un promemoria: la notifica del prossimo
+    ritiro, subito, ai destinatari scelti anche prima di salvare, con pulsanti inerti.
 
 ---
 

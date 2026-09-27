@@ -7,6 +7,20 @@ non solo "correzioni", e quello che richiede qualcosa da te viene prima di tutto
 
 ## [Non rilasciato]
 
+## [0.6.0] — 2026-09-27 — notifiche più belle
+
+### Aggiunto
+- **Notifiche più ricche:** il titolo elenca i rifiuti con la loro emoji (*🍎 Umido · 🧴
+  Plastica*), il testo dice quando metterli fuori e quando passa il ritiro (*Da mettere
+  fuori stasera, entro domani alle 06:00 — Ritiro domani, giovedì 24*).
+- **Emoji delle notifiche** per ogni tipologia, in *Tipologie* e nel file Excel. Vuota, si
+  ricava dall'icona.
+- **Android:** la notifica ha l'icona e il colore del rifiuto, e un canale proprio,
+  *Raccolta differenziata*, per sceglierne suono e importanza.
+- **Invia una prova** nel modulo di un promemoria: la notifica del prossimo ritiro arriva
+  subito ai destinatari scelti, anche prima di salvare. I suoi pulsanti non confermano
+  nulla.
+
 ## [0.5.2] — 2026-09-26 — card più ordinate
 
 ### Corretto

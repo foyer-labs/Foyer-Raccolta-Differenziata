@@ -31,6 +31,8 @@ export interface Tipologia {
   icona: string;
   note: string;
   esposizione: Finestra | null;
+  /** Vuota o assente: le notifiche la ricavano dall'icona. */
+  emoji?: string;
 }
 
 export type Ricorrenza =

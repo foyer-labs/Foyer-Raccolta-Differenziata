@@ -4,9 +4,9 @@ import { live } from "lit/directives/live.js";
 
 import { chip, nuovoId } from "../../comune/chip";
 import { base, moduli, pagina } from "../../comune/stili";
-import { fraseQuando, T } from "../../comune/testi";
+import { fraseQuando, messaggioProblema, T } from "../../comune/testi";
 import type { Destinatario, HomeAssistant, LetturaConfigurazione, Profilo, Quando } from "../../comune/tipi";
-import { copia, proponi } from "../contesto";
+import { avvisa, copia, proponi } from "../contesto";
 import "../../comune/finestra";
 import "../../comune/selettore";
 import type { Opzione } from "../../comune/selettore";
@@ -40,12 +40,38 @@ export class RdPromemoria extends LitElement {
     lettura: { attribute: false },
     _bozza: { state: true },
     _vacanza: { state: true },
+    _provando: { state: true },
   };
 
   hass!: HomeAssistant;
   lettura!: LetturaConfigurazione;
   private _bozza?: Profilo;
   private _vacanza = { dal: "", al: "" };
+  private _provando = false;
+
+  /** "Invia una prova": la notifica vera del prossimo ritiro, ai destinatari del
+   * modulo anche prima di salvare (decisione 72). */
+  private async _prova() {
+    const b = this._bozza;
+    if (!b || !b.destinatari.length) return;
+    this._provando = true;
+    try {
+      const esito = await this.hass.callWS<{ consegnate: number; fallite: string[] }>({
+        type: "foyer_raccolta_differenziata/promemoria/prova",
+        destinatari: b.destinatari,
+        tipologie: b.tipologie,
+      });
+      const nomi = new Map(this._disponibili().map((o) => [o.id, o.nome]));
+      if (esito.fallite.length)
+        avvisa(this, T.provaFallita(esito.fallite.map((c) => nomi.get(c) ?? daChiave(c).id).join(", ")));
+      else avvisa(this, T.provaInviata(esito.consegnate));
+    } catch (e) {
+      const codice = (e as { code?: string })?.code;
+      avvisa(this, codice === "nessun_ritiro" ? messaggioProblema({ codice, percorso: "" }) : T.provaErrore);
+    } finally {
+      this._provando = false;
+    }
+  }
 
   propostaAnnullata() {
     // "Indietro" su una modifica dei solleciti: i controlli tornano ai valori salvati.
@@ -206,6 +232,12 @@ export class RdPromemoria extends LitElement {
             : html`<div class="aiuto">${T.nessunDestinatario}</div>`}
           <small>${T.destinatariAiuto}</small>
         </div>
+        <div class="campo">
+          <button class="bottone prova" ?disabled=${!b.destinatari.length || this._provando} @click=${this._prova}>
+            <ha-icon icon="mdi:bell-ring-outline"></ha-icon>${T.prova}
+          </button>
+          <small>${T.provaAiuto}</small>
+        </div>
       </div>
       <div class="azioni-modulo" slot="azioni">
         ${esistente ? html`<button class="bottone pericolo" @click=${this._eliminaProfilo}>${T.elimina}</button>` : nothing}
@@ -357,6 +389,13 @@ export class RdPromemoria extends LitElement {
       .scelta .tutte.attivo {
         background: var(--rd-primario);
         color: var(--text-primary-color, #fff);
+      }
+      .bottone.prova {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        align-self: flex-start;
+        --mdc-icon-size: 18px;
       }
       .destinatari {
         display: grid;

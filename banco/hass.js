@@ -213,6 +213,7 @@ export function creaHass({ conferme = [] } = {}) {
       if (t === "config/salva") { config = { ...msg.configurazione, revisione: config.revisione + 1 }; return { salvato: true, problemi: [], revisione: config.revisione }; }
       if (t === "anomalie/ignora") { ignorati.push({ data: msg.data, tipologia: msg.tipologia }); return null; }
       if (t === "barra_laterale") { barra = msg.mostra; return null; }
+      if (t === "promemoria/prova") { console.log("prova", JSON.stringify(msg)); return { consegnate: msg.destinatari.length, fallite: [] }; }
       if (msg.type === "auth/sign_path") return { path: msg.path };
       if (t === "excel/importa") {
         // ?importa=errori: un file con problemi; altrimenti il calendario nuovo del
