@@ -1,11 +1,13 @@
-name: Problema
-description: Qualcosa non funziona come dovrebbe.
+name: Problema / Problem
+description: Qualcosa non funziona come dovrebbe. / Something does not work as expected.
 labels: ["problema"]
 body:
   - type: markdown
     attributes:
       value: |
         Grazie della segnalazione. Prima di aprirla, guarda la [guida](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/docs/GUIDA.md) e le Riparazioni di Home Assistant.
+
+        Puoi scrivere in italiano o in inglese. / English is fine too ([guide](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/docs/GUIDE.md)).
   - type: input
     id: versione
     attributes:

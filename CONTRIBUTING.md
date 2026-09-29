@@ -1,5 +1,8 @@
 # Contribuire
 
+> *Issues and pull requests in English are welcome; the code, comments and docs are in
+> Italian by design.*
+
 Grazie dell'interesse. Il progetto è tutto in italiano: codice, commenti, commit,
 documentazione (SPEC §3, INV-5).
 
