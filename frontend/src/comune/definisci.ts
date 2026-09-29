@@ -1,11 +1,12 @@
 // Definire gli elementi quando Home Assistant è pronto a riconoscerli.
 //
 // L'app di Home Assistant, partendo, sostituisce il registro degli elementi con uno
-// suo (il polyfill dei registri con ambito). Le card si caricano come modulo extra
-// (decisione 46) e possono arrivare prima: un elemento definito nel registro vecchio
-// esiste nell'elenco delle card ma il selettore non lo trova, e la card non si può
-// aggiungere da interfaccia. Si aspetta che l'app definisca <home-assistant>; fuori da
-// Home Assistant (il banco di prova) non c'è niente da aspettare.
+// suo (il polyfill dei registri con ambito). Le card si caricano anche come modulo
+// extra dell'index (decisione 73) e possono arrivare prima: un elemento definito nel
+// registro vecchio esiste nell'elenco delle card ma il selettore non lo trova, e la
+// card non si può aggiungere da interfaccia. Si aspetta che l'app definisca
+// <home-assistant>; fuori da Home Assistant (il banco di prova) non c'è niente da
+// aspettare.
 const pronto: Promise<unknown> =
   document.querySelector("home-assistant") && !customElements.get("home-assistant")
     ? customElements.whenDefined("home-assistant")

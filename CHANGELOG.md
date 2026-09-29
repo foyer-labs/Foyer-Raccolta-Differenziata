@@ -7,6 +7,29 @@ non solo "correzioni", e quello che richiede qualcosa da te viene prima di tutto
 
 ## [Non rilasciato]
 
+## [0.6.2] — 2026-09-29 — card sempre al loro posto nell'app
+
+Dopo l'aggiornamento riavvia Home Assistant. Non serve aggiungere niente.
+
+### Corretto
+- **«Errore di configurazione» nell'app Companion:** aprendo l'app le card della
+  raccolta potevano mancare, e tornavano solo con «Ricarica risorse» fino alla
+  riapertura successiva. L'app partiva da una copia vecchia della pagina, conservata dal
+  *service worker* di Home Assistant, in cui le card non c'erano. Ora le card arrivano
+  anche come risorsa delle plance, che l'app riceve sempre aggiornata.
+
+### Cambiato
+- **Una voce nuova tra le risorse delle plance**,
+  `/api/foyer_raccolta_differenziata/frontend/loader.js`, aggiunta e tolta
+  dall'integrazione. Con le risorse in YAML vive solo in memoria e non tocca i tuoi file.
+  Una risorsa della raccolta aggiunta a mano in passato non serve più: tra le risorse
+  gestite dall'interfaccia sparisce da sola, in YAML puoi toglierla quando vuoi.
+- **Se la voce di configurazione non parte**, le card dicono che il calendario non è
+  disponibile, invece di «Errore di configurazione».
+- **Aggiornamenti più puliti:** ogni versione delle card e del pannello ha un indirizzo
+  suo, così il telefono non tiene una versione vecchia in cache. Gli indirizzi delle
+  versioni precedenti portano a quella nuova.
+
 ## [0.6.1] — 2026-09-29 — anche in inglese
 
 Nessuna modifica all'integrazione: cambiano solo i testi che la presentano.

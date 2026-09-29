@@ -29,6 +29,9 @@ ICONA_PANNELLO: Final = "mdi:trash-can-outline"
 URL_STATICO: Final = "/foyer_raccolta_differenziata_statici"
 MODULO_PANNELLO: Final = "raccolta-pannello.js"
 MODULO_CARD: Final = "raccolta-card.js"
+# La risorsa Lovelace delle card (decisione 73): stabile per sempre, e sotto /api/
+# il service worker di Home Assistant non tiene nulla in cache.
+URL_LOADER: Final = f"/api/{DOMINIO}/frontend/loader.js"
 
 # Segnale di ogni ricalcolo, per le iscrizioni WebSocket di pannello e card.
 SEGNALE_AGGIORNATO: Final = f"{DOMINIO}_aggiornato"

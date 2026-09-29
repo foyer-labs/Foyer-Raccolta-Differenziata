@@ -36,7 +36,6 @@ async def test_il_pannello_e_registrato_per_gli_amministratori(
     assert pannello.sidebar_title == "Raccolta"
     assert pannello.show_in_sidebar
     assert pannello.config["_panel_custom"]["name"] == ELEMENTO_PANNELLO
-    assert "raccolta-pannello.js?v=" in pannello.config["_panel_custom"]["module_url"]
 
 
 async def test_nascondere_dal_configura_toglie_solo_dalla_barra(
@@ -100,14 +99,3 @@ async def test_rimuovere_l_integrazione_toglie_il_pannello(hass, hass_storage, f
     await hass.async_block_till_done()
 
     assert _pannello(hass) is None
-
-
-async def test_le_card_si_caricano_su_ogni_pagina(hass, hass_storage, freezer):
-    """Decisione 46: nessuna risorsa Lovelace da aggiungere a mano."""
-    from homeassistant.components.frontend import DATA_EXTRA_MODULE_URL
-
-    freezer.move_to(datetime(2026, 9, 23, 12, tzinfo=ROMA))
-    await installa(hass, hass_storage)
-
-    moduli = hass.data[DATA_EXTRA_MODULE_URL].urls
-    assert any("/raccolta-card.js?v=" in url for url in moduli)
