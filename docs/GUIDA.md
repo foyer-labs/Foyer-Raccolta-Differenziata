@@ -1,5 +1,7 @@
 # Guida a Foyer Raccolta Differenziata
 
+Italiano · [English](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/docs/GUIDE.md)
+
 Questa guida spiega come si installa, come si inserisce il calendario del tuo comune e come
 si usano promemoria, card ed entità. Si legge in dieci minuti; per il perché delle scelte
 c'è la [specifica](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/sviluppo/docs/SPEC.md), sul ramo di sviluppo.
@@ -24,10 +26,18 @@ c'è la [specifica](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/b
 Ti servono Home Assistant 2026.6 o successivo e, per i promemoria, un servizio di notifica
 che funziona (l'app Companion va benissimo).
 
-1. In HACS apri *Integrazioni*, menu ⋮ → *Repository personalizzati*, aggiungi
-   `https://github.com/foyer-labs/Foyer-Raccolta-Differenziata` con categoria
-   *Integrazione*. Installa **Foyer Raccolta Differenziata** e riavvia Home Assistant.
-2. *Impostazioni → Dispositivi e servizi → Aggiungi integrazione →
+1. Apri il repository in HACS con questo pulsante:
+
+   <a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=foyer-labs&repository=Foyer-Raccolta-Differenziata&category=integration"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Apri Home Assistant e questo repository dentro HACS"></a>
+
+   Oppure a mano: in HACS, menu ⋮ in alto a destra → *Repository personalizzati*, aggiungi
+   `https://github.com/foyer-labs/Foyer-Raccolta-Differenziata` con tipo *Integrazione*.
+   Scarica **Foyer Raccolta Differenziata** e riavvia Home Assistant.
+2. Aggiungi l'integrazione con questo pulsante:
+
+   <a href="https://my.home-assistant.io/redirect/config_flow_start/?domain=foyer_raccolta_differenziata"><img src="https://my.home-assistant.io/badges/config_flow_start.svg" alt="Apri Home Assistant e aggiungi Foyer Raccolta Differenziata"></a>
+
+   Oppure a mano: *Impostazioni → Dispositivi e servizi → Aggiungi integrazione →
    Foyer Raccolta Differenziata*.
 3. Scegli le tipologie da cui partire (umido, carta, plastica, vetro, secco, verde e, se
    ti servono, pannolini: le potrai cambiare) e quando si espongono i sacchi. Di solito è *dalle 20:00 del giorno
@@ -274,8 +284,8 @@ Se preferisci un foglio di calcolo, in *Impostazioni* trovi **Configurazione in 
 
 - **Scarica il modello**: un file con una guida alla compilazione (foglio *Leggimi*) e un
   foglio per ogni cosa: *Tipologie*, *Regole*, *Eccezioni*, *Promemoria*, *Vacanze*,
-  *Piattaforma*, *Piattaforma eccezioni*, *Impostazioni*. Le sei tipologie di base sono
-  già scritte; in ogni foglio una riga grigia fa da esempio, e passando sulle
+  *Piattaforma*, *Piattaforma eccezioni*, *Impostazioni*. Le sei tipologie di base (tutte
+  tranne i pannolini) sono già scritte; in ogni foglio una riga grigia fa da esempio, e passando sulle
   intestazioni leggi cosa va in ogni colonna.
 - **Esporta in Excel**: lo stesso file, con la tua configurazione dentro. È il modo più
   rapido per cambiare tante cose insieme, o per passare il calendario a un vicino.
@@ -314,7 +324,7 @@ riferimento della regola: le prossime date nell'editor ti dicono subito se ora �
 
 **Posso avere due case?** No: un calendario per installazione.
 
-**I promemoria non arrivano.** Controlla che il profilo sia attivo, che il destinatario
+**I promemoria non arrivano.** Controlla che il promemoria sia attivo, che il destinatario
 esista ancora in Home Assistant, che l'interruttore *Sospendi promemoria* sia spento e che
 oggi non sia in vacanza. Gli errori di consegna finiscono nel registro di Home Assistant.
 

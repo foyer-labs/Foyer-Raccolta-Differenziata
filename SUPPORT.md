@@ -1,5 +1,9 @@
 # Supporto
 
+> *English speakers:* the integration is Italian-only by design, but you can ask in
+> English. See the [English README](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/README.en.md) and
+> [guide](https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/docs/GUIDE.md), and open an issue with the *Problem* form.
+
 Foyer Raccolta Differenziata è il progetto personale e non commerciale di una persona,
 pubblicato come Foyer Labs. Le domande e le segnalazioni ricevono risposta al meglio delle
 possibilità, **senza garanzia** di una risposta, di una correzione o di tempi.
