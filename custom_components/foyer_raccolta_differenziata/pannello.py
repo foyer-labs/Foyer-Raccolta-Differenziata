@@ -226,6 +226,19 @@ async def _async_sorveglia(hass: HomeAssistant, dati: dict, viste: Any) -> None:
     dati.pop("sorveglianza", None)
 
 
+@callback
+def _sorveglia(hass: HomeAssistant, dati: dict) -> None:
+    """Sorveglianza per mezzo minuto da adesso, allungando quella in corso."""
+    dati["sorveglia_fino"] = max(
+        dati.get("sorveglia_fino", 0.0), hass.loop.time() + _SORVEGLIANZA
+    )
+    if "sorveglianza" not in dati:
+        dati["sorveglianza"] = hass.async_create_background_task(
+            _async_sorveglia(hass, dati, _risorse(hass)),
+            f"{DOMINIO}: risorsa Lovelace dopo la ricarica",
+        )
+
+
 async def async_registra_frontend(hass: HomeAssistant) -> None:
     """Moduli, loader e risorsa: in testa al setup, prima di leggere gli archivi.
 
@@ -256,16 +269,15 @@ async def async_registra_frontend(hass: HomeAssistant) -> None:
 
             @callback
             def _ricaricate(_evento: Event) -> None:
-                dati["sorveglia_fino"] = hass.loop.time() + _SORVEGLIANZA
-                if "sorveglianza" not in dati:
-                    dati["sorveglianza"] = hass.async_create_background_task(
-                        _async_sorveglia(hass, dati, _risorse(hass)),
-                        f"{DOMINIO}: risorsa Lovelace dopo la ricarica",
-                    )
+                _sorveglia(hass, dati)
 
             dati["ascolto"] = hass.bus.async_listen(
                 EVENT_CALL_SERVICE, _ricaricate, event_filter=_e_ricarica_risorse
             )
+            # Una ricarica partita prima dell'ascolto non si vede più: con le risorse
+            # in YAML si sorveglia subito, per mezzo minuto.
+            if isinstance(getattr(_risorse(hass), "data", None), list):
+                _sorveglia(hass, dati)
 
 
 def mostra_nella_barra(entry: ConfigEntry) -> bool:

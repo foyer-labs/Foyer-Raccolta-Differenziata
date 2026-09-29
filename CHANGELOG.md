@@ -17,6 +17,13 @@ Dopo l'aggiornamento riavvia Home Assistant. Non serve aggiungere niente.
   riapertura successiva. L'app partiva da una copia vecchia della pagina, conservata dal
   *service worker* di Home Assistant, in cui le card non c'erano. Ora le card arrivano
   anche come risorsa delle plance, che l'app riceve sempre aggiornata.
+- **Card che si moltiplicavano dopo una riconnessione:** a ogni ritorno dell'app dal
+  background, o dopo un calo della rete, ogni card si iscriveva di nuovo senza che la
+  vecchia iscrizione sparisse, e rileggeva i ritiri una volta in più a ogni
+  aggiornamento. Nel disiscriversi poteva anche fermare gli aggiornamenti di un'altra
+  card della plancia. Ora resta sempre una sola iscrizione per card, e il pannello non
+  perde più la sua: prima, dopo una riconnessione, poteva smettere di aggiornarsi da
+  solo.
 
 ### Cambiato
 - **Una voce nuova tra le risorse delle plance**,
@@ -25,11 +32,13 @@ Dopo l'aggiornamento riavvia Home Assistant. Non serve aggiungere niente.
   Una risorsa della raccolta aggiunta a mano in passato non serve più: tra le risorse
   gestite dall'interfaccia sparisce da sola, in YAML puoi toglierla quando vuoi.
 - **Se la voce di configurazione non parte**, le card dicono che il calendario non è
-  disponibile, invece di «Errore di configurazione», e riprovano una volta al minuto
-  invece che a ogni cambio di stato di Home Assistant. Se mancano i file delle card
-  (un'installazione incompleta), calendario e promemoria funzionano lo stesso.
-- **Aggiornamenti più puliti:** da questa versione card e pannello cambiano indirizzo a
-  ogni versione, così il telefono non ne tiene una vecchia in cache.
+  disponibile, invece di «Errore di configurazione», e riprovano al più ogni cinque
+  secondi invece che a ogni cambio di stato di Home Assistant. Se mancano i file delle
+  card (un'installazione incompleta), calendario e promemoria funzionano lo stesso.
+- **Aggiornamenti più puliti:** la risorsa non finisce mai in cache e porta sempre alle
+  card della versione installata, e anche gli indirizzi delle versioni precedenti
+  portano a quelle nuove. Una copia della 0.6.1 già sul telefono può restare fino a 31
+  giorni: le card funzionano lo stesso.
 
 ## [0.6.1] — 2026-09-29 — anche in inglese
 
