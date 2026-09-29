@@ -2,12 +2,14 @@
 custom_components
 hacs.json
 README.md
+README.en.md
 CHANGELOG.md
 LICENSE
 NOTICE
 SUPPORT.md
 CONTRIBUTING.md
 docs/GUIDA.md
+docs/GUIDE.md
 docs/screenshots
 docs/logo
 .github/ISSUE_TEMPLATE
