@@ -193,6 +193,12 @@ Per scheda** e cerca **Raccolta**: trovi *Raccolta: oggi e domani*, *Raccolta:
 settimana* e *Raccolta: mese*, con l'anteprima. Scegline una e regola titolo e opzioni
 nell'editor visuale.
 
+Tra le risorse delle plance (*Impostazioni → Plance → ⋮ → Risorse*) trovi una voce
+aggiunta dall'integrazione, `/api/foyer_raccolta_differenziata/frontend/loader.js`:
+è lei che porta le card anche nell'app. Lasciala dov'è; se la togli si rimette al
+riavvio, e sparisce da sola quando rimuovi l'integrazione. Con le risorse in YAML la
+voce non finisce nei tuoi file.
+
 <p align="center"><img src="screenshots/card-chiaro.png" alt="Le tre card: stasera fuori umido e plastica con il pulsante Esposto, la settimana con le icone dei rifiuti, il calendario del mese con i pallini colorati" width="900"></p>
 
 <p align="center"><img src="screenshots/card-telefono.png" alt="Le card oggi e settimana su un telefono, in tema scuro" width="300"></p>
@@ -332,5 +338,12 @@ oggi non sia in vacanza. Gli errori di consegna finiscono nel registro di Home A
 la pagina del browser (o chiudi e riapri l'app Companion): le card si caricano con la
 pagina. Con le versioni precedenti alla 0.4.1 le card potevano non comparire affatto:
 aggiorna.
+
+**Nell'app la card dice «Errore di configurazione».** Dalla 0.6.2 non dovrebbe più
+succedere: l'app partiva da una copia vecchia della pagina, conservata dal *service
+worker* di Home Assistant, in cui le card non c'erano. Ora arrivano anche come risorsa
+delle plance, che l'app riceve sempre aggiornata. Se l'errore resta dopo aver chiuso e
+riaperto l'app due volte, nell'app vai in **Impostazioni → App Companion → Risoluzione
+dei problemi → «Reset frontend cache»** (lo "Svuota cache" di Android non basta).
 
 **Dove chiedo aiuto?** Vedi [SUPPORT.md](../SUPPORT.md).

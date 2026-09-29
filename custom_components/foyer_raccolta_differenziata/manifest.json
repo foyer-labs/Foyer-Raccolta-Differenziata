@@ -8,6 +8,7 @@
   "dependencies": [
     "frontend",
     "http",
+    "lovelace",
     "repairs",
     "websocket_api"
   ],
@@ -19,5 +20,5 @@
     "openpyxl==3.1.5"
   ],
   "single_config_entry": true,
-  "version": "0.6.1"
+  "version": "0.6.2"
 }
