@@ -103,13 +103,17 @@ export abstract class CardRaccolta extends LitElement {
     if (this._connessa && this.hass) this._avvia();
   };
 
+  private _ultimoAvvio = 0;
+
   protected override willUpdate(cambiati: PropertyValues) {
-    // Dopo un'iscrizione fallita si riprova al minuto, non a ogni cambio di stato di
-    // Home Assistant: con l'integrazione ferma sarebbero due richieste ogni volta.
-    if (cambiati.has("hass") && this.hass && this._connessa && !this._disiscrivi && !this._errore) this._avvia();
+    // Dopo un'iscrizione fallita (Home Assistant che parte, integrazione ferma) si
+    // riprova al più ogni cinque secondi, non a ogni cambio di stato: sarebbero due
+    // richieste ogni volta. Dopo un riavvio la card torna in pochi secondi.
+    if (cambiati.has("hass") && this.hass && this._connessa && !this._disiscrivi && Date.now() - this._ultimoAvvio >= 5_000) this._avvia();
   }
 
   private _avvia() {
+    this._ultimoAvvio = Date.now();
     if (!this._connessioneAscoltata) {
       this.hass.connection.addEventListener?.("ready", this._riconnessa);
       this._connessioneAscoltata = true;

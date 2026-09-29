@@ -1412,7 +1412,7 @@ var Y = (e) => e.slice(11, 16), Ke = (e) => We(e.fasce ?? []).map(([e, t]) => `$
 	constructor(...e) {
 		super(...e), this._errore = !1, this._connessa = !1, this._connessioneAscoltata = !1, this._riconnessa = () => {
 			this._disiscrivi?.then((e) => e()).catch(() => void 0), this._disiscrivi = void 0, this._connessa && this.hass && this._avvia();
-		}, this._richiesta = 0;
+		}, this._ultimoAvvio = 0, this._richiesta = 0;
 	}
 	static {
 		this.properties = {
@@ -1450,10 +1450,10 @@ var Y = (e) => e.slice(11, 16), Ke = (e) => We(e.fasce ?? []).map(([e, t]) => `$
 		super.disconnectedCallback(), this._connessa = !1, clearInterval(this._minuto), this._disiscrivi?.then((e) => e()).catch(() => void 0), this._disiscrivi = void 0, this.hass?.connection.removeEventListener?.("ready", this._riconnessa), this._connessioneAscoltata = !1, this._finestra = void 0;
 	}
 	willUpdate(e) {
-		e.has("hass") && this.hass && this._connessa && !this._disiscrivi && !this._errore && this._avvia();
+		e.has("hass") && this.hass && this._connessa && !this._disiscrivi && Date.now() - this._ultimoAvvio >= 5e3 && this._avvia();
 	}
 	_avvia() {
-		this._connessioneAscoltata ||= (this.hass.connection.addEventListener?.("ready", this._riconnessa), !0);
+		this._ultimoAvvio = Date.now(), this._connessioneAscoltata ||= (this.hass.connection.addEventListener?.("ready", this._riconnessa), !0);
 		let e = this.hass.connection.subscribeMessage(() => void this.carica(), { type: `${X}/iscriviti` }).catch(() => (this._disiscrivi === e && (this._disiscrivi = void 0), this._errore = !0, () => void 0));
 		this._disiscrivi = e, this.carica();
 	}

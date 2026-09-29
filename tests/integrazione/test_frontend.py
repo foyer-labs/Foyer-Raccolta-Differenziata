@@ -10,6 +10,7 @@ from unittest.mock import patch
 from homeassistant.components.frontend import DATA_EXTRA_MODULE_URL, DATA_PANELS
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.setup import async_setup_component
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.foyer_raccolta_differenziata.const import (
@@ -167,23 +168,26 @@ YAML = {
 }
 
 
-def _rilettura(*secondi: float):
-    """«Ricarica risorse» che rilegge il YAML in tempi diversi, una lettura per volta.
+@pytest.fixture
+async def risorse_yaml(hass):
+    """Risorse in YAML, e una sorveglianza di due secondi invece di trenta: così i
+    test non aspettano."""
+    assert await async_setup_component(hass, "lovelace", YAML)
+    with patch(f"{PANNELLO}._SORVEGLIANZA", 2.0):
+        yield
 
-    La sorveglianza dura un secondo invece di trenta, così il test non aspetta.
-    """
+
+def _rilettura(*secondi: float):
+    """«Ricarica risorse» che rilegge il YAML in tempi diversi, una lettura per volta."""
     attese = iter(secondi)
 
     async def _leggi(_hass):
         await asyncio.sleep(next(attese))
         return YAML
 
-    return (
-        patch(
-            "homeassistant.components.lovelace.async_hass_config_yaml",
-            side_effect=_leggi,
-        ),
-        patch(f"{PANNELLO}._SORVEGLIANZA", 1.0),
+    return patch(
+        "homeassistant.components.lovelace.async_hass_config_yaml",
+        side_effect=_leggi,
     )
 
 
@@ -191,14 +195,14 @@ async def _ricarica(hass) -> None:
     await hass.services.async_call("lovelace", "reload_resources", blocking=True)
 
 
-async def test_con_le_risorse_in_yaml_la_voce_vive_in_memoria(hass, hass_storage):
-    assert await async_setup_component(hass, "lovelace", YAML)
+async def test_con_le_risorse_in_yaml_la_voce_vive_in_memoria(
+    hass, hass_storage, risorse_yaml
+):
     await installa(hass, hass_storage)
     assert _risorse(hass) == [ALTRA, URL_LOADER]
 
     # "Ricarica risorse" rilegge il YAML, dove la voce non c'è: si rimette.
-    lettura, sorveglianza = _rilettura(0)
-    with lettura, sorveglianza:
+    with _rilettura(0):
         await _ricarica(hass)
         await hass.async_block_till_done(wait_background_tasks=True)
 
@@ -206,25 +210,35 @@ async def test_con_le_risorse_in_yaml_la_voce_vive_in_memoria(hass, hass_storage
     assert "lovelace_resources" not in hass_storage
 
 
-async def test_due_ricariche_una_sull_altra(hass, hass_storage):
+async def test_due_ricariche_una_sull_altra(hass, hass_storage, risorse_yaml):
     """La seconda finisce dopo che la voce è già stata rimessa nella prima."""
-    assert await async_setup_component(hass, "lovelace", YAML)
     await installa(hass, hass_storage)
 
-    lettura, sorveglianza = _rilettura(0.2, 0.6)
-    with lettura, sorveglianza:
+    with _rilettura(0.2, 0.6):
         await asyncio.gather(_ricarica(hass), _ricarica(hass))
         await hass.async_block_till_done(wait_background_tasks=True)
 
     assert _risorse(hass) == [ALTRA, URL_LOADER]
 
 
-async def test_rimossa_durante_la_ricarica_la_voce_non_torna(hass, hass_storage):
-    assert await async_setup_component(hass, "lovelace", YAML)
+async def test_una_ricarica_gia_partita_all_avvio(hass, hass_storage, risorse_yaml):
+    """Partita prima che l'integrazione ascolti: la voce si rimette lo stesso."""
+    with _rilettura(0.5):
+        ricarica = hass.async_create_task(_ricarica(hass))
+        await asyncio.sleep(0)
+        await installa(hass, hass_storage)
+        await ricarica
+        await hass.async_block_till_done(wait_background_tasks=True)
+
+    assert _risorse(hass) == [ALTRA, URL_LOADER]
+
+
+async def test_rimossa_durante_la_ricarica_la_voce_non_torna(
+    hass, hass_storage, risorse_yaml
+):
     voce = await installa(hass, hass_storage)
 
-    lettura, sorveglianza = _rilettura(0.3)
-    with lettura, sorveglianza:
+    with _rilettura(0.3):
         ricarica = hass.async_create_task(_ricarica(hass))
         await asyncio.sleep(0)
         await hass.config_entries.async_remove(voce.entry_id)

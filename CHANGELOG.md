@@ -25,11 +25,13 @@ Dopo l'aggiornamento riavvia Home Assistant. Non serve aggiungere niente.
   Una risorsa della raccolta aggiunta a mano in passato non serve più: tra le risorse
   gestite dall'interfaccia sparisce da sola, in YAML puoi toglierla quando vuoi.
 - **Se la voce di configurazione non parte**, le card dicono che il calendario non è
-  disponibile, invece di «Errore di configurazione», e riprovano una volta al minuto
-  invece che a ogni cambio di stato di Home Assistant. Se mancano i file delle card
-  (un'installazione incompleta), calendario e promemoria funzionano lo stesso.
-- **Aggiornamenti più puliti:** da questa versione card e pannello cambiano indirizzo a
-  ogni versione, così il telefono non ne tiene una vecchia in cache.
+  disponibile, invece di «Errore di configurazione», e riprovano al più ogni cinque
+  secondi invece che a ogni cambio di stato di Home Assistant. Se mancano i file delle
+  card (un'installazione incompleta), calendario e promemoria funzionano lo stesso.
+- **Aggiornamenti più puliti:** la risorsa non finisce mai in cache e porta sempre alle
+  card della versione installata, e anche gli indirizzi delle versioni precedenti
+  portano a quelle nuove. Una copia della 0.6.1 già sul telefono può restare fino a 31
+  giorni: le card funzionano lo stesso.
 
 ## [0.6.1] — 2026-09-29 — anche in inglese
 

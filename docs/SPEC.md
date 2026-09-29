@@ -1229,7 +1229,8 @@ Correzione, 2026-09-29 (segnalazione del proprietario: nell'app Companion le car
       toglie con l'integrazione. Con le risorse in YAML vive solo in memoria, non tocca
       `configuration.yaml`, e si rimette dopo «Ricarica risorse»: per mezzo minuto si
       guarda ogni decimo di secondo, perché la pagina si ricarica senza aspettare il
-      servizio e una seconda ricarica può arrivare prima che la prima finisca. Resta
+      servizio e una seconda ricarica può arrivare prima che la prima finisca. Si guarda
+      anche per mezzo minuto dopo la registrazione, per una ricarica già partita. Resta
       valido il motivo della decisione 46 di non scrivere nei file dell'utente;
     - gli indirizzi delle versioni precedenti rimandano al modulo attuale, mai un errore:
       gli index salvati dai telefoni li contengono ancora. Fino alla 0.6.1 quegli
@@ -1237,7 +1238,8 @@ Correzione, 2026-09-29 (segnalazione del proprietario: nell'app Companion le car
       girare la card vecchia fino ad allora;
     - il frontend si registra all'inizio del setup, prima di leggere gli archivi: se la
       voce non parte, la card dice che il calendario non è disponibile invece di
-      «Errore di configurazione», e riprova una volta al minuto. Se invece mancano i
+      «Errore di configurazione», e riprova al più ogni cinque secondi, non a ogni
+      cambio di stato: dopo un riavvio torna in pochi secondi. Se invece mancano i
       file del frontend, mancano card e pannello, ma calendario e promemoria partono.
     Resta un caso: aprendo l'app mentre Home Assistant si avvia, la risorsa può non
     rispondere ancora, e la card torna alla riapertura successiva.
