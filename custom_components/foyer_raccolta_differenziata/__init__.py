@@ -24,10 +24,15 @@ _WEBSOCKET = "foyer_raccolta_differenziata_websocket"
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     from homeassistant.exceptions import ConfigEntryError
 
+    from . import pannello
     from .archivio import async_carica
     from .const import DOMINIO
     from .coordinatore import Coordinatore
 
+    # Prima di tutto il resto: anche se la voce non parte, la card arriva alla pagina
+    # e dice che il calendario non è disponibile, invece di "Errore di configurazione"
+    # (decisione 73).
+    await pannello.async_registra_frontend(hass)
     try:
         archivi = await async_carica(hass, entry)
     except Exception as errore:
@@ -51,7 +56,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.async_on_unload(coordinatore.gestore.arresta)
     await hass.config_entries.async_forward_entry_setups(entry, PIATTAFORME)
 
-    from . import pannello, scambio_excel, websocket
+    from . import scambio_excel, websocket
 
     if not hass.data.get(_WEBSOCKET):
         websocket.async_registra(hass)
@@ -98,7 +103,7 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     await async_elimina(hass)
     from . import pannello
 
-    pannello.async_rimuovi(hass)
+    await pannello.async_rimuovi(hass)
     for problema in list(ir.async_get(hass).issues.values()):
         if problema.domain == DOMINIO:
             ir.async_delete_issue(hass, DOMINIO, problema.issue_id)

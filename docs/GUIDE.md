@@ -228,6 +228,12 @@ Open the dashboard, *Edit dashboard* (the pencil), **Add card → By card** and 
 settimana* ("week") and *Raccolta: mese* ("month"), with a preview. Pick one and adjust
 title and options in the visual editor.
 
+Among the dashboard resources (*Settings → Dashboards → ⋮ → Resources*) you will find an
+entry added by the integration, `/api/foyer_raccolta_differenziata/frontend/loader.js`:
+it is what brings the cards to the app too. Leave it there; if you remove it, it comes
+back at the next restart, and it goes away by itself when you remove the integration.
+With YAML resources the entry never ends up in your files.
+
 <p align="center"><img src="screenshots/card-chiaro.png" alt="The three cards: organic and plastic out tonight with the Esposto button, the week with the waste icons, the month calendar with coloured dots" width="900"></p>
 
 <p align="center"><img src="screenshots/card-telefono.png" alt="The today and week cards on a phone, in dark theme" width="300"></p>
@@ -372,5 +378,12 @@ not within your time away (*Vacanze*). Delivery errors end up in Home Assistant'
 **I can't find the cards in the picker.** After installing or updating, reload the browser
 page (or close and reopen the Companion app): the cards load with the page. With versions
 before 0.4.1 the cards might not appear at all: update.
+
+**In the app the card says "Configuration error".** From 0.6.2 this should no longer
+happen: the app started from an old copy of the page, kept by Home Assistant's *service
+worker*, in which the cards were missing. Now they also arrive as a dashboard resource,
+which the app always receives up to date. If the error is still there after closing and
+reopening the app twice, go to **Settings → Companion app → Troubleshooting → "Reset
+frontend cache"** in the app (Android's "Clear cache" is not enough).
 
 **Where do I ask for help?** See [SUPPORT.md](../SUPPORT.md).

@@ -1450,7 +1450,7 @@ var Y = (e) => e.slice(11, 16), Ke = (e) => We(e.fasce ?? []).map(([e, t]) => `$
 		super.disconnectedCallback(), this._connessa = !1, clearInterval(this._minuto), this._disiscrivi?.then((e) => e()).catch(() => void 0), this._disiscrivi = void 0, this.hass?.connection.removeEventListener?.("ready", this._riconnessa), this._connessioneAscoltata = !1, this._finestra = void 0;
 	}
 	willUpdate(e) {
-		e.has("hass") && this.hass && this._connessa && !this._disiscrivi && this._avvia();
+		e.has("hass") && this.hass && this._connessa && !this._disiscrivi && !this._errore && this._avvia();
 	}
 	_avvia() {
 		this._connessioneAscoltata ||= (this.hass.connection.addEventListener?.("ready", this._riconnessa), !0);

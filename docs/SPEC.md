@@ -600,10 +600,10 @@ Come è costruito (decisione 49):
 - Versione minima: Home Assistant 2026.6.0; test in CI sulla minima e sull'ultima stabile
   (decisione 24).
 - Distribuzione: un solo repository HACS. L'integrazione serve i file del frontend
-  (pannello e card) e carica le card su ogni pagina di Home Assistant con
-  `add_extra_js_url`, in qualunque modalità delle dashboard, senza toccare le risorse
-  Lovelace (decisione 46). I file costruiti sono nel repository: HACS non ha un passo di
-  build.
+  (pannello e card) e fa arrivare le card su ogni pagina di Home Assistant da due canali:
+  una risorsa Lovelace che aggiunge da sola (in memoria, con le risorse in YAML) e
+  `add_extra_js_url` (decisione 73). L'utente non aggiunge nulla. I file costruiti sono
+  nel repository: HACS non ha un passo di build.
 - Configurazione iniziale (config flow, istanza unica): scelta dei preset, finestra di
   esposizione globale. Tutto il resto dal pannello.
 - "Configura" dell'integrazione (options flow): contiene solo l'interruttore **Mostra nella
@@ -1057,7 +1057,7 @@ Fase 4, 2026-09-25 (in autonomia).
 
 46. Le card si caricano con `add_extra_js_url`, come in Foyer Home Defender, invece di
     registrarle come risorsa Lovelace: funziona anche con le dashboard in YAML e non
-    scrive nella configurazione dell'utente.
+    scrive nella configurazione dell'utente. Superata dalla decisione 73.
 47. La pagina Promemoria del pannello arriva con la Fase 5, insieme al motore dei
     promemoria che ne valida i dati: una pagina che salva dati che nessuno controlla
     ancora è il modo di trovarsi con configurazioni invalide al primo avvio della Fase 5.
@@ -1210,6 +1210,41 @@ Notifiche più ricche, 2026-09-27 (richiesta del proprietario).
     Excel. Su Android icona e colore della tipologia, e un canale proprio.
 72. Il pulsante *Invia una prova* nel modulo di un promemoria: la notifica del prossimo
     ritiro, subito, ai destinatari scelti anche prima di salvare, con pulsanti inerti.
+
+Correzione, 2026-09-29 (segnalazione del proprietario: nell'app Companion le card dicono
+«Errore di configurazione» a ogni apertura, e tornano solo con «Ricarica risorse»).
+
+73. Le card arrivano alla pagina anche come **risorsa Lovelace**, che l'integrazione
+    aggiunge da sola; sostituisce la decisione 46. *Perché:* l'app si apre su
+    `/?external_auth=1`, e il service worker di Home Assistant le dà la copia di
+    `index.html` salvata quando si è installato, anche vecchia di settimane. Un modulo che
+    arriva solo dall'index (`add_extra_js_url`) all'avvio a freddo può mancare. Le risorse
+    viaggiano sul websocket e sono sempre attuali. Come è fatto:
+    - la risorsa è un indirizzo stabile, `/api/foyer_raccolta_differenziata/frontend/loader.js`,
+      che il service worker non tiene mai in cache e che importa il modulo con
+      l'impronta del contenuto nel percorso, in cache per sempre. Risorsa e index
+      portano allo stesso modulo della card, che il browser esegue una volta; il
+      pannello si apre dal suo modulo con l'impronta, che arriva anch'esso dal websocket;
+    - con le risorse in archivio (il caso normale) la voce si aggiunge una volta e si
+      toglie con l'integrazione. Con le risorse in YAML vive solo in memoria, non tocca
+      `configuration.yaml`, e si rimette dopo «Ricarica risorse»: per mezzo minuto si
+      guarda ogni decimo di secondo, perché la pagina si ricarica senza aspettare il
+      servizio e una seconda ricarica può arrivare prima che la prima finisca. Resta
+      valido il motivo della decisione 46 di non scrivere nei file dell'utente;
+    - gli indirizzi delle versioni precedenti rimandano al modulo attuale, mai un errore:
+      gli index salvati dai telefoni li contengono ancora. Fino alla 0.6.1 quegli
+      indirizzi si tenevano in cache 31 giorni: una copia già sul telefono può far
+      girare la card vecchia fino ad allora;
+    - il frontend si registra all'inizio del setup, prima di leggere gli archivi: se la
+      voce non parte, la card dice che il calendario non è disponibile invece di
+      «Errore di configurazione», e riprova una volta al minuto. Se invece mancano i
+      file del frontend, mancano card e pannello, ma calendario e promemoria partono.
+    Resta un caso: aprendo l'app mentre Home Assistant si avvia, la risorsa può non
+    rispondere ancora, e la card torna alla riapertura successiva.
+    Verificato su un Home Assistant locale con il service worker attivo e una copia di
+    avvio senza la raccolta: con la 0.6.1 la card dava «Custom element doesn't exist» al
+    primo avvio a freddo, con la 0.6.2 compare subito. La stessa correzione ha risolto il
+    problema sul telefono del proprietario con un'altra integrazione.
 
 ---
 
