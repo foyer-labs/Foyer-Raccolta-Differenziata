@@ -1222,17 +1222,25 @@ Correzione, 2026-09-29 (segnalazione del proprietario: nell'app Companion le car
     viaggiano sul websocket e sono sempre attuali. Come è fatto:
     - la risorsa è un indirizzo stabile, `/api/foyer_raccolta_differenziata/frontend/loader.js`,
       che il service worker non tiene mai in cache e che importa il modulo con
-      l'impronta del contenuto nel percorso, in cache per sempre. Risorsa, index e
-      pannello portano allo stesso modulo, che il browser esegue una volta;
+      l'impronta del contenuto nel percorso, in cache per sempre. Risorsa e index
+      portano allo stesso modulo della card, che il browser esegue una volta; il
+      pannello si apre dal suo modulo con l'impronta, che arriva anch'esso dal websocket;
     - con le risorse in archivio (il caso normale) la voce si aggiunge una volta e si
       toglie con l'integrazione. Con le risorse in YAML vive solo in memoria, non tocca
-      `configuration.yaml`, e si rimette dopo «Ricarica risorse»: resta valido il motivo
-      della decisione 46 di non scrivere nei file dell'utente;
+      `configuration.yaml`, e si rimette dopo «Ricarica risorse»: per mezzo minuto si
+      guarda ogni decimo di secondo, perché la pagina si ricarica senza aspettare il
+      servizio e una seconda ricarica può arrivare prima che la prima finisca. Resta
+      valido il motivo della decisione 46 di non scrivere nei file dell'utente;
     - gli indirizzi delle versioni precedenti rimandano al modulo attuale, mai un errore:
-      gli index salvati dai telefoni li contengono ancora;
+      gli index salvati dai telefoni li contengono ancora. Fino alla 0.6.1 quegli
+      indirizzi si tenevano in cache 31 giorni: una copia già sul telefono può far
+      girare la card vecchia fino ad allora;
     - il frontend si registra all'inizio del setup, prima di leggere gli archivi: se la
       voce non parte, la card dice che il calendario non è disponibile invece di
-      «Errore di configurazione».
+      «Errore di configurazione», e riprova una volta al minuto. Se invece mancano i
+      file del frontend, mancano card e pannello, ma calendario e promemoria partono.
+    Resta un caso: aprendo l'app mentre Home Assistant si avvia, la risorsa può non
+    rispondere ancora, e la card torna alla riapertura successiva.
     Verificato su un Home Assistant locale con il service worker attivo e una copia di
     avvio senza la raccolta: con la 0.6.1 la card dava «Custom element doesn't exist» al
     primo avvio a freddo, con la 0.6.2 compare subito. La stessa correzione ha risolto il

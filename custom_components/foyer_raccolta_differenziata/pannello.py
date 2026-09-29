@@ -5,19 +5,21 @@ su "/?external_auth=1" e il service worker di Home Assistant le dà la copia di
 index.html salvata quando si è installato, anche vecchia di settimane: un modulo che
 arriva solo dall'index (`add_extra_js_url`) all'avvio a freddo può mancare, e la card
 mostra "Errore di configurazione". Le risorse Lovelace invece viaggiano sul websocket
-e sono sempre attuali. Tutti i canali portano allo stesso modulo, che il browser
-esegue una volta sola:
+e sono sempre attuali. Risorsa e index portano allo stesso modulo della card, che il
+browser esegue una volta sola:
 
 - URL_LOADER, sotto /api/, è stabile e il service worker non lo tiene mai in cache:
   importa il modulo della card con l'impronta del contenuto nel percorso. È la
   risorsa Lovelace.
 - URL_STATICO/<impronta>/<file>: a un indirizzo corrisponde sempre lo stesso
-  contenuto, che può restare in cache per sempre. Anche il pannello si apre da qui.
+  contenuto, che può restare in cache per sempre. Anche il pannello si apre da qui,
+  con il suo modulo.
 - LOADER_INDEX è il canale dell'index: fuori da /api/, il service worker lo tiene in
   cache. Prova il loader fresco e, se non risponde, ripiega sul modulo.
 - Gli indirizzi delle versioni precedenti ("raccolta-card.js?v=…", impronte
   superate) rimandano al modulo attuale, mai un errore: gli index salvati dai
-  telefoni li contengono ancora.
+  telefoni li contengono ancora. Fino alla 0.6.1 quegli indirizzi si tenevano in
+  cache 31 giorni: una copia già sul telefono vale fino ad allora.
 
 Il pannello si registra con o senza titolo nella barra laterale, secondo l'opzione
 "Mostra nella barra laterale". Nascosto, resta registrato: si apre dal suo indirizzo
@@ -61,7 +63,15 @@ _FRONTEND = f"{DOMINIO}_frontend"
 _BLOCCO = f"{DOMINIO}_frontend_blocco"
 _JS = "text/javascript"
 _MAI_IN_CACHE = {"Cache-Control": "no-cache"}
-_PER_SEMPRE = {"Cache-Control": "public, max-age=31536000, immutable"}
+# Compresso secondo il browser: una cache intermedia deve tenere le due versioni.
+_PER_SEMPRE = {
+    "Cache-Control": "public, max-age=31536000, immutable",
+    "Vary": "Accept-Encoding",
+}
+# Dopo "Ricarica risorse" si guarda per mezzo minuto, spesso: la pagina si ricarica
+# subito, senza aspettare che il servizio finisca.
+_SORVEGLIANZA = 30.0
+_PASSO = 0.1
 
 type Moduli = dict[str, tuple[str, bytes]]
 
@@ -201,15 +211,19 @@ def _e_ricarica_risorse(dati: Any) -> bool:
     )
 
 
-async def _async_dopo_la_ricarica(hass: HomeAssistant, prima: Any) -> None:
-    """L'evento parte prima che il servizio rilegga il YAML: si aspetta che le
-    risorse cambino, al massimo una trentina di secondi, e si rimette la voce."""
-    for attesa in (0.5, 1, 2, 4, 8, 16):
-        await asyncio.sleep(attesa)
-        if _risorse(hass) is not prima:
-            break
-    async with hass.data[_BLOCCO]:
-        await _async_assicura_risorsa(hass)
+async def _async_sorveglia(hass: HomeAssistant, dati: dict, viste: Any) -> None:
+    """«Ricarica risorse» ricrea le risorse dal YAML, senza la voce, dopo l'evento; e
+    una seconda ricarica può arrivare prima che la prima finisca. Finché dura la
+    sorveglianza, a ogni cambio si rimette la voce. Si ferma se l'integrazione viene
+    tolta."""
+    while hass.loop.time() < dati["sorveglia_fino"] and "ascolto" in dati:
+        await asyncio.sleep(_PASSO)
+        if (adesso := _risorse(hass)) is not viste:
+            viste = adesso
+            async with hass.data[_BLOCCO]:
+                if "ascolto" in dati:
+                    await _async_assicura_risorsa(hass)
+    dati.pop("sorveglianza", None)
 
 
 async def async_registra_frontend(hass: HomeAssistant) -> None:
@@ -223,7 +237,14 @@ async def async_registra_frontend(hass: HomeAssistant) -> None:
     async with hass.data.setdefault(_BLOCCO, asyncio.Lock()):
         dati = hass.data.get(_FRONTEND)
         if dati is None:
-            moduli = await hass.async_add_executor_job(_leggi_moduli)
+            try:
+                moduli = await hass.async_add_executor_job(_leggi_moduli)
+            except OSError:
+                # Un'installazione incompleta non ferma calendario e promemoria.
+                _LOGGER.exception(
+                    "File del frontend illeggibili: niente card e pannello"
+                )
+                return
             dati = hass.data[_FRONTEND] = {"moduli": moduli}
             hass.http.register_view(_Loader(moduli))
             hass.http.register_view(_Statici(moduli))
@@ -235,10 +256,12 @@ async def async_registra_frontend(hass: HomeAssistant) -> None:
 
             @callback
             def _ricaricate(_evento: Event) -> None:
-                hass.async_create_background_task(
-                    _async_dopo_la_ricarica(hass, _risorse(hass)),
-                    f"{DOMINIO}: risorsa Lovelace dopo la ricarica",
-                )
+                dati["sorveglia_fino"] = hass.loop.time() + _SORVEGLIANZA
+                if "sorveglianza" not in dati:
+                    dati["sorveglianza"] = hass.async_create_background_task(
+                        _async_sorveglia(hass, dati, _risorse(hass)),
+                        f"{DOMINIO}: risorsa Lovelace dopo la ricarica",
+                    )
 
             dati["ascolto"] = hass.bus.async_listen(
                 EVENT_CALL_SERVICE, _ricaricate, event_filter=_e_ricarica_risorse
@@ -251,6 +274,8 @@ def mostra_nella_barra(entry: ConfigEntry) -> bool:
 
 async def async_registra(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Registra o aggiorna il pannello, senza mai toglierlo."""
+    if (dati := hass.data.get(_FRONTEND)) is None:
+        return  # file del frontend illeggibili: è già nel registro
     frontend.async_register_built_in_panel(
         hass,
         component_name="custom",
@@ -264,7 +289,7 @@ async def async_registra(hass: HomeAssistant, entry: ConfigEntry) -> None:
                 "embed_iframe": False,
                 "trust_external": False,
                 # Arriva dal websocket, sempre attuale come la risorsa.
-                "module_url": _url(hass.data[_FRONTEND]["moduli"], MODULO_PANNELLO),
+                "module_url": _url(dati["moduli"], MODULO_PANNELLO),
             }
         },
         require_admin=True,

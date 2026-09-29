@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 from pathlib import Path
 from unittest.mock import patch
 
-from homeassistant.components.frontend import DATA_EXTRA_MODULE_URL
+from homeassistant.components.frontend import DATA_EXTRA_MODULE_URL, DATA_PANELS
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -27,6 +28,7 @@ FRONTEND = (
 )
 LOADER_INDEX = f"{URL_STATICO}/loader.js"
 ALTRA = "/local/altra-card.js"
+PANNELLO = "custom_components.foyer_raccolta_differenziata.pannello"
 
 
 def _url(nome: str) -> str:
@@ -107,8 +109,6 @@ async def test_gli_indirizzi_di_prima_portano_al_modulo_attuale(
 
 
 async def test_il_pannello_si_apre_dal_modulo_con_l_impronta(hass, hass_storage):
-    from homeassistant.components.frontend import DATA_PANELS
-
     await installa(hass, hass_storage)
 
     pannello = hass.data[DATA_PANELS]["raccolta-differenziata"]
@@ -159,27 +159,90 @@ async def test_rimuovere_l_integrazione_toglie_risorsa_e_modulo(hass, hass_stora
     assert not _nell_index(hass)
 
 
-async def test_con_le_risorse_in_yaml_la_voce_vive_in_memoria(hass, hass_storage):
-    configurazione = {
-        "lovelace": {
-            "resource_mode": "yaml",
-            "resources": [{"url": ALTRA, "type": "module"}],
-        }
+YAML = {
+    "lovelace": {
+        "resource_mode": "yaml",
+        "resources": [{"url": ALTRA, "type": "module"}],
     }
-    assert await async_setup_component(hass, "lovelace", configurazione)
+}
+
+
+def _rilettura(*secondi: float):
+    """«Ricarica risorse» che rilegge il YAML in tempi diversi, una lettura per volta.
+
+    La sorveglianza dura un secondo invece di trenta, così il test non aspetta.
+    """
+    attese = iter(secondi)
+
+    async def _leggi(_hass):
+        await asyncio.sleep(next(attese))
+        return YAML
+
+    return (
+        patch(
+            "homeassistant.components.lovelace.async_hass_config_yaml",
+            side_effect=_leggi,
+        ),
+        patch(f"{PANNELLO}._SORVEGLIANZA", 1.0),
+    )
+
+
+async def _ricarica(hass) -> None:
+    await hass.services.async_call("lovelace", "reload_resources", blocking=True)
+
+
+async def test_con_le_risorse_in_yaml_la_voce_vive_in_memoria(hass, hass_storage):
+    assert await async_setup_component(hass, "lovelace", YAML)
     await installa(hass, hass_storage)
     assert _risorse(hass) == [ALTRA, URL_LOADER]
 
     # "Ricarica risorse" rilegge il YAML, dove la voce non c'è: si rimette.
-    with patch(
-        "homeassistant.components.lovelace.async_hass_config_yaml",
-        return_value=configurazione,
-    ):
-        await hass.services.async_call("lovelace", "reload_resources", blocking=True)
+    lettura, sorveglianza = _rilettura(0)
+    with lettura, sorveglianza:
+        await _ricarica(hass)
         await hass.async_block_till_done(wait_background_tasks=True)
 
     assert _risorse(hass) == [ALTRA, URL_LOADER]
     assert "lovelace_resources" not in hass_storage
+
+
+async def test_due_ricariche_una_sull_altra(hass, hass_storage):
+    """La seconda finisce dopo che la voce è già stata rimessa nella prima."""
+    assert await async_setup_component(hass, "lovelace", YAML)
+    await installa(hass, hass_storage)
+
+    lettura, sorveglianza = _rilettura(0.2, 0.6)
+    with lettura, sorveglianza:
+        await asyncio.gather(_ricarica(hass), _ricarica(hass))
+        await hass.async_block_till_done(wait_background_tasks=True)
+
+    assert _risorse(hass) == [ALTRA, URL_LOADER]
+
+
+async def test_rimossa_durante_la_ricarica_la_voce_non_torna(hass, hass_storage):
+    assert await async_setup_component(hass, "lovelace", YAML)
+    voce = await installa(hass, hass_storage)
+
+    lettura, sorveglianza = _rilettura(0.3)
+    with lettura, sorveglianza:
+        ricarica = hass.async_create_task(_ricarica(hass))
+        await asyncio.sleep(0)
+        await hass.config_entries.async_remove(voce.entry_id)
+        await ricarica
+        await hass.async_block_till_done(wait_background_tasks=True)
+
+    assert _risorse(hass) == [ALTRA]
+
+
+async def test_senza_i_file_del_frontend_il_resto_funziona(hass, hass_storage):
+    """Un'installazione incompleta toglie card e pannello, non il calendario."""
+    with patch(f"{PANNELLO}._leggi_moduli", side_effect=FileNotFoundError):
+        await installa(hass, hass_storage)
+
+    assert hass.states.get("calendar.raccolta_differenziata") is not None
+    assert "raccolta-differenziata" not in hass.data.get(DATA_PANELS, {})
+    assert _risorse(hass) == []
+    assert not _nell_index(hass)
 
 
 async def test_la_card_arriva_anche_se_la_voce_non_parte(hass, hass_storage):

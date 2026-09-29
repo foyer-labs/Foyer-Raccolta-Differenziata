@@ -104,7 +104,9 @@ export abstract class CardRaccolta extends LitElement {
   };
 
   protected override willUpdate(cambiati: PropertyValues) {
-    if (cambiati.has("hass") && this.hass && this._connessa && !this._disiscrivi) this._avvia();
+    // Dopo un'iscrizione fallita si riprova al minuto, non a ogni cambio di stato di
+    // Home Assistant: con l'integrazione ferma sarebbero due richieste ogni volta.
+    if (cambiati.has("hass") && this.hass && this._connessa && !this._disiscrivi && !this._errore) this._avvia();
   }
 
   private _avvia() {
