@@ -17,6 +17,11 @@ Dopo l'aggiornamento riavvia Home Assistant. Non serve aggiungere niente.
   riapertura successiva. L'app partiva da una copia vecchia della pagina, conservata dal
   *service worker* di Home Assistant, in cui le card non c'erano. Ora le card arrivano
   anche come risorsa delle plance, che l'app riceve sempre aggiornata.
+- **Card che si moltiplicavano dopo una riconnessione:** a ogni ritorno dell'app dal
+  background, o dopo un calo della rete, ogni card si iscriveva di nuovo senza che la
+  vecchia iscrizione sparisse, e rileggeva i ritiri una volta in più a ogni
+  aggiornamento. Nel disiscriversi poteva anche fermare gli aggiornamenti di un'altra
+  card della plancia. Ora resta sempre una sola iscrizione per card.
 
 ### Cambiato
 - **Una voce nuova tra le risorse delle plance**,

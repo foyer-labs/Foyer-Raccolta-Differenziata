@@ -86,7 +86,9 @@ export abstract class CardRaccolta extends LitElement {
     super.disconnectedCallback();
     this._connessa = false;
     clearInterval(this._minuto);
-    this._disiscrivi?.then((f) => f()).catch(() => undefined);
+    // A connessione caduta l'iscrizione è già morta con lei; e l'identificativo
+    // vecchio, sulla connessione nuova, può essere quello di un'altra iscrizione.
+    if (this.hass?.connection.connected !== false) this._disiscrivi?.then((f) => f()).catch(() => undefined);
     this._disiscrivi = undefined;
     this.hass?.connection.removeEventListener?.("ready", this._riconnessa);
     this._connessioneAscoltata = false;
@@ -96,9 +98,11 @@ export abstract class CardRaccolta extends LitElement {
 
   private _connessioneAscoltata = false;
 
-  /** Home Assistant riconnesso (dopo un riavvio): iscrizione nuova e dati freschi. */
+  /** Connessione tornata (riavvio, rete, app dal background): iscrizione nuova e dati
+   * freschi. La vecchia è morta con la connessione e non si disiscrive: il suo
+   * identificativo, sulla connessione nuova, può essere quello di un'altra iscrizione
+   * (di un'altra card o della plancia), e verrebbe cancellata quella. */
   private _riconnessa = () => {
-    this._disiscrivi?.then((f) => f()).catch(() => undefined);
     this._disiscrivi = undefined;
     if (this._connessa && this.hass) this._avvia();
   };
@@ -118,11 +122,13 @@ export abstract class CardRaccolta extends LitElement {
       this.hass.connection.addEventListener?.("ready", this._riconnessa);
       this._connessioneAscoltata = true;
     }
+    // Alla riconnessione ci pensa _riconnessa: se la rifacesse anche la libreria, le
+    // iscrizioni si raddoppierebbero a ogni ritorno dell'app dal background.
     const iscrizione = this.hass.connection
-      .subscribeMessage(() => void this.carica(), { type: `${DOMINIO}/iscriviti` })
+      .subscribeMessage(() => void this.carica(), { type: `${DOMINIO}/iscriviti` }, { resubscribe: false })
       .catch(() => {
         // L'integrazione non è ancora caricata (Home Assistant che parte): si
-        // riprova al prossimo minuto.
+        // riprova al prossimo cambio di stato, al più ogni cinque secondi, o al minuto.
         if (this._disiscrivi === iscrizione) this._disiscrivi = undefined;
         this._errore = true;
         return () => undefined;
