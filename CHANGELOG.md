@@ -21,7 +21,9 @@ Dopo l'aggiornamento riavvia Home Assistant. Non serve aggiungere niente.
   background, o dopo un calo della rete, ogni card si iscriveva di nuovo senza che la
   vecchia iscrizione sparisse, e rileggeva i ritiri una volta in più a ogni
   aggiornamento. Nel disiscriversi poteva anche fermare gli aggiornamenti di un'altra
-  card della plancia. Ora resta sempre una sola iscrizione per card.
+  card della plancia. Ora resta sempre una sola iscrizione per card, e il pannello non
+  perde più la sua: prima, dopo una riconnessione, poteva smettere di aggiornarsi da
+  solo.
 
 ### Cambiato
 - **Una voce nuova tra le risorse delle plance**,
