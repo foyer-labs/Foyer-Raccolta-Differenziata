@@ -9,7 +9,9 @@ export interface HomeAssistant {
     subscribeMessage<T>(
       callback: (msg: T) => void,
       msg: Record<string, unknown>,
+      opzioni?: { resubscribe?: boolean },
     ): Promise<() => void>;
+    connected?: boolean;
   };
   states: Record<string, { state: string; attributes: Record<string, unknown> }>;
   services: Record<string, Record<string, unknown>>;

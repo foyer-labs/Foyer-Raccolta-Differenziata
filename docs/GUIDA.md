@@ -343,7 +343,11 @@ aggiorna.
 succedere: l'app partiva da una copia vecchia della pagina, conservata dal *service
 worker* di Home Assistant, in cui le card non c'erano. Ora arrivano anche come risorsa
 delle plance, che l'app riceve sempre aggiornata. Se l'errore resta dopo aver chiuso e
-riaperto l'app due volte, nell'app vai in **Impostazioni → App Companion → Risoluzione
-dei problemi → «Reset frontend cache»** (lo "Svuota cache" di Android non basta).
+riaperto l'app due volte, svuota la cache della pagina dalle impostazioni dell'app:
+
+- **Android:** Impostazioni → App Companion → Risoluzione dei problemi → *Reset
+  frontend cache* (lo "Svuota cache" di Android non basta);
+- **iPhone:** Impostazioni → App Companion → Debug → *Reimposta la cache del frontend*
+  (in alcune versioni *Clear web view cache*).
 
 **Dove chiedo aiuto?** Vedi [SUPPORT.md](../SUPPORT.md).

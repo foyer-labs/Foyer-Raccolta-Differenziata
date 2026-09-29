@@ -79,8 +79,49 @@ export class RaccoltaPannello extends LitElement {
 
   override disconnectedCallback() {
     super.disconnectedCallback();
-    this._disiscrivi?.then((f) => f()).catch(() => undefined);
+    // A connessione caduta l'iscrizione è già morta con lei; e l'identificativo
+    // vecchio, sulla connessione nuova, può essere quello di un'altra iscrizione.
+    if (this.hass?.connection.connected !== false) this._disiscrivi?.then((f) => f()).catch(() => undefined);
     this._disiscrivi = undefined;
+    clearTimeout(this._attesa);
+    this._attesa = undefined;
+    this.hass?.connection.removeEventListener?.("ready", this._riconnesso);
+    this._ascoltaRiconnessione = false;
+  }
+
+  private _ascoltaRiconnessione = false;
+  private _attesa?: number;
+
+  /** Connessione tornata: un'iscrizione nuova dopo tre secondi, senza disiscrivere
+   * quella morta con la vecchia connessione (lo stesso schema delle card, dove c'è il
+   * perché, card/base.ts). */
+  private _riconnesso = () => {
+    this._disiscrivi = undefined;
+    clearTimeout(this._attesa);
+    this._attesa = window.setTimeout(() => {
+      this._attesa = undefined;
+      if (this.isConnected && this.hass && !this._disiscrivi) this._iscriviti();
+    }, 3_000);
+  };
+
+  private _iscriviti() {
+    if (!this._ascoltaRiconnessione) {
+      this.hass.connection.addEventListener?.("ready", this._riconnesso);
+      this._ascoltaRiconnessione = true;
+    }
+    if (this.hass.connection.connected === false) return;
+    const iscrizione: Promise<() => void> = this.hass.connection
+      .subscribeMessage(() => void this._carica(), { type: `${DOMINIO}/iscriviti` }, { resubscribe: false })
+      .then(
+        (disiscrivi) => {
+          // Arrivata quando non serve più: si chiude subito, sulla sua connessione.
+          if (this._disiscrivi === iscrizione) return disiscrivi;
+          void Promise.resolve(disiscrivi()).catch(() => undefined);
+          return () => undefined;
+        },
+        () => () => undefined,
+      );
+    this._disiscrivi = iscrizione;
   }
 
   override updated(cambiati: Map<string, unknown>) {
@@ -95,11 +136,9 @@ export class RaccoltaPannello extends LitElement {
     }
     // Una sola iscrizione per volta: `_disiscrivi` c'è dal momento in cui la si chiede,
     // non da quando arriva la prima lettura. Riconnesso, il pannello si riscrive.
-    if (cambiati.has("hass") && this.hass && !this._disiscrivi) {
+    if (cambiati.has("hass") && this.hass && !this._disiscrivi && this._attesa === undefined) {
       void this._carica();
-      this._disiscrivi = this.hass.connection
-        .subscribeMessage(() => void this._carica(), { type: `${DOMINIO}/iscriviti` })
-        .catch(() => () => undefined);
+      this._iscriviti();
     }
   }
 

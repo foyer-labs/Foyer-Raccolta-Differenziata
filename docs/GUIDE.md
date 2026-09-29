@@ -383,7 +383,11 @@ before 0.4.1 the cards might not appear at all: update.
 happen: the app started from an old copy of the page, kept by Home Assistant's *service
 worker*, in which the cards were missing. Now they also arrive as a dashboard resource,
 which the app always receives up to date. If the error is still there after closing and
-reopening the app twice, go to **Settings → Companion app → Troubleshooting → "Reset
-frontend cache"** in the app (Android's "Clear cache" is not enough).
+reopening the app twice, clear the page cache from the app's settings:
+
+- **Android:** Settings → Companion app → Troubleshooting → *Reset frontend cache*
+  (Android's "Clear cache" is not enough);
+- **iPhone:** Settings → Companion app → Debugging → *Reset frontend cache* (in some
+  versions *Clear web view cache*).
 
 **Where do I ask for help?** See [SUPPORT.md](../SUPPORT.md).

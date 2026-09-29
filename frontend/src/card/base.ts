@@ -86,8 +86,11 @@ export abstract class CardRaccolta extends LitElement {
     super.disconnectedCallback();
     this._connessa = false;
     clearInterval(this._minuto);
-    this._disiscrivi?.then((f) => f()).catch(() => undefined);
+    // A connessione caduta l'iscrizione è già morta con lei; e l'identificativo
+    // vecchio, sulla connessione nuova, può essere quello di un'altra iscrizione.
+    if (this.hass?.connection.connected !== false) this._disiscrivi?.then((f) => f()).catch(() => undefined);
     this._disiscrivi = undefined;
+    clearTimeout(this._attesa);
     this.hass?.connection.removeEventListener?.("ready", this._riconnessa);
     this._connessioneAscoltata = false;
     // Una finestra aperta non riappare da sola tornando alla plancia.
@@ -96,33 +99,64 @@ export abstract class CardRaccolta extends LitElement {
 
   private _connessioneAscoltata = false;
 
-  /** Home Assistant riconnesso (dopo un riavvio): iscrizione nuova e dati freschi. */
+  /** Connessione tornata (riavvio, rete, app dal background): iscrizione nuova e dati
+   * freschi. La vecchia è morta con la connessione e non si disiscrive: il suo
+   * identificativo, sulla connessione nuova, può essere quello di un'altra iscrizione
+   * (di un'altra card o della plancia), e verrebbe cancellata quella.
+   *
+   * Quella nuova si fa dopo tre secondi, non subito: appena dopo "ready" la barra
+   * laterale di Home Assistant disiscrive la sua con l'identificativo della
+   * connessione vecchia, e un'iscrizione fatta in quell'istante tende ad avere proprio
+   * quello. Nell'attesa willUpdate non riparte (_ultimoAvvio). */
   private _riconnessa = () => {
-    this._disiscrivi?.then((f) => f()).catch(() => undefined);
     this._disiscrivi = undefined;
-    if (this._connessa && this.hass) this._avvia();
+    this._ultimoAvvio = Date.now();
+    clearTimeout(this._attesa);
+    this._attesa = window.setTimeout(() => {
+      if (this._connessa && this.hass && !this._disiscrivi) this._avvia();
+    }, 3_000);
   };
 
+  private _attesa?: number;
+
+  private _ultimoAvvio = 0;
+
   protected override willUpdate(cambiati: PropertyValues) {
-    // Dopo un'iscrizione fallita si riprova al minuto, non a ogni cambio di stato di
-    // Home Assistant: con l'integrazione ferma sarebbero due richieste ogni volta.
-    if (cambiati.has("hass") && this.hass && this._connessa && !this._disiscrivi && !this._errore) this._avvia();
+    // Dopo un'iscrizione fallita (Home Assistant che parte, integrazione ferma) si
+    // riprova al più ogni cinque secondi, non a ogni cambio di stato: sarebbero due
+    // richieste ogni volta. Dopo un riavvio la card torna in pochi secondi.
+    if (cambiati.has("hass") && this.hass && this._connessa && !this._disiscrivi && Date.now() - this._ultimoAvvio >= 5_000) this._avvia();
   }
 
   private _avvia() {
+    this._ultimoAvvio = Date.now();
     if (!this._connessioneAscoltata) {
       this.hass.connection.addEventListener?.("ready", this._riconnessa);
       this._connessioneAscoltata = true;
     }
-    const iscrizione = this.hass.connection
-      .subscribeMessage(() => void this.carica(), { type: `${DOMINIO}/iscriviti` })
-      .catch(() => {
-        // L'integrazione non è ancora caricata (Home Assistant che parte): si
-        // riprova al prossimo minuto.
-        if (this._disiscrivi === iscrizione) this._disiscrivi = undefined;
-        this._errore = true;
-        return () => undefined;
-      });
+    // A connessione giù la libreria metterebbe l'iscrizione in coda e la manderebbe
+    // accanto a quella di _riconnessa: ci pensa "ready".
+    if (this.hass.connection.connected === false) return;
+    // Alla riconnessione ci pensa _riconnessa: se la rifacesse anche la libreria, le
+    // iscrizioni si raddoppierebbero a ogni ritorno dell'app dal background.
+    const iscrizione: Promise<() => void> = this.hass.connection
+      .subscribeMessage(() => void this.carica(), { type: `${DOMINIO}/iscriviti` }, { resubscribe: false })
+      .then(
+        (disiscrivi) => {
+          // Arrivata quando non serve più (card staccata, connessione rifatta): si
+          // chiude subito, sulla connessione da cui arriva.
+          if (this._disiscrivi === iscrizione) return disiscrivi;
+          void Promise.resolve(disiscrivi()).catch(() => undefined);
+          return () => undefined;
+        },
+        () => {
+          // L'integrazione non è ancora caricata (Home Assistant che parte): si
+          // riprova al prossimo cambio di stato, al più ogni cinque secondi, o al minuto.
+          if (this._disiscrivi === iscrizione) this._disiscrivi = undefined;
+          this._errore = true;
+          return () => undefined;
+        },
+      );
     this._disiscrivi = iscrizione;
     void this.carica();
   }
