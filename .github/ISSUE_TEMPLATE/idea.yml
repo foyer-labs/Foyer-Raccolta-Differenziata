@@ -1,11 +1,13 @@
 name: Idea
-description: Una funzione che manca.
+description: Una funzione che manca. / A missing feature.
 labels: ["idea"]
 body:
   - type: markdown
     attributes:
       value: |
         Il progetto sceglie la semplicità di proposito: spiega il caso reale che la funzione risolverebbe.
+
+        Puoi scrivere in italiano o in inglese. / English is fine too.
   - type: textarea
     id: caso
     attributes:

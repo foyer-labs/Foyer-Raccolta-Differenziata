@@ -1,5 +1,11 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Guida
+  - name: Guida / Guide
     url: https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/docs/GUIDA.md
-    about: Installazione, regole, promemoria, card e domande frequenti.
+    about: Installazione, regole, promemoria, card e domande frequenti. English guide in docs/GUIDE.md.
+  - name: Aiuto / Support
+    url: https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/blob/main/SUPPORT.md
+    about: Come chiedere aiuto, in italiano o in inglese. How to ask for help, in Italian or English.
+  - name: Sicurezza / Security
+    url: https://github.com/foyer-labs/Foyer-Raccolta-Differenziata/security/advisories/new
+    about: Segnala una vulnerabilità in privato. Report a vulnerability privately.

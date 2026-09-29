@@ -7,6 +7,20 @@ non solo "correzioni", e quello che richiede qualcosa da te viene prima di tutto
 
 ## [Non rilasciato]
 
+## [0.6.1] — 2026-09-29 — anche in inglese
+
+Nessuna modifica all'integrazione: cambiano solo i testi che la presentano.
+
+### Cambiato
+- **README nuovo**, con i pulsanti per aprire il repository in HACS e aggiungere
+  l'integrazione in un tocco.
+- **README e guida anche in inglese** (`README.en.md`, `docs/GUIDE.md`), per chi non parla
+  italiano e per i revisori di HACS. L'integrazione resta in italiano, per scelta.
+- **Guida:** il percorso per aggiungere il repository in HACS era quello di una versione
+  vecchia di HACS; ora ci sono anche i pulsanti.
+- **Segnalazioni:** si può scrivere anche in inglese, e le vulnerabilità si segnalano in
+  privato.
+
 ## [0.6.0] — 2026-09-27 — notifiche più belle
 
 ### Aggiunto
