@@ -4462,7 +4462,11 @@ var $ = "foyer_raccolta_differenziata", en = [
 	"impostazioni"
 ], tn = class extends k {
 	constructor(...e) {
-		super(...e), this.narrow = !1, this._pagina = "panoramica", this._problemi = [], this._occupato = !1, this._proposta = 0;
+		super(...e), this.narrow = !1, this._pagina = "panoramica", this._problemi = [], this._occupato = !1, this._proposta = 0, this._ascoltaRiconnessione = !1, this._riconnesso = () => {
+			this._disiscrivi = void 0, clearTimeout(this._attesa), this._attesa = window.setTimeout(() => {
+				this._attesa = void 0, this.isConnected && this.hass && !this._disiscrivi && this._iscriviti();
+			}, 3e3);
+		};
 	}
 	static {
 		this.properties = {
@@ -4485,14 +4489,19 @@ var $ = "foyer_raccolta_differenziata", en = [
 		e && en.includes(e) && (this._pagina = e);
 	}
 	disconnectedCallback() {
-		super.disconnectedCallback(), this._disiscrivi?.then((e) => e()).catch(() => void 0), this._disiscrivi = void 0;
+		super.disconnectedCallback(), this.hass?.connection.connected !== !1 && this._disiscrivi?.then((e) => e()).catch(() => void 0), this._disiscrivi = void 0, clearTimeout(this._attesa), this._attesa = void 0, this.hass?.connection.removeEventListener?.("ready", this._riconnesso), this._ascoltaRiconnessione = !1;
+	}
+	_iscriviti() {
+		if (this._ascoltaRiconnessione ||= (this.hass.connection.addEventListener?.("ready", this._riconnesso), !0), this.hass.connection.connected === !1) return;
+		let e = this.hass.connection.subscribeMessage(() => void this._carica(), { type: `${$}/iscriviti` }, { resubscribe: !1 }).then((t) => this._disiscrivi === e ? t : (Promise.resolve(t()).catch(() => void 0), () => void 0), () => () => void 0);
+		this._disiscrivi = e;
 	}
 	updated(e) {
 		let t = this.renderRoot.querySelector(".avviso");
 		t?.showPopover && !t.matches(":popover-open") && t.showPopover(), e.has("_pagina") && this.renderRoot.querySelector(".schede button.attiva")?.scrollIntoView({
 			block: "nearest",
 			inline: "nearest"
-		}), e.has("hass") && this.hass && !this._disiscrivi && (this._carica(), this._disiscrivi = this.hass.connection.subscribeMessage(() => void this._carica(), { type: `${$}/iscriviti` }).catch(() => () => void 0));
+		}), e.has("hass") && this.hass && !this._disiscrivi && this._attesa === void 0 && (this._carica(), this._iscriviti());
 	}
 	async _carica() {
 		try {

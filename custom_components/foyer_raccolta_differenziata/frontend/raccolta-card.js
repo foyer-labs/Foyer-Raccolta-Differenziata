@@ -1411,8 +1411,10 @@ function Ge(e, t) {
 var Y = (e) => e.slice(11, 16), Ke = (e) => We(e.fasce ?? []).map(([e, t]) => `${Y(e)}–${Y(t)}`).join(" · "), X = "foyer_raccolta_differenziata", Z = class extends P {
 	constructor(...e) {
 		super(...e), this._errore = !1, this._connessa = !1, this._connessioneAscoltata = !1, this._riconnessa = () => {
-			this._disiscrivi?.then((e) => e()).catch(() => void 0), this._disiscrivi = void 0, this._connessa && this.hass && this._avvia();
-		}, this._richiesta = 0;
+			this._disiscrivi = void 0, this._ultimoAvvio = Date.now(), clearTimeout(this._attesa), this._attesa = window.setTimeout(() => {
+				this._connessa && this.hass && !this._disiscrivi && this._avvia();
+			}, 3e3);
+		}, this._ultimoAvvio = 0, this._richiesta = 0;
 	}
 	static {
 		this.properties = {
@@ -1447,14 +1449,14 @@ var Y = (e) => e.slice(11, 16), Ke = (e) => We(e.fasce ?? []).map(([e, t]) => `$
 		}, 6e4), this.hass && this._avvia();
 	}
 	disconnectedCallback() {
-		super.disconnectedCallback(), this._connessa = !1, clearInterval(this._minuto), this._disiscrivi?.then((e) => e()).catch(() => void 0), this._disiscrivi = void 0, this.hass?.connection.removeEventListener?.("ready", this._riconnessa), this._connessioneAscoltata = !1, this._finestra = void 0;
+		super.disconnectedCallback(), this._connessa = !1, clearInterval(this._minuto), this.hass?.connection.connected !== !1 && this._disiscrivi?.then((e) => e()).catch(() => void 0), this._disiscrivi = void 0, clearTimeout(this._attesa), this.hass?.connection.removeEventListener?.("ready", this._riconnessa), this._connessioneAscoltata = !1, this._finestra = void 0;
 	}
 	willUpdate(e) {
-		e.has("hass") && this.hass && this._connessa && !this._disiscrivi && this._avvia();
+		e.has("hass") && this.hass && this._connessa && !this._disiscrivi && Date.now() - this._ultimoAvvio >= 5e3 && this._avvia();
 	}
 	_avvia() {
-		this._connessioneAscoltata ||= (this.hass.connection.addEventListener?.("ready", this._riconnessa), !0);
-		let e = this.hass.connection.subscribeMessage(() => void this.carica(), { type: `${X}/iscriviti` }).catch(() => (this._disiscrivi === e && (this._disiscrivi = void 0), this._errore = !0, () => void 0));
+		if (this._ultimoAvvio = Date.now(), this._connessioneAscoltata ||= (this.hass.connection.addEventListener?.("ready", this._riconnessa), !0), this.hass.connection.connected === !1) return;
+		let e = this.hass.connection.subscribeMessage(() => void this.carica(), { type: `${X}/iscriviti` }, { resubscribe: !1 }).then((t) => this._disiscrivi === e ? t : (Promise.resolve(t()).catch(() => void 0), () => void 0), () => (this._disiscrivi === e && (this._disiscrivi = void 0), this._errore = !0, () => void 0));
 		this._disiscrivi = e, this.carica();
 	}
 	async carica(e) {
