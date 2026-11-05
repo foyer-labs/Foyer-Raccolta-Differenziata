@@ -189,9 +189,26 @@ Several types of waste on the same day arrive in a single message:
 Thursday 24th.")
 
 Phones with the Companion app also get the **Esposto ✓** ("put out") button, and on
-Android the notification has the waste type's icon and colour; other services (Telegram,
-email, …) get a title and text. On Android the notifications have their own channel,
+Android the notification has the waste type's icon and colour; other services (email, …)
+get a title and text. On Android the notifications have their own channel,
 *Raccolta differenziata*: in the app's settings you choose its sound and importance.
+
+**Telegram.** Pick the chat from the *Telegram* group in *A chi*: these are the notify
+entities of Home Assistant's *Telegram bot* integration, one per chat (you add them in
+*Settings → Devices & services → Telegram bot → ⋮ → Add allowed chat ID*). The message
+depends on your Home Assistant version:
+
+- **from 2026.11** it arrives with the title in bold and the **Esposto ✓** button and,
+  with follow-ups on, *Ricordamelo tra 30 minuti* ("remind me in 30 minutes"), just like
+  on the phone; when you press a button Telegram shows a short notice ("Segnato come
+  esposto ✓", "marked as put out");
+- **before 2026.11** it arrives as plain text, without buttons.
+
+From Home Assistant 2026.11 the old Telegram `notify` services, the ones written in
+`configuration.yaml` with `platform: telegram`, no longer exist. If a reminder used one,
+*Settings → Repairs* shows *Alcuni promemoria non arrivano a destinazione* ("some reminders
+don't reach their recipient"): add the chat to the Telegram bot and pick it again in
+*A chi*.
 
 **Test.** *Invia una prova* ("send a test"), below *A chi*, immediately sends the
 notification for the next collection to the chosen recipients, even before you save: you
@@ -374,6 +391,13 @@ the next dates in the editor tell you straight away whether it is right now.
 **Reminders don't arrive.** Check that the reminder is active, that the recipient still
 exists in Home Assistant, that the *Sospendi promemoria* switch is off and that today is
 not within your time away (*Vacanze*). Delivery errors end up in Home Assistant's log.
+A recipient that no longer exists also shows up in *Settings → Repairs*.
+
+**After updating to Home Assistant 2026.11, Telegram gets nothing.** You were using the old
+Telegram `notify` service, which 2026.11 removed. Add the chat to the *Telegram bot*
+integration (*⋮ → Add allowed chat ID*), then in the reminder remove the old recipient and
+pick the chat from the *Telegram* group. Use *Invia una prova* to check: the message now
+has buttons too.
 
 **I can't find the cards in the picker.** After installing or updating, reload the browser
 page (or close and reopen the Companion app): the cards load with the page. With versions

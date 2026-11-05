@@ -40,6 +40,11 @@ def festivo(nome: str) -> str:
 
 AZIONE_ESPOSTO = "Esposto ✓"
 AZIONE_RINVIA = "Ricordamelo tra 30 minuti"
+# Le risposte ai pulsanti di Telegram, in un piccolo avviso sopra la chat.
+TELEGRAM_ESPOSTO = "Segnato come esposto ✓"
+TELEGRAM_RINVIATO = "Te lo ricordo più tardi"
+TELEGRAM_PROVA = "Era una prova: nessuna conferma"
+TELEGRAM_SCADUTO = "Questo promemoria non vale più"
 # Il canale delle notifiche su Android: suono e importanza si scelgono lì.
 CANALE_NOTIFICHE = "Raccolta differenziata"
 _GIORNI = ("Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica")
