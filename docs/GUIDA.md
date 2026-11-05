@@ -154,9 +154,24 @@ Più rifiuti nello stesso giorno arrivano in un messaggio solo:
 > Ritiro domani, giovedì 24
 
 I telefoni con l'app Companion ricevono anche il pulsante **Esposto ✓**, e su Android la
-notifica ha l'icona e il colore del rifiuto; gli altri servizi (Telegram, email, …)
-ricevono titolo e testo. Su Android le notifiche hanno un canale proprio, *Raccolta
+notifica ha l'icona e il colore del rifiuto; gli altri servizi (email, …) ricevono
+titolo e testo. Su Android le notifiche hanno un canale proprio, *Raccolta
 differenziata*: nelle impostazioni dell'app ne scegli suono e importanza.
+
+**Telegram.** Scegli la chat dal gruppo *Telegram* di *A chi*: sono le entità notify
+dell'integrazione *Telegram bot* di Home Assistant, una per chat (si aggiungono da
+*Impostazioni → Dispositivi e servizi → Telegram bot → ⋮ → Aggiungi ID chat
+consentito*). Il messaggio dipende dalla versione di Home Assistant:
+
+- **da 2026.11** arriva con il titolo in grassetto e i pulsanti **Esposto ✓** e, con i
+  solleciti accesi, *Ricordamelo tra 30 minuti*, proprio come sul telefono; premuto un
+  pulsante, Telegram mostra un breve avviso ("Segnato come esposto ✓");
+- **prima di 2026.11** arriva come testo, senza pulsanti.
+
+Da Home Assistant 2026.11 i vecchi servizi `notify` di Telegram, quelli scritti in
+`configuration.yaml` con `platform: telegram`, non esistono più. Se un promemoria li usava,
+in *Impostazioni → Riparazioni* compare *Alcuni promemoria non arrivano a destinazione*:
+aggiungi la chat al bot Telegram e sceglila di nuovo in *A chi*.
 
 **Prova.** *Invia una prova*, sotto *A chi*, manda subito la notifica del prossimo ritiro ai
 destinatari scelti, anche prima di salvare: vedi com'è fatta e se arriva. I suoi pulsanti
@@ -333,6 +348,13 @@ riferimento della regola: le prossime date nell'editor ti dicono subito se ora �
 **I promemoria non arrivano.** Controlla che il promemoria sia attivo, che il destinatario
 esista ancora in Home Assistant, che l'interruttore *Sospendi promemoria* sia spento e che
 oggi non sia in vacanza. Gli errori di consegna finiscono nel registro di Home Assistant.
+Un destinatario che non esiste più si vede anche in *Impostazioni → Riparazioni*.
+
+**Dopo l'aggiornamento a Home Assistant 2026.11 Telegram non riceve più nulla.** Usavi il
+vecchio servizio `notify` di Telegram, che 2026.11 ha tolto. Aggiungi la chat
+all'integrazione *Telegram bot* (*⋮ → Aggiungi ID chat consentito*), poi nel promemoria
+togli il vecchio destinatario e scegli la chat dal gruppo *Telegram*. Usa *Invia una
+prova* per controllare: ora il messaggio ha anche i pulsanti.
 
 **Non trovo le card nel selettore.** Dopo l'installazione o un aggiornamento ricarica
 la pagina del browser (o chiudi e riapri l'app Companion): le card si caricano con la
