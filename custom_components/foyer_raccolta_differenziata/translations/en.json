@@ -122,6 +122,10 @@
       "description": "La configurazione salvata contiene errori ({problemi}), quindi le entità della raccolta non sono disponibili. Correggila dal pannello della raccolta.",
       "title": "La configurazione della raccolta non è valida"
     },
+    "destinatari_mancanti": {
+      "title": "Alcuni promemoria non arrivano a destinazione",
+      "description": "Questi destinatari dei promemoria non esistono più in Home Assistant: {destinatari}. Dal pannello della raccolta, pagina Promemoria, sceglili di nuovo o toglili. Se è Telegram: da Home Assistant 2026.11 i vecchi servizi notify di Telegram non esistono più; aggiungi la chat al bot Telegram (Impostazioni → Dispositivi e servizi → Telegram bot) e scegli la sua entità notify."
+    },
     "ritiri_festivi": {
       "description": "Nei prossimi 30 giorni questi ritiri cadono in un giorno festivo: {ritiri}. Controlla cosa ha deciso il tuo comune e, dal pannello della raccolta, sposta o togli il ritiro, oppure ignora l'avviso se il ritiro resta com'è.",
       "title": "Ritiri in giorni festivi da controllare"

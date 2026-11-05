@@ -170,6 +170,7 @@ export const T = {
   nessunDestinatarioScelto: "Nessun destinatario: aggiungine almeno uno.",
   gruppoCompanion: "App Companion",
   gruppoServizi: "Altri servizi",
+  gruppoTelegram: "Telegram",
   gruppoEntita: "Entità notify",
   // Promemoria
   aiutoPromemoria: "Un promemoria dice quando avvisarti e chi. Più rifiuti nello stesso giorno arrivano in un solo messaggio.",
@@ -188,7 +189,7 @@ export const T = {
   tutte: "Tutte",
   tutteAiuto: "«Tutte» comprende anche le tipologie che aggiungerai.",
   destinatari: "A chi",
-  destinatariAiuto: "I telefoni con l'app Companion ricevono anche il pulsante «Esposto ✓».",
+  destinatariAiuto: "I telefoni con l'app Companion ricevono anche il pulsante «Esposto ✓»; le chat Telegram lo ricevono da Home Assistant 2026.11.",
   nessunDestinatario: "Nessun servizio di notifica trovato in Home Assistant.",
   conPulsanti: "con pulsanti",
   soloTesto: "solo testo",

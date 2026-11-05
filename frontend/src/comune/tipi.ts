@@ -2,7 +2,9 @@
 
 export interface HomeAssistant {
   callWS<T>(msg: Record<string, unknown>): Promise<T>;
-  config?: { time_zone?: string };
+  config?: { time_zone?: string; version?: string };
+  /** Il registro delle entità: la piattaforma dice, per esempio, se è Telegram. */
+  entities?: Record<string, { platform?: string }>;
   connection: {
     addEventListener?(evento: "ready" | "disconnected", ascolto: () => void): void;
     removeEventListener?(evento: "ready" | "disconnected", ascolto: () => void): void;

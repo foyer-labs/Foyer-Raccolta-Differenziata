@@ -7,6 +7,24 @@ non solo "correzioni", e quello che richiede qualcosa da te viene prima di tutto
 
 ## [Non rilasciato]
 
+## [0.7.0] — 2026-11-05 — Telegram con Home Assistant 2026.11
+
+Home Assistant 2026.11 ha tolto la vecchia piattaforma `notify` di Telegram. **Se i tuoi
+promemoria arrivavano su Telegram con un servizio `notify.…` scritto in
+`configuration.yaml`, dopo l'aggiornamento non arrivano più:** aggiungi la chat
+all'integrazione *Telegram bot* (*⋮ → Aggiungi ID chat consentito*) e sceglila di nuovo
+nel promemoria, dal gruppo *Telegram*. Te lo ricorda anche un avviso in *Riparazioni*.
+
+### Aggiunto
+- **Telegram con i pulsanti:** da Home Assistant 2026.11 le chat del bot Telegram
+  ricevono il promemoria con `telegram_bot.send_message`: titolo in grassetto e i pulsanti
+  **Esposto ✓** e *Ricordamelo tra 30 minuti*, che funzionano come nell'app Companion.
+  Prima di 2026.11 arriva il testo, come finora.
+- **Destinatari spariti in Riparazioni:** se un destinatario dei promemoria non esiste
+  più (il vecchio servizio di Telegram, un telefono tolto), compare un avviso con
+  l'elenco, invece di tacere.
+- Nel pannello le chat Telegram hanno un gruppo proprio in *A chi*.
+
 ## [0.6.2] — 2026-09-29 — card sempre al loro posto nell'app
 
 Dopo l'aggiornamento riavvia Home Assistant. Non serve aggiungere niente.

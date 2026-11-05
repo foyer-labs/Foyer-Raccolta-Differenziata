@@ -511,6 +511,31 @@ All'app Companion arrivano anche il colore e l'icona della prima tipologia
 "Raccolta differenziata", dove l'utente sceglie suono e importanza. iOS li ignora e mostra
 l'emoji del titolo.
 
+**Telegram (decisione 74).** Da Home Assistant 2026.11 la vecchia piattaforma `notify` di
+Telegram (`notify` con `platform: telegram` in YAML) non esiste più: i suoi servizi
+`notify.<nome>` spariscono, e le chat si raggiungono con le entità notify del bot
+Telegram. Per questo un'entità `notify` della piattaforma `telegram_bot` riceve due
+formati, secondo la versione di Home Assistant:
+
+- **da 2026.11:** `telegram_bot.send_message` con `entity_id`, il titolo in grassetto sopra
+  il testo (`parse_mode: html`, testo con i caratteri speciali protetti) e i pulsanti
+  sotto (`inline_keyboard`): **Esposto ✓** e, con i solleciti accesi, **Ricordamelo tra 30
+  minuti**. Il pulsante torna come evento `telegram_callback`, con dati corti perché
+  Telegram ne accetta 64 byte: `/rd_esposto_<gettone>` e `/rd_rinvia_<gettone>_<impronta>`,
+  dove l'impronta (8 caratteri) riconosce il destinatario tra quelli dei profili. La
+  conferma vale come quella dell'app Companion; chi ha premuto è il nome Telegram.
+  L'integrazione risponde al pulsante (`telegram_bot.answer_callback_query`) con un
+  avviso breve: "Segnato come esposto ✓", "Te lo ricordo più tardi", "Era una prova" o
+  "Questo promemoria non vale più". Il pannello mette le chat Telegram in un gruppo
+  proprio e le indica "con pulsanti";
+- **prima di 2026.11:** il testo con `notify.send_message`, come ogni altra entità.
+
+Un destinatario che non esiste più (un servizio `notify` sparito, come quelli di Telegram
+dopo l'aggiornamento, o un'entità tolta) apre un problema in Riparazioni con l'elenco e
+il modo di sostituirlo; sparisce quando il destinatario torna o si toglie dal profilo. Si
+controlla a Home Assistant avviato, a ogni modifica della configurazione e quando un
+servizio `notify` compare o sparisce.
+
 **Prova.** Nel modulo di un promemoria, *Invia una prova* manda subito ai destinatari del
 modulo, anche non salvato, la notifica vera del prossimo ritiro delle sue tipologie, con
 una riga che dice che è una prova (decisione 72). I pulsanti della prova hanno un
@@ -1248,6 +1273,17 @@ Correzione, 2026-09-29 (segnalazione del proprietario: nell'app Companion le car
     primo avvio a freddo, con la 0.6.2 compare subito. La stessa correzione ha risolto il
     problema sul telefono del proprietario con un'altra integrazione.
 
+
+Telegram con Home Assistant 2026.11, 2026-11-05 (richiesta del proprietario).
+
+74. Le chat Telegram ricevono il formato adatto alla versione di Home Assistant (§8.3):
+    da 2026.11, quando la piattaforma `notify` di Telegram è stata tolta,
+    `telegram_bot.send_message` con titolo in grassetto e i pulsanti *Esposto ✓* e
+    *Ricordamelo*, confermati dall'evento `telegram_callback`; prima, il testo con
+    `notify.send_message`. La versione si legge da Home Assistant (anno e mese), non si
+    prova a chiamare un servizio per vedere se c'è. Un destinatario sparito, come i
+    vecchi servizi di Telegram dopo l'aggiornamento, apre un problema in Riparazioni
+    invece di far tacere i promemoria senza dirlo.
 ---
 
 ## 17. Da confermare
