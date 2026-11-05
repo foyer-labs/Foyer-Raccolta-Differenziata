@@ -164,6 +164,8 @@ export function creaHass({ conferme = [] } = {}) {
   const ignorati = [];
   const hass = {
     user: { is_admin: true, name: "Luca" },
+    config: { time_zone: "Europe/Rome", version: new URLSearchParams(location.search).get("ha") ?? "2026.11.1" },
+    entities: { "notify.telegram_famiglia": { platform: "telegram_bot" } },
     states: {
       "notify.telegram_famiglia": { state: "unknown", attributes: { friendly_name: "Telegram famiglia" } },
       "notify.alexa_cucina": { state: "unknown", attributes: { friendly_name: "Alexa cucina" } },

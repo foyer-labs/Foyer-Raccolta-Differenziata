@@ -32,7 +32,16 @@ const leggibile = (id: string) => {
   const testo = id.replaceAll("_", " ");
   return testo.charAt(0).toUpperCase() + testo.slice(1);
 };
-const conPulsanti = (d: Destinatario) => d.tipo === "servizio" && d.id.startsWith("mobile_app_");
+/** Home Assistant 2026.11 o successivo: Telegram passa da telegram_bot.send_message,
+ * con i pulsanti (decisione 74). */
+const telegramConPulsanti = (hass: HomeAssistant) => {
+  const [anno, mese] = (hass.config?.version ?? "").split(".").map((n) => parseInt(n, 10));
+  return anno > 2026 || (anno === 2026 && mese >= 11);
+};
+const eTelegram = (hass: HomeAssistant, entita: string) => hass.entities?.[entita]?.platform === "telegram_bot";
+const conPulsanti = (hass: HomeAssistant, d: Destinatario) =>
+  (d.tipo === "servizio" && d.id.startsWith("mobile_app_")) ||
+  (d.tipo === "entita" && eTelegram(hass, d.id) && telegramConPulsanti(hass));
 
 export class RdPromemoria extends LitElement {
   static override properties = {
@@ -101,16 +110,21 @@ export class RdPromemoria extends LitElement {
       });
     const entita = Object.keys(this.hass.states ?? {})
       .filter((e) => e.startsWith("notify."))
-      .map((id): Opzione => ({
-        id: `entita:${id}`,
-        nome: String(this.hass.states[id].attributes.friendly_name ?? id),
-        dettaglio: id,
-        etichetta: T.soloTesto,
-        icona: "mdi:bell-badge-outline",
-        gruppo: T.gruppoEntita,
-      }));
-    // Prima i telefoni (hanno i pulsanti), poi gli altri servizi, poi le entità.
-    const ordine = [T.gruppoCompanion, T.gruppoServizi, T.gruppoEntita];
+      .map((id): Opzione => {
+        const telegram = eTelegram(this.hass, id);
+        const pulsanti = telegram && telegramConPulsanti(this.hass);
+        return {
+          id: `entita:${id}`,
+          nome: String(this.hass.states[id].attributes.friendly_name ?? id),
+          dettaglio: id,
+          etichetta: pulsanti ? T.conPulsanti : T.soloTesto,
+          etichettaEvidente: pulsanti,
+          icona: telegram ? "mdi:send" : "mdi:bell-badge-outline",
+          gruppo: telegram ? T.gruppoTelegram : T.gruppoEntita,
+        };
+      });
+    // Prima i telefoni (hanno i pulsanti), poi Telegram, gli altri servizi, le entità.
+    const ordine = [T.gruppoCompanion, T.gruppoTelegram, T.gruppoServizi, T.gruppoEntita];
     return [...servizi, ...entita].sort(
       (a, b) => ordine.indexOf(a.gruppo!) - ordine.indexOf(b.gruppo!) || a.nome.localeCompare(b.nome),
     );
@@ -251,7 +265,7 @@ export class RdPromemoria extends LitElement {
   private _riepilogo(p: Profilo) {
     const tipologie = this.lettura.configurazione.tipologie;
     const quali = p.tipologie === null ? T.tutte : p.tipologie.map((id) => tipologie.find((t) => t.id === id)?.nome ?? id).join(", ");
-    const telefoni = p.destinatari.filter(conPulsanti).length;
+    const telefoni = p.destinatari.filter((d) => conPulsanti(this.hass, d)).length;
     return html`${quali} · ${p.destinatari.length} ${p.destinatari.length === 1 ? "destinatario" : "destinatari"}${telefoni ? html` · ${telefoni} con pulsanti` : nothing}`;
   }
 

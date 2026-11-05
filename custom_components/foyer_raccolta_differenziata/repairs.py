@@ -5,7 +5,9 @@ Tre problemi:
 * configurazione non valida (INV-2), che non si corregge da qui ma dal pannello;
 * calendario in scadenza o scaduto (decisione 14), che si corregge indicando la
   nuova data di validità dopo aver controllato il calendario del comune;
-* ritiri in giorni festivi nei prossimi 30 giorni, non gestiti (decisione 34).
+* ritiri in giorni festivi nei prossimi 30 giorni, non gestiti (decisione 34);
+* destinatari dei promemoria che non esistono più, come i servizi `notify` di
+  Telegram tolti in Home Assistant 2026.11 (decisione 74).
 """
 
 from __future__ import annotations
@@ -31,6 +33,7 @@ PROBLEMA_CALCOLO = "calcolo_non_riuscito"
 PROBLEMA_IN_SCADENZA = "calendario_in_scadenza"
 PROBLEMA_SCADUTO = "calendario_scaduto"
 PROBLEMA_FESTIVI = "ritiri_festivi"
+PROBLEMA_DESTINATARI = "destinatari_mancanti"
 GIORNI_FESTIVI = 30
 
 
@@ -114,6 +117,17 @@ def aggiorna_problemi(hass: HomeAssistant, coordinatore: Coordinatore) -> None:
         PROBLEMA_FESTIVI,
         bool(festivi),
         segnaposti={"ritiri": "; ".join(elenco), "numero": str(len(elenco))},
+    )
+
+
+@callback
+def imposta_destinatari_mancanti(hass: HomeAssistant, mancanti: list[str]) -> None:
+    """I promemoria che non arrivano a qualcuno: lo si dice, invece di tacere."""
+    _imposta(
+        hass,
+        PROBLEMA_DESTINATARI,
+        bool(mancanti),
+        segnaposti={"destinatari": ", ".join(mancanti)},
     )
 
 

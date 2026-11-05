@@ -5,22 +5,44 @@ pulsanti delle notifiche e si fissa il timer. `decidi` gira ogni minuto, all'ist
 previsto del prossimo invio e a ogni evento: così l'ultimo istante di attività è
 sempre al massimo di un minuto fa, e dopo un riavvio si recupera ciò che serve
 (SPEC §8.6).
+
+Telegram (decisione 74): da Home Assistant 2026.11 la vecchia piattaforma `notify`
+di Telegram non esiste più, e i messaggi si mandano con `telegram_bot.send_message`
+alle entità notify del bot. Da quella versione un'entità di Telegram riceve il
+messaggio in quel formato, con i pulsanti sotto; prima, il testo con
+`notify.send_message` come ogni altra entità.
 """
 
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
+import hashlib
+from html import escape
 import logging
 from typing import TYPE_CHECKING, Any
 
-from homeassistant.core import CALLBACK_TYPE, Context, Event, HomeAssistant, callback
+from homeassistant import const as ha_const
+from homeassistant.const import (
+    EVENT_HOMEASSISTANT_STARTED,
+    EVENT_SERVICE_REGISTERED,
+    EVENT_SERVICE_REMOVED,
+)
+from homeassistant.core import (
+    CALLBACK_TYPE,
+    Context,
+    CoreState,
+    Event,
+    HomeAssistant,
+    callback,
+)
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.event import (
     async_track_point_in_time,
     async_track_time_interval,
 )
 from homeassistant.util import dt as dt_util
 
-from . import testi
+from . import repairs, testi
 from .core.emoji import EMOJI_PREDEFINITA, emoji_di
 from .core.promemoria import (
     Conferma,
@@ -46,6 +68,29 @@ GRUPPO = "raccolta-differenziata"
 EVENTO_AZIONE = "mobile_app_notification_action"
 SECONDI_SALVATAGGIO = 10
 
+# Telegram (decisione 74). I dati di un pulsante stanno in 64 byte: prefissi corti.
+TELEGRAM = "telegram_bot"
+TELEGRAM_DA = (2026, 11)
+EVENTO_TELEGRAM = "telegram_callback"
+TG_ESPOSTO = "/rd_esposto_"
+TG_RINVIA = "/rd_rinvia_"
+TG_PROVA = "/rd_prova"
+
+
+def versione_ha() -> tuple[int, int]:
+    """Anno e mese della versione di Home Assistant in uso."""
+    return ha_const.MAJOR_VERSION, ha_const.MINOR_VERSION
+
+
+def telegram_bot_attivo() -> bool:
+    """Da 2026.11 Telegram si raggiunge con `telegram_bot.send_message`."""
+    return versione_ha() >= TELEGRAM_DA
+
+
+def _impronta(chiave: str) -> str:
+    """Il destinatario nei dati di un pulsante Telegram, in 8 caratteri."""
+    return hashlib.sha256(chiave.encode()).hexdigest()[:8]
+
 
 class GestorePromemoria:
     def __init__(self, hass: HomeAssistant, coordinatore: Coordinatore) -> None:
@@ -65,6 +110,25 @@ class GestorePromemoria:
             )
         )
         self._annulla.append(self.hass.bus.async_listen(EVENTO_AZIONE, self._azione))
+        self._annulla.append(
+            self.hass.bus.async_listen(EVENTO_TELEGRAM, self._azione_telegram)
+        )
+        # I destinatari che non esistono più (Telegram dopo 2026.11, un telefono
+        # tolto): si controllano a Home Assistant avviato e a ogni cambiamento.
+        self._annulla.append(self.coordinatore.ascolta(self.controlla_destinatari))
+        for evento in (EVENT_SERVICE_REGISTERED, EVENT_SERVICE_REMOVED):
+            self._annulla.append(
+                self.hass.bus.async_listen(evento, self._servizio_cambiato)
+            )
+        if self.hass.state is CoreState.running:
+            self.controlla_destinatari()
+        else:
+            self._annulla.append(
+                self.hass.bus.async_listen_once(
+                    EVENT_HOMEASSISTANT_STARTED,
+                    lambda _evento: self.controlla_destinatari(),
+                )
+            )
         self.decidi()
 
     @callback
@@ -169,6 +233,69 @@ class GestorePromemoria:
         )
         return len(ritiri)
 
+    # --- destinatari che non esistono più -------------------------------------------
+
+    @callback
+    def _servizio_cambiato(self, evento: Event) -> None:
+        if evento.data.get("domain") == "notify":
+            self.controlla_destinatari()
+
+    @callback
+    def controlla_destinatari(self) -> None:
+        """Il problema in Riparazioni per i destinatari che non si raggiungono più."""
+        if self.hass.state is not CoreState.running:
+            return
+        mancanti: list[str] = []
+        if not self.coordinatore.problemi:
+            config = carica_promemoria(self.coordinatore.archivi.configurazione)
+            for profilo in config.profili:
+                for d in profilo.destinatari:
+                    esiste = (
+                        self.hass.states.get(d.id) is not None
+                        if d.tipo == "entita"
+                        else self.hass.services.has_service("notify", d.id)
+                    )
+                    nome = d.id if d.tipo == "entita" else f"notify.{d.id}"
+                    if not esiste and nome not in mancanti:
+                        mancanti.append(nome)
+        repairs.imposta_destinatari_mancanti(self.hass, mancanti)
+
+    def _telegram(self, destinatario: Destinatario) -> bool:
+        """Un'entità del bot Telegram, su un Home Assistant che usa il formato nuovo."""
+        if destinatario.tipo != "entita" or not telegram_bot_attivo():
+            return False
+        voce = er.async_get(self.hass).async_get(destinatario.id)
+        return (
+            voce is not None
+            and voce.platform == TELEGRAM
+            and self.hass.services.has_service(TELEGRAM, "send_message")
+        )
+
+    async def _invia_telegram(
+        self,
+        destinatario: Destinatario,
+        titolo: str,
+        messaggio: str,
+        esposto: str,
+        rinvia: str | None,
+    ) -> None:
+        """Il messaggio con `telegram_bot.send_message`: il titolo in grassetto e i
+        pulsanti sotto, che tornano come evento `telegram_callback`."""
+        pulsanti = [f"{testi.AZIONE_ESPOSTO}:{esposto}"]
+        if rinvia is not None:
+            pulsanti.append(f"{testi.AZIONE_RINVIA}:{rinvia}")
+        await self.hass.services.async_call(
+            TELEGRAM,
+            "send_message",
+            {
+                "entity_id": destinatario.id,
+                "message": f"<b>{escape(titolo)}</b>\n{escape(messaggio)}",
+                "parse_mode": "html",
+                "inline_keyboard": pulsanti,
+            },
+            blocking=True,
+        )
+
     # --- invio ---------------------------------------------------------------------
 
     def _voci(
@@ -217,6 +344,8 @@ class GestorePromemoria:
             esposto=f"{AZIONE_ESPOSTO}_{invio.gettone}",
             rinvia=f"{AZIONE_RINVIA}_{invio.gettone}" if invio.azioni_rinvio else None,
             tag=f"raccolta-{invio.data.isoformat()}",
+            gettone=invio.gettone,
+            con_rinvio=invio.azioni_rinvio,
         )
 
     async def async_prova(
@@ -250,6 +379,7 @@ class GestorePromemoria:
             rinvia=f"{AZIONE_PROVA}_RINVIA" if self._solleciti_attivi else None,
             tag="raccolta-prova",
             prova=True,
+            con_rinvio=self._solleciti_attivi,
         )
 
     @property
@@ -269,6 +399,8 @@ class GestorePromemoria:
         rinvia: str | None,
         tag: str,
         prova: bool = False,
+        gettone: str = "",
+        con_rinvio: bool = False,
     ) -> tuple[int, list[str]]:
         """Manda a ogni destinatario; restituisce quanti l'hanno avuta e chi no."""
         titolo, messaggio = testi.notifica(
@@ -281,6 +413,23 @@ class GestorePromemoria:
         consegnate, fallite = 0, []
         for destinatario in destinatari:
             try:
+                if self._telegram(destinatario):
+                    if prova:
+                        tg_esposto, tg_rinvia = TG_PROVA, TG_PROVA
+                    else:
+                        tg_esposto = f"{TG_ESPOSTO}{gettone}"
+                        tg_rinvia = (
+                            f"{TG_RINVIA}{gettone}_{_impronta(destinatario.chiave)}"
+                        )
+                    await self._invia_telegram(
+                        destinatario,
+                        titolo,
+                        messaggio,
+                        tg_esposto,
+                        tg_rinvia if con_rinvio else None,
+                    )
+                    consegnate += 1
+                    continue
                 if destinatario.tipo == "entita":
                     await self.hass.services.async_call(
                         "notify",
@@ -328,15 +477,7 @@ class GestorePromemoria:
     async def _azione(self, evento: Event) -> None:
         azione = str(evento.data.get("action", ""))
         if azione.startswith(f"{AZIONE_ESPOSTO}_"):
-            gettone = azione.removeprefix(f"{AZIONE_ESPOSTO}_")
-            fatto = next(
-                (
-                    v
-                    for v in self._stato.get("invii_fatti", [])
-                    if v.get("gettone") == gettone
-                ),
-                None,
-            )
+            fatto = self._invio_fatto(azione.removeprefix(f"{AZIONE_ESPOSTO}_"))
             if fatto is None:
                 return
             giorno = date.fromisoformat(fatto["data"])
@@ -351,3 +492,71 @@ class GestorePromemoria:
             gettone, _, destinatario = resto.partition("_")
             if gettone and destinatario:
                 self.decidi(Rinvio(gettone, destinatario))
+
+    async def _azione_telegram(self, evento: Event) -> None:
+        """Un pulsante premuto in Telegram (decisione 74)."""
+        dati = str(evento.data.get("data") or evento.data.get("command") or "")
+        if not dati.startswith("/rd_"):
+            return
+        risposta = None
+        if dati.startswith(TG_ESPOSTO):
+            fatto = self._invio_fatto(dati.removeprefix(TG_ESPOSTO))
+            if fatto is not None:
+                self.decidi(
+                    Conferma(
+                        tuple(
+                            (date.fromisoformat(fatto["data"]), t)
+                            for t in fatto["tipologie"]
+                        ),
+                        evento.data.get("from_first") or None,
+                    )
+                )
+                risposta = testi.TELEGRAM_ESPOSTO
+        elif dati.startswith(TG_RINVIA):
+            gettone, _, impronta = dati.removeprefix(TG_RINVIA).partition("_")
+            chiave = self._destinatario_da_impronta(impronta)
+            if gettone and chiave:
+                self.decidi(Rinvio(gettone, chiave))
+                risposta = testi.TELEGRAM_RINVIATO
+        elif dati == TG_PROVA:
+            risposta = testi.TELEGRAM_PROVA
+        await self._rispondi_telegram(evento, risposta)
+
+    def _invio_fatto(self, gettone: str) -> dict[str, Any] | None:
+        return next(
+            (
+                v
+                for v in self._stato.get("invii_fatti", [])
+                if v.get("gettone") == gettone
+            ),
+            None,
+        )
+
+    def _destinatario_da_impronta(self, impronta: str) -> str | None:
+        config = carica_promemoria(self.coordinatore.archivi.configurazione)
+        for profilo in config.profili:
+            for d in profilo.destinatari:
+                if _impronta(d.chiave) == impronta:
+                    return d.chiave
+        return None
+
+    async def _rispondi_telegram(self, evento: Event, testo: str | None) -> None:
+        """Toglie la rotellina dal pulsante e dice cosa è successo."""
+        richiesta = evento.data.get("id")
+        if not richiesta or not self.hass.services.has_service(
+            TELEGRAM, "answer_callback_query"
+        ):
+            return
+        dati: dict[str, Any] = {
+            "callback_query_id": richiesta,
+            "message": testo or testi.TELEGRAM_SCADUTO,
+        }
+        bot = evento.data.get("bot")
+        if isinstance(bot, dict) and bot.get("config_entry_id"):
+            dati["config_entry_id"] = bot["config_entry_id"]
+        try:
+            await self.hass.services.async_call(
+                TELEGRAM, "answer_callback_query", dati, blocking=True
+            )
+        except Exception:  # una risposta mancata non ferma nulla
+            _LOGGER.debug("Risposta al pulsante Telegram non riuscita", exc_info=True)
